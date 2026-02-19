@@ -1,6 +1,7 @@
 package com.api.controller;
 
 import com.api.business.ClienteService;
+import com.api.dto.ClienteDTO;
 import com.api.entity.Cliente;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,18 @@ public class ClienteController {
     }
 
 
-    @PutMapping
+    @PutMapping("/{id}")
+    public ResponseEntity<Cliente> atualizar(@PathVariable Long id, @RequestBody Cliente clienteDTO){
+
+        Cliente atualizado = clienteService.atualizarCliente(id, clienteDTO);
+        return ResponseEntity.ok(atualizado);
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Void> alterarStatus(@PathVariable Long id) {
+        clienteService.alterarStatus(id);
+        return ResponseEntity.noContent().build();
+    }
 
     // Deletar
     @DeleteMapping("/{id}")
