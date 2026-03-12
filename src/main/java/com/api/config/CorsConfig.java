@@ -10,7 +10,10 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://app-videira-natural.vercel.app/") // Mude para o seu domínio
-                .allowedMethods("GET", "POST", "PUT", "DELETE");
+                // Apenas domínios externos aqui
+                .allowedOrigins("https://app-videira-natural.vercel.app")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("*") // Importante adicionar para evitar erros de cabeçalho
+                .allowCredentials(true);
     }
 }
