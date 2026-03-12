@@ -1,0 +1,27 @@
+classDiagram
+
+class Cliente {
+  Long id
+  String nome
+  String email
+  String senha
+  Role role
+  Boolean ativo
+  LocalDateTime dataCriacao
+}
+
+class Role {
+  <<enumeration>>
+  CLIENT
+  ADMIN
+}
+
+class RefreshToken {
+  Long id
+  String token
+  LocalDateTime expiracao
+  Boolean revogado
+}
+
+Cliente "1" --> "0..*" RefreshToken
+Cliente --> Role
