@@ -1,5 +1,6 @@
 package com.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -10,30 +11,37 @@ import java.util.UUID;
 
 @Entity
 @Data
+@Table(name = "TB_CLIENTE")
 public class Cliente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "ID")
     private Long id;
 
     @NotNull
-    @Column(name = "BD_CLIENTE_NOME")
+    @Column(name = "NOME")
     private String nome;
 
-    @Column(name = "BD_CLIENTE_EMAIL")
+    @Column(name = "EMAIL")
     private String email;
 
-    @Column(name = "BD_CLIENTE_WHATSAPP")
+    @Column(name = "WHATSAPP")
     private String whatsapp;
 
-    @Column(name = "BD_FLAG_ATIVO")
+    @Column(name = "FLAG_ATIVO")
     private Boolean ativo;
 
-    @Column(name = "BD_CLIENTE_DATA_CRIACAO")
+    @Column(name = "DATA_CRIACAO")
     private LocalDate dataCriacao;
 
-    @Column(name = "BD_CLIENTE_POSSUI_CONTA")
-    private Boolean possuiConta;
+    @Column(name = "POSSUI_CONTA_APP")
+    private Boolean possuiContaApp;
+
+    @Column(name = "TB_CLIENTE_DATA_NASCIMENTO")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private String dataNascimento;
+
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn( name = "endereco_id")

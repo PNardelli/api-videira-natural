@@ -48,7 +48,7 @@ public class ClienteService {
         clienteExistente.setNome(clienteAtualizado.getNome());
         clienteExistente.setEmail(clienteAtualizado.getEmail());
         clienteExistente.setWhatsapp(clienteAtualizado.getWhatsapp());
-        clienteExistente.setPossuiConta(clienteAtualizado.getPossuiConta());
+        clienteExistente.setPossuiContaApp(clienteAtualizado.getPossuiContaApp());
         clienteExistente.setAtivo(clienteAtualizado.getAtivo());
 
         if (clienteAtualizado.getEndereco().getCep() != null) {
