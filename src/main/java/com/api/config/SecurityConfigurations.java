@@ -34,8 +34,8 @@ public class SecurityConfigurations {
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login").permitAll() // Tente sem a barra inicial
-                        .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()                        .anyRequest().authenticated()
                 )
                 // Adicione isso para ver exatamente POR QUE o Spring está negando:
                 .exceptionHandling(ex -> ex
@@ -51,13 +51,11 @@ public class SecurityConfigurations {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Permite o seu front-end
-        config.setAllowedOrigins(List.of("https://app-videira-natural.vercel.app"));
-        // Permite os métodos necessários
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // Permite todos os cabeçalhos
+        config.setAllowedOrigins(List.of(
+                "https://app-videira-natural.vercel.app",
+                "http://localhost:5173"
+        ));        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        // Importante para autenticação baseada em token/credenciais
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
