@@ -10,7 +10,8 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5173") // A porta onde seu Vue roda
+                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins("https://app-videira-natural.vercel.app") // A URL do seu front na Vercel// A porta onde seu Vue roda
                 .allowedOriginPatterns("*") // Resolve o conflito com allowCredentials
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
