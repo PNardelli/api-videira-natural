@@ -1,5 +1,5 @@
 package com.api.business;
-
+import com.api.entity.Usuario;
 import com.api.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +15,8 @@ public class AuthorizationService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return repository.findByLogin(username);
+        Usuario user = repository.findByLogin(username);
+
+        return user;
     }
 }

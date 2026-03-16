@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-    // O Spring Data JPA implementa a lógica desta busca sozinho
-    UserDetails findByLogin(String login);
+    Usuario findByLogin(String login);
 }
