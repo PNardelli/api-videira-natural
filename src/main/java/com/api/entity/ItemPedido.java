@@ -2,10 +2,13 @@ package com.api.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "TB_ITEM_PEDIDO")
 public class ItemPedido {

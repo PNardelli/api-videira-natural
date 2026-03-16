@@ -4,13 +4,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "TB_CLIENTE")
 public class Cliente {
 
@@ -33,7 +36,7 @@ public class Cliente {
     private Boolean ativo;
 
     @Column(name = "DATA_CRIACAO")
-    private LocalDate dataCriacao;
+    private String dataCriacao;
 
     @Column(name = "POSSUI_CONTA_APP")
     private Boolean possuiContaApp;
