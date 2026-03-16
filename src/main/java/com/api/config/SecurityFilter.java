@@ -30,8 +30,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         return path.startsWith("/h2-console") ||
                 path.startsWith("/swagger-ui") ||
                 path.startsWith("/v3/api-docs") ||
-                path.startsWith("/auth/login") ||
-                path.startsWith("/auth/register");
+                path.startsWith("/auth");
     }
 
     @Override
