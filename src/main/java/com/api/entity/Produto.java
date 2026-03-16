@@ -44,6 +44,8 @@ public class Produto {
 
     private Boolean ativo = true;
     private LocalDateTime dataCriacao;
+    @Nullable
+    private String observacao;
     private String imagemUrl;
 
 }

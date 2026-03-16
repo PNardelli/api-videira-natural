@@ -1,6 +1,7 @@
 package com.api.dto;
 
 import com.api.eNum.UnidadeMedida;
+import jakarta.annotation.Nullable;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -19,5 +20,7 @@ public class ProdutoRequest {
     private Integer estoque;
     private UnidadeMedida unidadeMedida;
     private LocalDate dataValidade;
+    @Nullable
+    private String observacao;
 
 }
