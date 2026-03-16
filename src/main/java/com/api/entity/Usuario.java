@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Table(name = "usuarios")
+@Table(name = "tb_usuario")
 @Entity(name = "usuarios")
 @Getter
 @NoArgsConstructor
@@ -24,14 +24,12 @@ public class Usuario implements UserDetails {
     private Long id;
     private String login;
     private String senha;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private UsuarioRole role;
 
-    // Se você não quiser usar o @AllArgsConstructor do Lombok,
-    // você precisa criar este construtor manualmente:
-    public Usuario(String login, String senha, UsuarioRole role) {
-        this.login = login;
-        this.senha = senha;
-        this.role = role;
+    public Usuario(String login, String encryptedPassword, UsuarioRole role) {
     }
 
     @Override
