@@ -1,5 +1,6 @@
 package com.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -17,10 +18,12 @@ public class Fornecedor {
     private Long id;
 
     private String nome;
+    @JsonIgnoreProperties(value = "Cpf_Cnpj")
     private String cfpCnpj;
     private String whatsapp;
 
     @OneToMany(mappedBy = "fornecedor")
+    @JsonIgnoreProperties("fornecedor") // Isso impede que o vínculo tente mostrar o fornecedor de novo
     private List<ProdutoFornecedor> produtos;
 
 }

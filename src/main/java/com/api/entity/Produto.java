@@ -1,6 +1,7 @@
 package com.api.entity;
 
 import com.api.eNum.UnidadeMedida;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -23,7 +24,7 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @Column(unique = true, nullable = false)
     private String codigoProduto;
 
     @Nullable
@@ -37,16 +38,20 @@ public class Produto {
 
     private BigDecimal precoVenda;
 
-    @OneToMany(mappedBy = "produto")
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProdutoFornecedor> fornecedores;
 
     @Enumerated(EnumType.STRING)
     private UnidadeMedida unidadeMedida;
 
-    private LocalDate dataValidade;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private String dataValidade;
 
     private Boolean ativo = true;
-    private LocalDateTime dataCriacao;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private String dataCriacao;
+
     @Nullable
     private String observacao;
     private String imagemUrl;
