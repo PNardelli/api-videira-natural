@@ -10,9 +10,10 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://app-videira-natural.vercel.app") // URL do seu front
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedOrigins("https://app-videira-natural.vercel.app")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // O OPTIONS aqui já resolve o Preflight
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(true)
+                .maxAge(3600); // Dica: mantém a permissão no navegador por 1 hora
     }
 }
