@@ -38,8 +38,7 @@ public class Produto {
 
     private BigDecimal precoVenda;
 
-    @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProdutoFornecedor> fornecedores;
+    private String descricao;
 
     @Enumerated(EnumType.STRING)
     private UnidadeMedida unidadeMedida;

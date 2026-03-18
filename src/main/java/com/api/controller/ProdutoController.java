@@ -21,7 +21,7 @@ public class ProdutoController {
         return produtoService.salvar(produtoRequest);
     }
 
-    @GetMapping("/listar-produtos")
+    @GetMapping("/listar")
     public List<Produto> listar(){
         return produtoService.listar();
     }

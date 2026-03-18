@@ -17,12 +17,14 @@ public class ProdutoRequest {
     private String codigoBarras;
     private String nome;
     private Long categoriaId;
-    private Long fornecedorId;
+    private String descricao;
     private BigDecimal precoCompra;
     private BigDecimal precoVenda;
     private Integer estoque;
     private UnidadeMedida unidadeMedida;
     private String dataValidade;
+    private Long dataValidadeDias;
+
     @Nullable
     private String observacao;
 

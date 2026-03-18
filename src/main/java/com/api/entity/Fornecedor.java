@@ -21,9 +21,4 @@ public class Fornecedor {
     @JsonIgnoreProperties(value = "Cpf_Cnpj")
     private String cfpCnpj;
     private String whatsapp;
-
-    @OneToMany(mappedBy = "fornecedor")
-    @JsonIgnoreProperties("fornecedor") // Isso impede que o vínculo tente mostrar o fornecedor de novo
-    private List<ProdutoFornecedor> produtos;
-
 }

@@ -47,23 +47,6 @@ public class ProdutoService {
             produto.setObservacao("Sem Observação Cadastrada");
         }else {produto.setObservacao(req.getObservacao());}
 
-        if (req.getFornecedorId() != null) {
-            Fornecedor fornecedor = fornecedorRepository.findById(req.getFornecedorId())
-                    .orElseThrow(() -> new RuntimeException("Fornecedor não cadastrado"));
-
-            // Cria o vínculo
-            ProdutoFornecedor vinculo = new ProdutoFornecedor();
-            vinculo.setProduto(produto);
-            vinculo.setFornecedor(fornecedor);
-            vinculo.setPrecoCompra(req.getPrecoCompra());
-            vinculo.setDataValidade(req.getDataValidade());
-            vinculo.setQuantidade(req.getEstoque());
-            vinculo.setUnidade(req.getUnidadeMedida().toString());
-
-            // Adiciona na lista do produto (o Cascade salvará isso)
-            produto.setFornecedores(List.of(vinculo));
-        }
-
         return produtoRepository.save(produto);
     }
 
