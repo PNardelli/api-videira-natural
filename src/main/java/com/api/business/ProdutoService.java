@@ -1,10 +1,7 @@
 package com.api.business;
 
 import com.api.dto.ProdutoRequest;
-import com.api.entity.Categoria;
-import com.api.entity.Fornecedor;
-import com.api.entity.Produto;
-import com.api.entity.ProdutoFornecedor;
+import com.api.entity.*;
 import com.api.repository.CategoriaRepository;
 import com.api.repository.FornecedorRepository;
 import com.api.repository.ProdutoFornecedorRepository;
@@ -14,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProdutoService {
@@ -38,14 +36,14 @@ public class ProdutoService {
         Produto produto = new Produto();
         produto.setCodigoProduto(req.getCodigoProduto());
         produto.setNome(req.getNome());
+        produto.setDescricao(req.getDescricao().isBlank() ? "Descrição não Cadastrada" : req.getDescricao());
         produto.setCategoria(categoria);
         produto.setPrecoVenda(req.getPrecoVenda());
+        produto.setPrecoCompra(req.getPrecoCompra());
         produto.setUnidadeMedida(req.getUnidadeMedida());
-        produto.setDataValidade(req.getDataValidade());
-        produto.setDataCriacao(LocalDate.now().toString());
-        if (req.getObservacao().isBlank()){
-            produto.setObservacao("Sem Observação Cadastrada");
-        }else {produto.setObservacao(req.getObservacao());}
+        produto.setDataValidade(adicionarDataValidadeDias(req.getDataValidadeDias()));
+        produto.setDataCriacao(LocalDate.now());
+        produto.setObservacao(req.getObservacao().isBlank() ? "Sem Observação Cadastrada" : req.getObservacao());
 
         return produtoRepository.save(produto);
     }
@@ -58,8 +56,26 @@ public class ProdutoService {
         return produtoRepository.findById(id).orElse(null);
     }
 
+    public Produto atualizarProduto(Long id, ProdutoRequest produtoAtualizado) {
+        Produto produtoExistente = produtoRepository.findById(id).orElseThrow();
+
+        produtoExistente.setCodigoProduto(produtoAtualizado.getCodigoProduto());
+        produtoExistente.setDataValidade(produtoAtualizado.getDataValidade());
+
+        return produtoRepository.save(produtoExistente);
+    }
+
     public void deletar(Long id){
         produtoRepository.deleteById(id);
     }
+
+    public void ajustarEstoque(Long id, Map<String, Object> dados){
+
+    }
+
+
+  private LocalDate adicionarDataValidadeDias(Long data){
+      return (data != null) ? LocalDate.now().plusDays(data) : LocalDate.now();
+  }
 
 }

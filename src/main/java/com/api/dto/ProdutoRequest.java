@@ -22,7 +22,7 @@ public class ProdutoRequest {
     private BigDecimal precoVenda;
     private Integer estoque;
     private UnidadeMedida unidadeMedida;
-    private String dataValidade;
+    private LocalDate dataValidade;
     private Long dataValidadeDias;
 
     @Nullable

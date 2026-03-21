@@ -2,7 +2,11 @@ package com.api.business;
 
 import com.api.entity.Fornecedor;
 import com.api.repository.FornecedorRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -15,8 +19,19 @@ public class FornecedorService {
         this.repository = repository;
     }
 
-    public Fornecedor salvar(Fornecedor fornecedor) {
-        return repository.save(fornecedor);
+    public ResponseEntity<Fornecedor> salvar(Fornecedor payload) {
+        if (payload.getNome().isBlank() || payload.getCfpCnpj().isBlank()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome ou CPF/CNPJ obrigatórios.");
+        }
+
+        Fornecedor fornecedor = new Fornecedor();
+        fornecedor.setNome(payload.getNome());
+        fornecedor.setWhatsapp(payload.getWhatsapp());
+        fornecedor.setCfpCnpj(payload.getCfpCnpj());
+
+        repository.save(fornecedor);
+
+        return ResponseEntity.ok(fornecedor);
     }
 
     public List<Fornecedor> listar() {

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,8 +24,15 @@ public class MovimentacaoEstoque {
 
     private Integer quantidade;
 
+    // Na sua entidade MovimentacaoEstoque:
+    @ManyToOne
+    @JoinColumn(name = "fornecedor_id")
+    private Fornecedor fornecedor;
+
     @Enumerated(EnumType.STRING)
     private TipoMovimentacao tipoMovimentacao;
+
+    private LocalDate dataValidade;
 
     private String observacao;
     private LocalDateTime data;

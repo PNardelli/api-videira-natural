@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -19,18 +20,18 @@ public class ProdutoFornecedor {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "produto_id")
-    @JsonIgnoreProperties("fornecedores")
     private Produto produto;
 
-    @ManyToOne
+    @ManyToOne // <--- A CORREÇÃO
     @JoinColumn(name = "fornecedor_id")
-    @JsonIgnoreProperties("produtosVinculados") // Não deixa o fornecedor carregar a lista de produtos dele aqui
     private Fornecedor fornecedor;
 
+    private LocalDateTime dataEntrada;
     private BigDecimal precoCompra;
-    private String dataValidade; // O segredo está aqui
+    private BigDecimal precoVenda;
+    private String dataValidade;
     private String unidade;
     private Integer quantidade;
 }

@@ -38,21 +38,24 @@ public class Produto {
 
     private BigDecimal precoVenda;
 
+    private BigDecimal precoCompra;
+
     private String descricao;
 
     @Enumerated(EnumType.STRING)
     private UnidadeMedida unidadeMedida;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private String dataValidade;
+    private LocalDate dataValidade;
 
     private Boolean ativo = true;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private String dataCriacao;
+    private LocalDate dataCriacao;
 
     @Nullable
     private String observacao;
+
     private String imagemUrl;
 
 }
