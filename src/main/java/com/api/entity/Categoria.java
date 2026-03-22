@@ -12,6 +12,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Table(name = "tb_categoria")
 public class Categoria {
 
     @Id

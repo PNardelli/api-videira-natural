@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@Table(name = "tb_produto_fornecedor")
 public class ProdutoFornecedor {
 
     @Id
@@ -24,14 +25,14 @@ public class ProdutoFornecedor {
     @JoinColumn(name = "produto_id")
     private Produto produto;
 
-    @ManyToOne // <--- A CORREÇÃO
+    @ManyToOne
     @JoinColumn(name = "fornecedor_id")
     private Fornecedor fornecedor;
 
     private LocalDateTime dataEntrada;
     private BigDecimal precoCompra;
     private BigDecimal precoVenda;
-    private String dataValidade;
+    private LocalDate dataValidade;
     private String unidade;
     private Integer quantidade;
 }

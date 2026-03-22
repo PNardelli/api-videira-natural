@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Table(name = "tb_usuario")
-@Entity(name = "usuarios")
+@Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor // <-- Esta anotação do Lombok cria o construtor com todos os argumentos

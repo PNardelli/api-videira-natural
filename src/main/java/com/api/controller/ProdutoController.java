@@ -1,5 +1,6 @@
 package com.api.controller;
 
+import com.api.business.ProdutoFornecedorService;
 import com.api.dto.MovimentacaoDTO;
 import com.api.dto.ProdutoRequest;
 import com.api.entity.Produto;
@@ -19,9 +20,15 @@ public class ProdutoController {
     @Autowired
     private ProdutoService produtoService;
 
+    @Autowired
+    private ProdutoFornecedorService servicePF;
+
     @PostMapping("/cadastrar")
     public Produto salvar(@RequestBody ProdutoRequest produtoRequest){
-        return produtoService.salvar(produtoRequest);
+        var responseProduto = produtoService.salvar(produtoRequest);
+        servicePF.cadastrarProdutoFornecedor(responseProduto);
+
+        return responseProduto;
     }
 
     @GetMapping("/listar")
@@ -31,6 +38,7 @@ public class ProdutoController {
 
     @GetMapping("/{id}")
     public Produto buscar(@PathVariable Long id){
+
         return produtoService.buscar(id);
     }
 

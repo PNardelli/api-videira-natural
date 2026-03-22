@@ -20,14 +20,14 @@ public class FornecedorService {
     }
 
     public ResponseEntity<Fornecedor> salvar(Fornecedor payload) {
-        if (payload.getNome().isBlank() || payload.getCfpCnpj().isBlank()){
+            if (payload.getNome().isBlank() || payload.getCpfCnpj().isBlank()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome ou CPF/CNPJ obrigatórios.");
         }
 
         Fornecedor fornecedor = new Fornecedor();
         fornecedor.setNome(payload.getNome());
         fornecedor.setWhatsapp(payload.getWhatsapp());
-        fornecedor.setCfpCnpj(payload.getCfpCnpj());
+        fornecedor.setCpfCnpj(payload.getCpfCnpj());
 
         repository.save(fornecedor);
 

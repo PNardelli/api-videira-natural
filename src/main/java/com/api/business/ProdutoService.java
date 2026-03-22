@@ -1,5 +1,6 @@
 package com.api.business;
 
+import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.ProdutoRequest;
 import com.api.entity.*;
 import com.api.repository.CategoriaRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class ProdutoService {
@@ -23,9 +25,6 @@ public class ProdutoService {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
-
-    @Autowired
-    private FornecedorRepository fornecedorRepository;
 
     public Produto salvar(ProdutoRequest req) {
 
@@ -46,6 +45,8 @@ public class ProdutoService {
         produto.setObservacao(req.getObservacao().isBlank() ? "Sem Observação Cadastrada" : req.getObservacao());
 
         return produtoRepository.save(produto);
+
+
     }
 
     public List<Produto> listar(){
@@ -59,8 +60,17 @@ public class ProdutoService {
     public Produto atualizarProduto(Long id, ProdutoRequest produtoAtualizado) {
         Produto produtoExistente = produtoRepository.findById(id).orElseThrow();
 
+        Optional<Categoria> categoriaAtualizada = categoriaRepository.findById(produtoAtualizado.getCategoriaId());
+
         produtoExistente.setCodigoProduto(produtoAtualizado.getCodigoProduto());
+        produtoExistente.setCodigoBarras(produtoAtualizado.getCodigoBarras());
         produtoExistente.setDataValidade(produtoAtualizado.getDataValidade());
+        produtoExistente.setObservacao(produtoAtualizado.getObservacao());
+        produtoExistente.setDescricao(produtoAtualizado.getDescricao());
+        produtoExistente.setCategoria(categoriaAtualizada.orElseThrow());
+        produtoExistente.setPrecoCompra(produtoAtualizado.getPrecoCompra());
+        produtoExistente.setPrecoVenda(produtoAtualizado.getPrecoVenda());
+        produtoExistente.setUnidadeMedida(produtoAtualizado.getUnidadeMedida());
 
         return produtoRepository.save(produtoExistente);
     }

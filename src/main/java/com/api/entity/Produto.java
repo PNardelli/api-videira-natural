@@ -2,6 +2,8 @@ package com.api.entity;
 
 import com.api.eNum.UnidadeMedida;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -55,6 +57,10 @@ public class Produto {
 
     @Nullable
     private String observacao;
+
+    @OneToMany(mappedBy = "produto", fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("produto")
+    private List<ProdutoFornecedor> fornecedores;
 
     private String imagemUrl;
 
