@@ -26,9 +26,9 @@ public class ProdutoFornecedorService {
         ProdutoFornecedor produtoFornecedor = new ProdutoFornecedor();
         produtoFornecedor.setProduto(produto);
 
-        produtoFornecedor.setQuantidade(0);
+        produtoFornecedor.setQuantidade(produto.getEstoque());
         produtoFornecedor.setUnidade(produto.getUnidadeMedida().toString());
-        produtoFornecedor.setDataValidade(produtoFornecedor.getDataValidade());
+        produtoFornecedor.setDataValidade(produto.getDataValidade());
         produtoFornecedor.setDataEntrada(LocalDateTime.now());
         produtoFornecedor.setPrecoCompra(produto.getPrecoCompra());
         produtoFornecedor.setPrecoVenda(produto.getPrecoVenda());
@@ -36,4 +36,9 @@ public class ProdutoFornecedorService {
         return repositoryPF.save(produtoFornecedor);
     }
 
+    public ProdutoFornecedor recuperarProduto(Long id) {
+
+         ProdutoFornecedor response = repositoryPF.findById(id).orElseThrow();
+         return response;
+    }
 }

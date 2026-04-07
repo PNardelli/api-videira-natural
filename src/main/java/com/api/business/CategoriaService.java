@@ -1,5 +1,6 @@
 package com.api.business;
 
+import com.api.dto.CategoriaDTO;
 import com.api.entity.Categoria;
 import com.api.repository.CategoriaRepository;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,11 @@ public class CategoriaService {
         this.repository = repository;
     }
 
-    public Categoria salvar(Categoria categoria) {
+    public Categoria salvar(CategoriaDTO categoriaDTO) {
+
+        Categoria categoria = new Categoria();
+        categoria.setNome(categoriaDTO.getNome().trim().toUpperCase());
+
         return repository.save(categoria);
     }
 

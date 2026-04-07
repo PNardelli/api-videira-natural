@@ -1,9 +1,6 @@
 package com.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,5 +31,5 @@ public class ProdutoFornecedor {
     private BigDecimal precoVenda;
     private LocalDate dataValidade;
     private String unidade;
-    private Integer quantidade;
+    private BigDecimal quantidade;
 }

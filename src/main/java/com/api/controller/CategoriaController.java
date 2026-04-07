@@ -1,9 +1,11 @@
 package com.api.controller;
 
 import com.api.business.CategoriaService;
+import com.api.dto.CategoriaDTO;
 import com.api.entity.Categoria;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.CacheRequest;
 import java.util.List;
 
 @RestController
@@ -18,8 +20,8 @@ public class CategoriaController {
     }
 
     @PostMapping
-    public Categoria salvar(@RequestBody Categoria categoria) {
-        return service.salvar(categoria);
+    public Categoria salvar(@RequestBody CategoriaDTO categoriaDTO) {
+        return service.salvar(categoriaDTO);
     }
 
     @GetMapping

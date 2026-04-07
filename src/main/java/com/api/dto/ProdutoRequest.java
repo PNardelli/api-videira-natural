@@ -14,13 +14,13 @@ import java.time.LocalDate;
 public class ProdutoRequest {
 
     private String codigoProduto;
-    private String codigoBarras;
+    private String codigoBarra;
     private String nome;
     private Long categoriaId;
     private String descricao;
     private BigDecimal precoCompra;
     private BigDecimal precoVenda;
-    private Integer estoque;
+    private BigDecimal estoque;
     private UnidadeMedida unidadeMedida;
     private LocalDate dataValidade;
     private Long dataValidadeDias;

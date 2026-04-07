@@ -16,6 +16,7 @@ public class ClienteDTO {
     private String nome;
     private String email;
     private String whatsapp;
+    private String dataNascimento;
     private Boolean ativo;
     private Boolean possuiConta;
     private Endereco endereco;

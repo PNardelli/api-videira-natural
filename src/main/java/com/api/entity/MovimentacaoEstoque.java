@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -23,7 +24,7 @@ public class MovimentacaoEstoque {
     @JoinColumn(name = "produto_id")
     private Produto produto;
 
-    private Integer quantidade;
+    private BigDecimal quantidade;
 
     // Na sua entidade MovimentacaoEstoque:
     @ManyToOne
@@ -32,6 +33,12 @@ public class MovimentacaoEstoque {
 
     @Enumerated(EnumType.STRING)
     private TipoMovimentacao tipoMovimentacao;
+
+    private BigDecimal precoVenda;
+
+    private BigDecimal precoCompra;
+
+    private String unidadeMedida;
 
     private LocalDate dataValidade;
 

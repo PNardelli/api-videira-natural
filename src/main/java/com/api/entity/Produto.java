@@ -44,6 +44,9 @@ public class Produto {
 
     private String descricao;
 
+    @Column(columnDefinition = "NUMERIC(10,2)")
+    private BigDecimal estoque;
+
     @Enumerated(EnumType.STRING)
     private UnidadeMedida unidadeMedida;
 

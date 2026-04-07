@@ -3,6 +3,7 @@ package com.api.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +30,7 @@ public class Cliente {
     @Column(name = "EMAIL")
     private String email;
 
-    @Column(name = "WHATSAPP")
+    @Column(name = "WHATSAPP", unique = true)
     private String whatsapp;
 
     @Column(name = "FLAG_ATIVO")

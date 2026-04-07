@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -33,16 +34,19 @@ public class ProdutoService {
                 .orElseThrow();
 
         Produto produto = new Produto();
-        produto.setCodigoProduto(req.getCodigoProduto());
-        produto.setNome(req.getNome());
-        produto.setDescricao(req.getDescricao().isBlank() ? "Descrição não Cadastrada" : req.getDescricao());
+
+        produto.setCodigoBarras(req.getCodigoBarra().isBlank() || req.getCodigoBarra().isEmpty() ? req.getCodigoProduto().trim().toUpperCase() : req.getCodigoBarra().trim().toUpperCase());
+        produto.setCodigoProduto(req.getCodigoProduto().isEmpty() || req.getCodigoProduto().isBlank() ? req.getCodigoBarra().trim().toUpperCase() : req.getCodigoProduto().trim().toUpperCase());
+        produto.setNome(req.getNome().trim().toUpperCase());
+        produto.setDescricao(req.getDescricao().isBlank() ? "Descrição não Cadastrada".toUpperCase() : req.getDescricao().trim().toUpperCase());
         produto.setCategoria(categoria);
         produto.setPrecoVenda(req.getPrecoVenda());
         produto.setPrecoCompra(req.getPrecoCompra());
         produto.setUnidadeMedida(req.getUnidadeMedida());
-        produto.setDataValidade(adicionarDataValidadeDias(req.getDataValidadeDias()));
+        produto.setEstoque(req.getEstoque());
+        produto.setDataValidade(req.getDataValidade());
         produto.setDataCriacao(LocalDate.now());
-        produto.setObservacao(req.getObservacao().isBlank() ? "Sem Observação Cadastrada" : req.getObservacao());
+        produto.setObservacao(req.getObservacao().isBlank() ? "Sem Observação Cadastrada".toUpperCase() : req.getObservacao().trim().toUpperCase());
 
         return produtoRepository.save(produto);
 
@@ -62,11 +66,11 @@ public class ProdutoService {
 
         Optional<Categoria> categoriaAtualizada = categoriaRepository.findById(produtoAtualizado.getCategoriaId());
 
-        produtoExistente.setCodigoProduto(produtoAtualizado.getCodigoProduto());
-        produtoExistente.setCodigoBarras(produtoAtualizado.getCodigoBarras());
+        produtoExistente.setCodigoProduto(produtoAtualizado.getCodigoProduto().trim().toUpperCase());
+        produtoExistente.setCodigoBarras(produtoAtualizado.getCodigoBarra().trim().toUpperCase());
         produtoExistente.setDataValidade(produtoAtualizado.getDataValidade());
-        produtoExistente.setObservacao(produtoAtualizado.getObservacao());
-        produtoExistente.setDescricao(produtoAtualizado.getDescricao());
+        produtoExistente.setObservacao(produtoAtualizado.getObservacao().isEmpty() || produtoAtualizado.getObservacao().isBlank() ? produtoExistente.getObservacao().trim().toUpperCase() : produtoExistente.getObservacao().trim().toUpperCase());
+        produtoExistente.setDescricao(produtoAtualizado.getDescricao().trim().toUpperCase());
         produtoExistente.setCategoria(categoriaAtualizada.orElseThrow());
         produtoExistente.setPrecoCompra(produtoAtualizado.getPrecoCompra());
         produtoExistente.setPrecoVenda(produtoAtualizado.getPrecoVenda());
