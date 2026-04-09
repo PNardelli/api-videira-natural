@@ -1,6 +1,7 @@
 package com.api.dto;
 
 import com.api.eNum.UnidadeMedida;
+import com.api.entity.Fornecedor;
 import jakarta.annotation.Nullable;
 import lombok.Data;
 import lombok.Getter;
@@ -24,8 +25,8 @@ public class ProdutoRequest {
     private UnidadeMedida unidadeMedida;
     private LocalDate dataValidade;
     private Long dataValidadeDias;
-
-    @Nullable
+    private Long codigoFornecedorXml;
+    private Long fornecedorId;
     private String observacao;
 
 }

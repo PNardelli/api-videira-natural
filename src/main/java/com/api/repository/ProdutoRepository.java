@@ -11,6 +11,8 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long > {
 
     Optional<Produto> findByCodigoBarras(String codigoBarras);
 
+    Optional<Produto> findByCodigoFornecedorXml(String codigoFornecedor);
+
     List<Produto> findByCodigoProdutoOrNomeContainingIgnoreCase(String codigo, String nome);
 
 }

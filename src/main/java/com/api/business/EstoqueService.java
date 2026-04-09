@@ -7,25 +7,29 @@ import com.api.entity.Fornecedor;
 import com.api.entity.MovimentacaoEstoque;
 import com.api.entity.Produto;
 import com.api.entity.ProdutoFornecedor;
-import com.api.repository.FornecedorRepository;
-import com.api.repository.MovimentacaoEstoqueRepository;
-import com.api.repository.ProdutoFornecedorRepository;
-import com.api.repository.ProdutoRepository;
+import com.api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 public class EstoqueService {
 
     @Autowired private ProdutoRepository produtoRepository;
     @Autowired private ProdutoFornecedorRepository pfRepository;
+
     @Autowired
-    private ProdutoFornecedorService pfService;
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private ImportacaoXmlRepository importacaoXmlRepository;
+
+    @Autowired
+    private ProdutoService produtoService;
+
     @Autowired private FornecedorRepository fornecedorRepository;
     @Autowired private MovimentacaoEstoqueRepository movimentacaoRepository;
 
@@ -124,6 +128,7 @@ public class EstoqueService {
         // 4. Registra o histórico uma única vez ao final
         registrarHistorico(movimentacaoDTO, pfSalvo, fornecedor);
     }
+
 
     //REGISTRAR NA TABELA DE HISTORICO.
     private void registrarHistorico(MovimentacaoDTO dto, ProdutoFornecedor produtoFornecedor, Fornecedor fornecedor){

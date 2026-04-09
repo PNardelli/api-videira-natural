@@ -1,4 +1,4 @@
-package com.api.dto;
+package com.api.dto.xml;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
@@ -29,11 +29,15 @@ public class NfeCompletaDto {
     @Setter
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class InfNFe {
+
+        @JacksonXmlProperty(localName = "Id")
+        private String chaveNotaFiscal;
+
         @JacksonXmlProperty(localName = "emit") // Dados do Fornecedor
         private EmitenteDto emitente;
 
         @JacksonXmlProperty(localName = "det") // Lista de Itens
         @JacksonXmlElementWrapper(useWrapping = false)
-        private List<xmlDTO> itens;
+        private List<ItemNotaDTO> itens;
     }
 }

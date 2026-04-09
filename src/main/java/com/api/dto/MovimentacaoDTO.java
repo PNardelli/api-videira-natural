@@ -18,4 +18,5 @@ public class MovimentacaoDTO {
     private String observacao;
     private LocalDate dataValidade;
     private Boolean isGramas;
+    private String codigoProdutoFornecedor;
 }

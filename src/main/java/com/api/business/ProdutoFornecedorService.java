@@ -17,8 +17,6 @@ public class ProdutoFornecedorService {
 
     public ProdutoFornecedor salvar(ProdutoFornecedorDTO produtoFornecedorDTO){
         ProdutoFornecedor produtoFornecedor = new ProdutoFornecedor();
-
-
         return repositoryPF.save(produtoFornecedor);
     }
 

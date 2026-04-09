@@ -61,6 +61,9 @@ public class Produto {
     @Nullable
     private String observacao;
 
+    @Nullable
+    private String codigoFornecedorXml;
+
     @OneToMany(mappedBy = "produto", fetch = FetchType.EAGER)
     @JsonIgnoreProperties("produto")
     private List<ProdutoFornecedor> fornecedores;

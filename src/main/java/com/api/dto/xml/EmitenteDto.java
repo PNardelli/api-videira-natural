@@ -1,4 +1,4 @@
-package com.api.dto;
+package com.api.dto.xml;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -18,6 +18,6 @@ public class EmitenteDto {
     @JacksonXmlProperty(localName = "xFant")
     private String nomeFantasia;
 
-    @JacksonXmlProperty(localName = "fone")
-    private String telefone;
+    @JacksonXmlProperty(localName = "enderEmit")
+    private EnderEmitDTO enderEmit;
 }

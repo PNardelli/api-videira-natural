@@ -35,18 +35,32 @@ public class ProdutoService {
 
         Produto produto = new Produto();
 
-        produto.setCodigoBarras(req.getCodigoBarra().isBlank() || req.getCodigoBarra().isEmpty() ? req.getCodigoProduto().trim().toUpperCase() : req.getCodigoBarra().trim().toUpperCase());
+        produto.setCodigoBarras(
+                (req.getCodigoBarra() == null || req.getCodigoBarra().isBlank())
+                        ? req.getCodigoProduto().trim().toUpperCase()
+                        : req.getCodigoBarra()
+        );
         produto.setCodigoProduto(req.getCodigoProduto().isEmpty() || req.getCodigoProduto().isBlank() ? req.getCodigoBarra().trim().toUpperCase() : req.getCodigoProduto().trim().toUpperCase());
         produto.setNome(req.getNome().trim().toUpperCase());
-        produto.setDescricao(req.getDescricao().isBlank() ? "Descrição não Cadastrada".toUpperCase() : req.getDescricao().trim().toUpperCase());
-        produto.setCategoria(categoria);
+        produto.setDescricao(
+                (req.getDescricao() == null || req.getDescricao().isBlank())
+                        ? "DESCRIÇÃO NÃO CADASTRADA"
+                        : req.getDescricao().trim().toUpperCase()
+        );        produto.setCategoria(categoria);
         produto.setPrecoVenda(req.getPrecoVenda());
         produto.setPrecoCompra(req.getPrecoCompra());
         produto.setUnidadeMedida(req.getUnidadeMedida());
         produto.setEstoque(req.getEstoque());
         produto.setDataValidade(req.getDataValidade());
         produto.setDataCriacao(LocalDate.now());
-        produto.setObservacao(req.getObservacao().isBlank() ? "Sem Observação Cadastrada".toUpperCase() : req.getObservacao().trim().toUpperCase());
+        produto.setObservacao(
+                (req.getObservacao() == null || req.getObservacao().isBlank())
+                        ? "OBSERVAÇÃO NÃO CADASTRADA"
+                        : req.getObservacao().trim().toUpperCase()
+        );
+        if (req.getCodigoFornecedorXml() != null){
+            produto.setCodigoFornecedorXml(req.getCodigoFornecedorXml().toString());
+        }
 
         return produtoRepository.save(produto);
 
