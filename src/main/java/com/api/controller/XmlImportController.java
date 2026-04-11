@@ -2,6 +2,7 @@ package com.api.controller;
 
 import com.api.business.EstoqueService;
 import com.api.business.XmlImportService;
+import com.api.dto.xml.ConfirmarImportacaoDTO;
 import com.api.dto.xml.ImportacaoResultadoDTO;
 import com.api.dto.xml.ItemConferenciaDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +31,13 @@ public class XmlImportController {
     }
 
     @PostMapping("/confirmar-importacao")
-    public ResponseEntity<?> confirmar(@RequestBody List<ItemConferenciaDTO> itensRevisados) {
-        xmlImportService.salvarItensRevisados(itensRevisados);
-        return ResponseEntity.ok("Estoque atualizado com sucesso!");
+    public ResponseEntity<?> confirmar(
+            @RequestBody ConfirmarImportacaoDTO dto) {
+
+        xmlImportService.salvarItensRevisados(
+                dto.getItens(),
+                dto.getReimportar()
+        );
+        return ResponseEntity.ok("Estoque atualizado");
     }
 }

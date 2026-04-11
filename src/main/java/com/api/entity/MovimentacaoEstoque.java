@@ -45,4 +45,8 @@ public class MovimentacaoEstoque {
     private String observacao;
     private LocalDateTime data;
 
+    private String origemMovimentacao;
+
+    private String notaFiscal;
+
 }

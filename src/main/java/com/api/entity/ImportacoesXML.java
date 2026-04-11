@@ -19,7 +19,7 @@ public class ImportacoesXML {
 
     private LocalDate dataImportacao;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, name = "idUnicoNotaFiscal", nullable = false)
     private String idUnicoNotaFiscal;
 
     private String nomeFornecedor;

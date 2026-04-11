@@ -1,5 +1,6 @@
 package com.api.business;
 
+import com.api.entity.Cliente;
 import com.api.entity.Fornecedor;
 import com.api.repository.FornecedorRepository;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,17 @@ public class FornecedorService {
 
     public List<Fornecedor> listar() {
         return repository.findAll();
+    }
+
+
+    public Fornecedor atualizarFornecedor(Long id, Fornecedor fornecedorAtualizado) {
+        Fornecedor fornecedorParaAtualizar = repository.findById(id).orElseThrow();
+
+        fornecedorParaAtualizar.setNome(fornecedorAtualizado.getNome().trim().toUpperCase());
+        fornecedorParaAtualizar.setCpfCnpj(fornecedorAtualizado.getCpfCnpj().trim());
+        fornecedorParaAtualizar.setWhatsapp(fornecedorAtualizado.getWhatsapp().trim());
+
+        return fornecedorParaAtualizar;
     }
 
 }

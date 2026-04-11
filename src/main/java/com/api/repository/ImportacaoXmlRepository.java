@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface ImportacaoXmlRepository extends JpaRepository<ImportacoesXML, Long> {
 
     boolean existsByIdUnicoNotaFiscal(String idUnicoNotaFiscal);
+
+    void deleteByIdUnicoNotaFiscal(String idUnicoNotaFiscal);
 }

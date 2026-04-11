@@ -19,4 +19,6 @@ public class MovimentacaoDTO {
     private LocalDate dataValidade;
     private Boolean isGramas;
     private String codigoProdutoFornecedor;
+    private String notaFiscal;
+    private String origemMovimentacao;
 }

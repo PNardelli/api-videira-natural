@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import static com.api.eNum.TipoMovimentacao.*;
+
 @Service
 public class EstoqueService {
 
@@ -82,7 +84,7 @@ public class EstoqueService {
         produtoFornecedorExistente.setQuantidade(produtoFornecedorExistente.getQuantidade().add(dto.getQuantidade()));
         produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
 
-        if (dto.getFornecedorId() != null){
+        if (dto.getFornecedorId() == null){
             produtoFornecedorExistente.setFornecedor(fornecedor);
         }
 
@@ -146,13 +148,9 @@ public class EstoqueService {
         mov.setPrecoCompra(dto.getPrecoCompra());
         mov.setPrecoVenda(dto.getPrecoVenda());
         mov.setUnidadeMedida(dto.getUnidadeMedida());
-        if (dto.getTipo() == TipoMovimentacao.ENTRADA){
-            mov.setObservacao(dto.getObservacao() == null ? dto.getObservacao().toUpperCase() : "ENTRADA DE ESTOQUE");
-        }if (dto.getTipo() == TipoMovimentacao.SAIDA){
-            mov.setObservacao(dto.getObservacao() == null ? dto.getObservacao().toUpperCase() : "SAIDA DE ESTOQUE");
-        }if (dto.getTipo() == TipoMovimentacao.PERDA){
-            mov.setObservacao(dto.getObservacao() == null ? dto.getObservacao().toUpperCase() : "PERCA DE PRODUTOS");
-        }
+
+        var response = teste(dto.getTipo());
+
         mov.setData(LocalDateTime.now());
         mov.setDataValidade(dto.getDataValidade());
 
@@ -160,5 +158,19 @@ public class EstoqueService {
             mov.setFornecedor(fornecedor);
         }
         movimentacaoRepository.save(mov);
+    }
+
+
+
+    private void teste(TipoMovimentacao tipo){
+
+        switch (TipoMovimentacao) {
+            case SAIDA: System.out.println("SAIDA"); break;
+            case PERDA: System.out.println("PERDA"); break;
+            case AJUSTE: System.out.println("AJUSTE"); break;
+            case ENTRADA: System.out.println("ENTRADA"); break;
+            default: System.out.println("Tipo invalido!"); break;
+        }
+
     }
 }

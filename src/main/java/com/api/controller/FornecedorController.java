@@ -1,5 +1,6 @@
 package com.api.controller;
 
+import com.api.entity.Cliente;
 import com.api.entity.Fornecedor;
 import com.api.business.FornecedorService;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,15 @@ public class FornecedorController {
     @GetMapping("/listar")
     public List<Fornecedor> listar() {
         return service.listar();
+
+    }
+
+    @PutMapping("/atualizar/{id}")
+    public ResponseEntity<Fornecedor> atualizar(@PathVariable Long id,
+                                                @RequestBody Fornecedor fornecedor){
+
+        Fornecedor atualizado = service.atualizarFornecedor(id, fornecedor);
+        return ResponseEntity.ok(atualizado);
     }
 
 }

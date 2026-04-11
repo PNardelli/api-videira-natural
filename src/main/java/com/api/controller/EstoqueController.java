@@ -31,7 +31,6 @@ public class EstoqueController {
 
     @GetMapping("/produto-fornecedor/{id}")
     public ProdutoFornecedor buscar(@PathVariable Long id){
-
         return pfService.recuperarProduto(id);
     }
 
