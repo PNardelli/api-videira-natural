@@ -1,10 +1,9 @@
 package com.api.business;
 
 import com.api.dto.ProdutoFornecedorDTO;
-import com.api.dto.ProdutoRequest;
+import com.api.dto.requests.ProdutoRequest;
 import com.api.entity.*;
 import com.api.repository.CategoriaRepository;
-import com.api.repository.FornecedorRepository;
 import com.api.repository.ProdutoFornecedorRepository;
 import com.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProdutoService {
@@ -63,8 +61,6 @@ public class ProdutoService {
         }
 
         return produtoRepository.save(produto);
-
-
     }
 
     public List<Produto> listar(){
@@ -97,13 +93,21 @@ public class ProdutoService {
         produtoRepository.deleteById(id);
     }
 
-    public void ajustarEstoque(Long id, Map<String, Object> dados){
-
-    }
-
 
   private LocalDate adicionarDataValidadeDias(Long data){
       return (data != null) ? LocalDate.now().plusDays(data) : LocalDate.now();
   }
 
+    public List<ProdutoFornecedorDTO> buscarFlexivel(String termo) {
+        List<Produto> produtos = produtoRepository.findByFlexivel(termo);
+
+        return produtos.stream().map(p -> {
+            ProdutoFornecedorDTO dto = new ProdutoFornecedorDTO();
+            dto.setProdutoId(p.getId());
+            dto.setNome(p.getNome());
+            dto.setPrecoVenda(p.getPrecoVenda());
+            dto.setUnidade(String.valueOf(p.getUnidadeMedida()));
+            return dto;
+        }).collect(Collectors.toList());
+    }
 }

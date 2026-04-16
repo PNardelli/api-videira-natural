@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class ProdutoFornecedorDTO {
 
     private Long produtoId;
+    private String nome;
     private Long fornecedorId;
     private LocalDateTime dataEntrada;
     private LocalDate dataValidade;

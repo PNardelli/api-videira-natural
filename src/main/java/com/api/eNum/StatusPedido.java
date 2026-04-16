@@ -7,6 +7,7 @@ public enum StatusPedido {
     EM_PREPARACAO,         // Separando / produzindo
     PRONTO_PARA_RETIRADA,  // Disponível para o cliente retirar
     ENVIADO,               // Saiu para entrega (se houver entrega)
-    ENTREGUE,              // Finalizado
+    ENTREGUE,
+    FINALIZADO,// Finalizado
     CANCELADO
 }

@@ -1,7 +1,6 @@
 package com.api.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,24 +9,22 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Entity
-@Table(name = "TB_ITEM_PEDIDO")
-public class ItemPedido {
+@Table(name = "tb_item_venda")
+public class ItemVenda {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "pedido_id")
-    private Pedido pedido;
+    @JoinColumn(name = "venda_id")
+    private Venda venda;
 
     @ManyToOne
     @JoinColumn(name = "produto_id")
     private Produto produto;
 
-    private BigDecimal quantidade;
-
+    private Integer quantidade;
     private BigDecimal precoUnitario;
-
-    private BigDecimal subTotal;
+    private BigDecimal subtotal;
 }

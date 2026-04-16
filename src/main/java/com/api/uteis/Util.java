@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+
 @Service
 public class Util {
 
@@ -22,5 +24,17 @@ public class Util {
 
         return endereco;
     };
+
+    public String GeradorCodigo (){
+
+        LocalDateTime data = LocalDateTime.now();
+
+        var hora = data.getHour();
+        var min = data.getMinute();
+        var seg = data.getSecond();
+
+        String prefixo = String.valueOf(hora+min+seg);
+        return prefixo;
+    }
 
 }

@@ -162,15 +162,15 @@ public class EstoqueService {
 
 
 
-    private void teste(TipoMovimentacao tipo){
+    private String teste(TipoMovimentacao tipo){
 
-        switch (TipoMovimentacao) {
+        switch (tipo) {
             case SAIDA: System.out.println("SAIDA"); break;
             case PERDA: System.out.println("PERDA"); break;
             case AJUSTE: System.out.println("AJUSTE"); break;
             case ENTRADA: System.out.println("ENTRADA"); break;
             default: System.out.println("Tipo invalido!"); break;
         }
-
+        return null;
     }
 }

@@ -17,6 +17,7 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
     ProdutoFornecedor getProdutoFornecedor(@Param("produtoId") Long produtoId);
 
     Optional<ProdutoFornecedor> findByProdutoAndFornecedor(Produto produto, Fornecedor fornecedor);
+
 }
 
 

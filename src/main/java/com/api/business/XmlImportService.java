@@ -1,6 +1,6 @@
 package com.api.business;
 
-import com.api.dto.ProdutoRequest;
+import com.api.dto.requests.ProdutoRequest;
 import com.api.dto.xml.*;
 import com.api.eNum.TipoMovimentacao;
 import com.api.eNum.UnidadeMedida;

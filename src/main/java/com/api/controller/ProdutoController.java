@@ -1,8 +1,7 @@
 package com.api.controller;
 
 import com.api.business.ProdutoFornecedorService;
-import com.api.dto.MovimentacaoDTO;
-import com.api.dto.ProdutoRequest;
+import com.api.dto.requests.ProdutoRequest;
 import com.api.entity.Produto;
 import com.api.business.ProdutoService;
 import com.api.repository.ProdutoRepository;
@@ -11,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/produtos")
