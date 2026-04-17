@@ -62,6 +62,6 @@ public class VendaController {
     @PostMapping("/processar-item")
     public ResponseEntity<List<ItemCarrinhoRequest>> processar(@RequestBody PdvRequest request) {
         // Aqui você chama o Service que tem a regra da balança e do "UN vs KG"
-        return ResponseEntity.ok(vendaService.processarAdicao(request.getTermo(), request.getCarrinho(), request.getProdutoId()));
+        return ResponseEntity.ok(vendaService.processarAdicao(request.getTermo(), request.getCarrinho(), request.getProdutoId(), request.getPeso()));
     }
 }

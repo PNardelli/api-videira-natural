@@ -85,19 +85,25 @@ public class VendaService {
 
 
 
-    public List<ItemCarrinhoRequest> processarAdicao(String termo, List<ItemCarrinhoRequest> carrinho, Long codProduto) {
+    public List<ItemCarrinhoRequest> processarAdicao(String termo,
+                                                     List<ItemCarrinhoRequest> carrinho,
+                                                     Long codProduto,
+                                                     Double peso) {
+
         ItemCarrinhoRequest itemParaAdicionar = new ItemCarrinhoRequest();
 
-        // CASO A: BALANÇA (Código 2...)
+        // CASO A: BALANÇA (etiqueta)
         if (termo != null && termo.length() == 13 && termo.startsWith("2")) {
+
             ProdutoRequest p = produtoFornecedorService.recuperarProdutoGranel(termo);
+
             itemParaAdicionar.setProdutoId(p.getProdutoId());
             itemParaAdicionar.setNome(p.getNome());
             itemParaAdicionar.setPreco(p.getPrecoVenda());
             itemParaAdicionar.setUnidade("KG");
-            itemParaAdicionar.setQuantidade(p.getEstoque()); // Peso extraído da etiqueta
+            itemParaAdicionar.setQuantidade(p.getEstoque()); // peso da etiqueta
         }
-        // CASO B: CLIQUE NA SUGESTÃO (Usa o codProduto vindo do Front)
+        // CASO B: FRONT (botão capturar peso ou sugestão)
         else {
             ProdutoFornecedor produtoFornecedor = produtoFornecedorRepository.getProdutoFornecedor(codProduto);
             if (produtoFornecedor == null) return carrinho;
@@ -105,27 +111,41 @@ public class VendaService {
             itemParaAdicionar.setProdutoId(produtoFornecedor.getProduto().getId());
             itemParaAdicionar.setNome(produtoFornecedor.getProduto().getNome());
             itemParaAdicionar.setPreco(produtoFornecedor.getPrecoVenda());
-            itemParaAdicionar.setUnidade(produtoFornecedor.getUnidade().substring(0,2));
-            itemParaAdicionar.setQuantidade(BigDecimal.ONE);
+            itemParaAdicionar.setUnidade(produtoFornecedor.getUnidade().substring(0, 2));
+
+            // 🔥 CORREÇÃO AQUI
+            if (peso != null) {
+                itemParaAdicionar.setQuantidade(BigDecimal.valueOf(peso));
+            } else {
+                itemParaAdicionar.setQuantidade(BigDecimal.ONE);
+            }
         }
 
-        // CALCULA O SUBTOTAL DO NOVO ITEM
+        // SUBTOTAL
         BigDecimal subtotal = itemParaAdicionar.getPreco().multiply(itemParaAdicionar.getQuantidade());
-        itemParaAdicionar.setSubTotal(subtotal);  // <--- Faltava isso!
+        itemParaAdicionar.setSubTotal(subtotal);
 
-        // REGRA DE SOMA (Só para UNIDADE)
+        // 🔵 REGRA:
+        // UN → soma
+        // KG → duplica (como você quer)
+
         if ("UN".equalsIgnoreCase(itemParaAdicionar.getUnidade())) {
             for (ItemCarrinhoRequest itemNoCarrinho : carrinho) {
                 if (itemNoCarrinho.getProdutoId().equals(itemParaAdicionar.getProdutoId())) {
-                    // Soma quantidade
-                    itemNoCarrinho.setQuantidade(itemNoCarrinho.getQuantidade().add(BigDecimal.ONE));
-                    // RECALCULA SUBTOTAL do item que já estava lá
-                    itemNoCarrinho.setSubTotal(itemNoCarrinho.getPreco().multiply(itemNoCarrinho.getQuantidade()));
+
+                    itemNoCarrinho.setQuantidade(
+                            itemNoCarrinho.getQuantidade().add(BigDecimal.ONE)
+                    );
+
+                    itemNoCarrinho.setSubTotal(
+                            itemNoCarrinho.getPreco().multiply(itemNoCarrinho.getQuantidade())
+                    );
+
                     return carrinho;
                 }
             }
         }
-        // SE FOR KG OU UNIDADE NOVA, ADICIONA NA LISTA
+        // KG ou item novo → adiciona novo item
         carrinho.add(itemParaAdicionar);
         return carrinho;
     }
