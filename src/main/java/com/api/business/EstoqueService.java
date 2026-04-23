@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.api.eNum.TipoMovimentacao.AJUSTE;
@@ -43,7 +44,7 @@ public class EstoqueService {
     @Transactional
     public void processarMovimentacao(MovimentacaoDTO dto) {
 
-        ProdutoFornecedor produtoFornecedorExistente = produtoFornecedorRepository.getProdutoFornecedor(dto.getProdutoId());
+        ProdutoFornecedor produtoFornecedorExistente = produtoFornecedorRepository.findById(dto.getProdutoId()).orElseThrow();
 
         Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
                 .orElseThrow(() -> new RuntimeException("FORNECEDOR NÃO ENCONTRADO"));
@@ -107,6 +108,8 @@ public class EstoqueService {
 
         produtoFornecedorRepository.save(produtoFornecedorExistente);
 
+        desativarProdutoFornecedor(null, produtoFornecedorExistente.getProduto().getId());
+
         registrarHistorico(dto, produtoFornecedorExistente, fornecedor);
     }
 
@@ -144,8 +147,15 @@ public class EstoqueService {
 
     @Transactional
     public Venda processarNovaVenda(VendaDTO vendaDTO) {
+        Cliente clienteVenda = new Cliente();
+
+        if (vendaDTO.getClienteId() != null){
+            clienteVenda = clienteRepository.getReferenceById(vendaDTO.getClienteId());
+        }
+
+
         List<ItemVenda> itemVendaList = dtoToEntity.itemVendaDtoToEntity(vendaDTO.getItens());
-        Venda venda = dtoToEntity.vendaDtoToEntity(vendaDTO, itemVendaList);
+        Venda venda = dtoToEntity.vendaDtoToEntity(vendaDTO, itemVendaList, clienteVenda);
 
         venda.setItens(new ArrayList<>());
 
@@ -191,49 +201,87 @@ public class EstoqueService {
 
                 venda.getItens().add(item);
 
-                return vendaRepository.save(venda);
+                vendaRepository.save(venda);
+
+                desativarProdutoFornecedor(lotes, null);
             }
         }
 
+        if (venda.getCliente() != null){
+         clienteRepository.save(venda.getCliente());
+        }
         return venda;
     }
 
 
-        //REGISTRAR NA TABELA DE HISTORICO.
-        private void registrarHistorico (MovimentacaoDTO dto, ProdutoFornecedor pfSalvo, Fornecedor fornecedor){
+    //REGISTRAR NA TABELA DE HISTORICO.
+    private void registrarHistorico(MovimentacaoDTO dto, ProdutoFornecedor pfSalvo, Fornecedor fornecedor) {
 
-            // 1. Tratamento de Unidade (Gramas para KG ou vice-versa)
-            if (Boolean.TRUE.equals(dto.getIsGramas())) {
-                dto.setUnidadeMedida(UnidadeMedida.GRAMAS.toString());
-                // Se o seu padrão de banco for gramas, o cálculo está correto
-                dto.setQuantidade(dto.getQuantidade().multiply(BigDecimal.valueOf(1000)));
-            }
-
-            MovimentacaoEstoque mov = new MovimentacaoEstoque();
-
-            // 2. O PONTO CHAVE: Vincular ao Lote Específico
-            // Certifique-se de que sua entidade MovimentacaoEstoque tenha esse campo
-            mov.setProdutoFornecedor(pfSalvo);
-
-            // Mantemos o Produto para consultas rápidas se necessário
-            mov.setProduto(pfSalvo.getProduto());
-
-            mov.setQuantidade(dto.getQuantidade());
-            mov.setTipoMovimentacao(dto.getTipo());
-
-            // 3. Snapshot de Preços (Auditoria)
-            // Salvamos os valores que vieram no DTO, independente se o
-            // ProdutoFornecedor for editado no futuro.
-            mov.setPrecoCompra(dto.getPrecoCompra());
-            mov.setPrecoVenda(dto.getPrecoVenda());
-            mov.setUnidadeMedida(dto.getUnidadeMedida());
-            mov.setData(LocalDateTime.now());
-            mov.setDataValidade(dto.getDataValidade());
-
-            if (fornecedor != null) {
-                mov.setFornecedor(fornecedor);
-            }
-
-            movimentacaoRepository.save(mov);
+        // 1. Tratamento de Unidade (Gramas para KG ou vice-versa)
+        if (Boolean.TRUE.equals(dto.getIsGramas())) {
+            dto.setUnidadeMedida(UnidadeMedida.GRAMAS.toString());
+            // Se o seu padrão de banco for gramas, o cálculo está correto
+            dto.setQuantidade(dto.getQuantidade().multiply(BigDecimal.valueOf(1000)));
         }
+
+        MovimentacaoEstoque mov = new MovimentacaoEstoque();
+
+        // 2. O PONTO CHAVE: Vincular ao Lote Específico
+        // Certifique-se de que sua entidade MovimentacaoEstoque tenha esse campo
+        mov.setProdutoFornecedor(pfSalvo);
+
+        // Mantemos o Produto para consultas rápidas se necessário
+        mov.setProduto(pfSalvo.getProduto());
+
+        mov.setQuantidade(dto.getQuantidade());
+        mov.setTipoMovimentacao(dto.getTipo());
+
+        // 3. Snapshot de Preços (Auditoria)
+        // Salvamos os valores que vieram no DTO, independente se o
+        // ProdutoFornecedor for editado no futuro.
+        mov.setPrecoCompra(dto.getPrecoCompra());
+        mov.setPrecoVenda(dto.getPrecoVenda());
+        mov.setUnidadeMedida(dto.getUnidadeMedida());
+        mov.setData(LocalDateTime.now());
+        mov.setDataValidade(dto.getDataValidade());
+
+        if (fornecedor != null) {
+            mov.setFornecedor(fornecedor);
+        }
+
+        movimentacaoRepository.save(mov);
     }
+
+
+    //REGRA PARA ATIVAR E DESATIVAR O PRODUTO.
+    private void desativarProdutoFornecedor(List<ProdutoFornecedor> todosOsLotes, Long produtoId) {
+        if (produtoId != null) {
+            todosOsLotes = produtoFornecedorRepository.getProdutoFornecedorList(produtoId, PageRequest.of(0, 10));
+        }
+            List<ProdutoFornecedor> lotesZerados = todosOsLotes.stream()
+                    .filter(lp -> lp.getQuantidade().compareTo(BigDecimal.ZERO) <= 0)
+                    .toList();
+
+            List<ProdutoFornecedor> lotesComEstoque = todosOsLotes.stream()
+                    .filter(lp -> lp.getQuantidade().compareTo(BigDecimal.ZERO) > 0)
+                    .toList();
+
+            if (!lotesComEstoque.isEmpty()) {
+                lotesZerados.forEach(lote -> lote.setProdutoAtivo(false));
+            } else if (!lotesZerados.isEmpty()) {
+                ProdutoFornecedor loteAncora = todosOsLotes.stream()
+                        .max(Comparator.comparing(ProdutoFornecedor::getDataValidade))
+                        .orElse(todosOsLotes.get(0));
+
+                for (ProdutoFornecedor lote : todosOsLotes) {
+                    if (lote.equals(loteAncora)) {
+                        lote.setProdutoAtivo(true);
+                    } else {
+                        lote.setProdutoAtivo(false);
+                    }
+                }
+            }
+    }
+
+
+}
