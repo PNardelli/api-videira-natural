@@ -24,7 +24,11 @@ public class ItemVenda {
     @JoinColumn(name = "produto_id")
     private Produto produto;
 
-    private Integer quantidade;
+    @ManyToOne
+    @JoinColumn(name = "produto_fornecedor_id")
+    private ProdutoFornecedor produtoFornecedorId;
+
+    private BigDecimal quantidade;
     private BigDecimal precoUnitario;
     private BigDecimal subtotal;
 }

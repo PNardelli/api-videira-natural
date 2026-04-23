@@ -46,6 +46,8 @@ public class Cliente {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private String dataNascimento;
 
+    @Column(name = "VIDEIRA_SALDO")
+    private Integer videiraSaldo;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn( name = "endereco_id")

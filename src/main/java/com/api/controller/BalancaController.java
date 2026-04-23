@@ -26,8 +26,14 @@ public class BalancaController {
     }
 
     @PostMapping("/iniciar")
-    public void iniciar() {
-        balancaService.iniciarLeitura();
+    public ResponseEntity<?> iniciar() {
+        try {
+            balancaService.iniciarLeitura();
+            return ResponseEntity.ok("Leitura iniciada");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
     }
 
     @PostMapping("/parar")

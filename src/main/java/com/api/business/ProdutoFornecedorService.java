@@ -8,6 +8,7 @@ import com.api.entity.ProdutoFornecedor;
 import com.api.repository.FornecedorRepository;
 import com.api.repository.ProdutoFornecedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -48,6 +49,7 @@ public class ProdutoFornecedorService {
         produtoFornecedor.setDataEntrada(LocalDateTime.now());
         produtoFornecedor.setPrecoCompra(produto.getPrecoCompra());
         produtoFornecedor.setPrecoVenda(produto.getPrecoVenda());
+        produtoFornecedor.setProdutoAtivo(true);
 
         return repositoryPF.save(produtoFornecedor);
     }
@@ -65,22 +67,23 @@ public class ProdutoFornecedorService {
 
         List<ProdutoFornecedorDTO> produto = produtoService.buscarFlexivel(produtoNoCodigoBarra);
 
-        ProdutoFornecedor produtoFornecedor = repositoryPF.getProdutoFornecedor(produto.get(0).getProdutoId());
+        List<ProdutoFornecedor> produtoFornecedorList = repositoryPF.getProdutoFornecedorList(produto.get(0).getProdutoId(), PageRequest.of(0,1));
+        //ProdutoFornecedor produtoFornecedor = repositoryPF.getProdutoFornecedor(produto.get(0).getProdutoId());
 
 
 
         BigDecimal valorConvertido = new BigDecimal(valorNoCodigoBarra).movePointLeft(2);
         BigDecimal pesoComprado = valorConvertido.divide(
-                produtoFornecedor.getPrecoVenda(),
+                produtoFornecedorList.get(0).getPrecoVenda(),
                 3,
                 RoundingMode.HALF_UP
         );
-        produtoRequest.setProdutoId(produtoFornecedor.getProduto().getId());
-        produtoRequest.setCodigoProduto(produtoFornecedor.getProduto().getCodigoProduto());
+        produtoRequest.setProdutoId(produtoFornecedorList.get(0).getProduto().getId());
+        produtoRequest.setCodigoProduto(produtoFornecedorList.get(0).getProduto().getCodigoProduto());
         produtoRequest.setEstoque(pesoComprado);
-        produtoRequest.setPrecoVenda(produtoFornecedor.getPrecoVenda());
-        produtoRequest.setNome(produtoFornecedor.getProduto().getNome());
-        produtoRequest.setUnidadeMedida(produtoFornecedor.getProduto().getUnidadeMedida());
+        produtoRequest.setPrecoVenda(produtoFornecedorList.get(0).getPrecoVenda());
+        produtoRequest.setNome(produtoFornecedorList.get(0).getProduto().getNome());
+        produtoRequest.setUnidadeMedida(produtoFornecedorList.get(0).getProduto().getUnidadeMedida());
 
         return produtoRequest;
     }

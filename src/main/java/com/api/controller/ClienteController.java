@@ -2,6 +2,7 @@ package com.api.controller;
 
 import com.api.business.ClienteService;
 import com.api.dto.ClienteDTO;
+import com.api.dto.ClientePdvDTO;
 import com.api.entity.Cliente;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,9 +27,19 @@ public class ClienteController {
     }
 
     // Listar todos
-    @GetMapping
-    public ResponseEntity<List<Cliente>> listar() {
-        return ResponseEntity.ok(clienteService.listarTodos());
+    @GetMapping("/buscar")
+    public List<Cliente> buscar(@RequestParam(required = false) String termo) {
+        // 👉 SEM termo = comportamento atual (Gestão)
+        if (termo == null || termo.isBlank()) {
+            return clienteService.listarTodos();
+        }
+        // 👉 COM termo = busca otimizada (PDV)
+        return clienteService.buscarPorNomeOuWhatsapp(termo);
+    }
+
+    @GetMapping("/pdv")
+    public List<ClientePdvDTO> buscarPdv(@RequestParam String termo) {
+        return clienteService.buscarClientesPdv(termo);
     }
 
     // Buscar por ID

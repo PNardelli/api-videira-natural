@@ -1,17 +1,15 @@
 package com.api.business;
 
 import com.api.dto.ClienteDTO;
+import com.api.dto.ClientePdvDTO;
 import com.api.entity.Cliente;
-import com.api.entity.Endereco;
 import com.api.repository.ClienteRepository;
 import com.api.uteis.Util;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -34,6 +32,7 @@ public class ClienteService {
         }
 
         Cliente cliente = new Cliente();
+        cliente.setVideiraSaldo(50);
         cliente.setNome(clienteDTO.getNome().trim().toUpperCase());
         cliente.setEmail(clienteDTO.getEmail());
         cliente.setWhatsapp(clienteDTO.getWhatsapp());
@@ -81,4 +80,21 @@ public class ClienteService {
         clienteExistente.setEndereco(clienteAtualizado.getEndereco() == null ? null : util.formatarEndereco(clienteAtualizado.getEndereco()));
         return clienteRepository.save(clienteExistente);
     }
+
+    public List<Cliente> buscarPorNomeOuWhatsapp(String termo){
+        return clienteRepository.buscarPorNomeOuWhatsapp(termo);
+
+    }
+
+    public List<ClientePdvDTO> buscarClientesPdv(String termo) {
+        return clienteRepository.buscarPorNomeOuWhatsapp(termo)
+                .stream()
+                .map(c -> new ClientePdvDTO(
+                        c.getId(),
+                        c.getNome(),
+                        c.getVideiraSaldo()
+                ))
+                .toList();
+    }
+
 }

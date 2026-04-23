@@ -19,6 +19,6 @@ public class VendaDTO {
     private BigDecimal totalFinal;
     private TipoVenda canalVenda;
     private StatusPedido statusPedido;
-    private String metodoPagamento; // Ex: "PIX", "CARTAO", "DINHEIRO"
+    private List<PagamentoDTO> pagamentos;
 
 }

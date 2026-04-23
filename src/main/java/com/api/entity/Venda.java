@@ -1,6 +1,5 @@
 package com.api.entity;
 
-import com.api.eNum.FormaPagamento;
 import com.api.eNum.StatusPedido;
 import com.api.eNum.TipoEntrega;
 import com.api.eNum.TipoVenda;
@@ -46,9 +45,6 @@ public class Venda {
     private BigDecimal total = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
-    private FormaPagamento metodoPagamento;
-
-    @Enumerated(EnumType.STRING)
     private TipoVenda canalVenda; // PDV ou ONLINE
 
     @Enumerated(EnumType.STRING)
@@ -57,6 +53,9 @@ public class Venda {
     @Enumerated(EnumType.STRING)
     private StatusPedido statusPedido;
 
+    @OneToMany(mappedBy = "venda", cascade = CascadeType.ALL)
+    private List<PagamentoVenda> pagamentos = new ArrayList<>();
+
     // Relacionamento de endereço (útil para o canal ONLINE)
     @ManyToOne
     @JoinColumn(name = "endereco_entrega_id")
@@ -64,6 +63,9 @@ public class Venda {
 
     @OneToMany(mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemVenda> itens = new ArrayList<>();
+
+    @Column(name = "coins_geradas")
+    private Integer coinsGeradas;
 
     // Helper method para garantir que a data de atualização mude sempre
     @PreUpdate

@@ -101,6 +101,8 @@ public class ProdutoService {
     public List<ProdutoFornecedorDTO> buscarFlexivel(String termo) {
         List<Produto> produtos = produtoRepository.findByFlexivel(termo);
 
+
+
         return produtos.stream().map(p -> {
             ProdutoFornecedorDTO dto = new ProdutoFornecedorDTO();
             dto.setProdutoId(p.getId());

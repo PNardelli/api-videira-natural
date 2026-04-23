@@ -32,4 +32,5 @@ public class ProdutoFornecedor {
     private LocalDate dataValidade;
     private String unidade;
     private BigDecimal quantidade;
+    private Boolean produtoAtivo;
 }

@@ -21,6 +21,10 @@ public class MovimentacaoEstoque {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "produto_fornecedor_id")
+    private ProdutoFornecedor produtoFornecedor;
+
+    @ManyToOne
     @JoinColumn(name = "produto_id")
     private Produto produto;
 

@@ -1,14 +1,13 @@
 package com.api.business;
 
-import com.api.entity.Cliente;
 import com.api.entity.Fornecedor;
 import com.api.repository.FornecedorRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -26,9 +25,10 @@ public class FornecedorService {
         }
 
         Fornecedor fornecedor = new Fornecedor();
-        fornecedor.setNome(payload.getNome());
+        fornecedor.setNome(payload.getNome().trim().toUpperCase());
         fornecedor.setWhatsapp(payload.getWhatsapp());
         fornecedor.setCpfCnpj(payload.getCpfCnpj());
+        fornecedor.setDataCadastro(LocalDate.now());
 
         repository.save(fornecedor);
 
