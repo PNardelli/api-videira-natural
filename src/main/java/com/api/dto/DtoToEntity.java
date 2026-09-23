@@ -42,7 +42,7 @@ public class DtoToEntity {
 
         venda.setItens(itemVendaList);
 
-        if (cliente != null){
+        if (cliente.getId() != null){
             int coinsGeradas = venda.getTotal().intValue();
             venda.setCoinsGeradas(coinsGeradas);
 
