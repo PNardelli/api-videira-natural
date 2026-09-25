@@ -100,11 +100,11 @@ public class XmlImportService {
                 dto.setExisteNoSistema(true);
                 dto.setProdutoId(produtoExistente.get().getId());
                 dto.setNomeSugerido(produtoExistente.get().getNome());
-                dto.setPrecoCompra(produtoExistente.get().getPrecoCompra());
+                //dto.setPrecoCompra(produtoExistente.get().getPrecoCompra());
                 dto.setCategoriaId(produtoExistente.get().getCategoria().getId());
-                dto.setPrecoVenda(produtoExistente.get().getPrecoVenda());
+                //dto.setPrecoVenda(produtoExistente.get().getPrecoVenda());
                 dto.setCodigoProdutoInterno(produtoExistente.get().getCodigoProduto());
-                dto.setDataValidade(produtoExistente.get().getDataValidade());
+                //dto.setDataValidade(produtoExistente.get().getDataValidade());
                 dto.setUnidadeMedida(produtoExistente.get().getUnidadeMedida().name());
             } else {
                 dto.setExisteNoSistema(false);

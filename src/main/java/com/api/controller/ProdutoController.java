@@ -28,7 +28,6 @@ public class ProdutoController {
     @PostMapping("/cadastrar")
     public Produto salvar(@RequestBody ProdutoRequest produtoRequest){
         Produto responseProduto = produtoService.salvar(produtoRequest);
-        servicePF.cadastrarProdutoFornecedor(responseProduto, null);
 
         return responseProduto;
     }

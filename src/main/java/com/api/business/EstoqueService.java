@@ -37,6 +37,9 @@ public class EstoqueService {
     private ProdutoFornecedorRepository produtoFornecedorRepository;
 
     @Autowired
+    private ProdutoService produtoService;
+
+    @Autowired
     private FornecedorRepository fornecedorRepository;
     @Autowired
     private MovimentacaoEstoqueRepository movimentacaoRepository;
@@ -116,10 +119,9 @@ public class EstoqueService {
 
     @Transactional
     public void processarNovaEntrada(MovimentacaoDTO dto) {
-        // 1. Recuperamos o Produto navegando pela tabela de estoque
-        // Como você garantiu que o vínculo sempre existe, o orElseThrow aqui
-        // vira uma proteção contra inconsistências graves de banco.
-        Produto produtoMaster = produtoFornecedorRepository.getProdutoFornecedor(dto.getProdutoId()).getProduto();
+
+        //Produto produtoMaster = produtoFornecedorRepository.getProdutoFornecedor(dto.getProdutoId()).getProduto();
+        Produto produtoMasterTeste = produtoService.buscar(dto.getProdutoId());
 
         // 2. Buscamos o Fornecedor da nota que está entrando
         Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
@@ -127,7 +129,7 @@ public class EstoqueService {
 
         // 3. Criamos o NOVO LOTE (Isolamento de validade e custo)
         ProdutoFornecedor novoProdutoFornecedor = new ProdutoFornecedor();
-        novoProdutoFornecedor.setProduto(produtoMaster);
+        novoProdutoFornecedor.setProduto(produtoMasterTeste);
         novoProdutoFornecedor.setFornecedor(fornecedor);
 
         // Dados da carga atual

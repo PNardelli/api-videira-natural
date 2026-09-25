@@ -38,20 +38,10 @@ public class Produto {
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
-    private BigDecimal precoVenda;
-
-    private BigDecimal precoCompra;
-
     private String descricao;
-
-    @Column(columnDefinition = "NUMERIC(10,2)")
-    private BigDecimal estoque;
 
     @Enumerated(EnumType.STRING)
     private UnidadeMedida unidadeMedida;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private LocalDate dataValidade;
 
     private Boolean ativo = true;
 

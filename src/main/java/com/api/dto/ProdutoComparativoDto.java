@@ -22,7 +22,7 @@ public class ProdutoComparativoDto {
         this.nome = p.getNome();
         this.codigoBarra = p.getCodigoBarras();
         this.quantidadeNota = qtdNota;
-        this.estoqueAtual = p.getEstoque() != null ? p.getEstoque() : BigDecimal.valueOf(0);
+        //this.estoqueAtual = p.getEstoque() != null ? p.getEstoque() : BigDecimal.valueOf(0);
         //this.novoEstoque = this.estoqueAtual + qtdNota;
     }
 }

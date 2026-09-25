@@ -45,11 +45,11 @@ public class ProdutoService {
                         ? "DESCRIÇÃO NÃO CADASTRADA"
                         : req.getDescricao().trim().toUpperCase()
         );        produto.setCategoria(categoria);
-        produto.setPrecoVenda(req.getPrecoVenda());
-        produto.setPrecoCompra(req.getPrecoCompra());
+        //produto.setPrecoVenda(req.getPrecoVenda());
+        //produto.setPrecoCompra(req.getPrecoCompra());
         produto.setUnidadeMedida(req.getUnidadeMedida());
-        produto.setEstoque(req.getEstoque());
-        produto.setDataValidade(req.getDataValidade());
+       // produto.setEstoque(req.getEstoque());
+        //produto.setDataValidade(req.getDataValidade());
         produto.setDataCriacao(LocalDate.now());
         produto.setObservacao(
                 (req.getObservacao() == null || req.getObservacao().isBlank())
@@ -78,12 +78,12 @@ public class ProdutoService {
 
         produtoExistente.setCodigoProduto(produtoAtualizado.getCodigoProduto().trim().toUpperCase());
         produtoExistente.setCodigoBarras(produtoAtualizado.getCodigoBarra().trim().toUpperCase());
-        produtoExistente.setDataValidade(produtoAtualizado.getDataValidade());
+       // produtoExistente.setDataValidade(produtoAtualizado.getDataValidade());
         produtoExistente.setObservacao(produtoAtualizado.getObservacao().isEmpty() || produtoAtualizado.getObservacao().isBlank() ? produtoExistente.getObservacao().trim().toUpperCase() : produtoExistente.getObservacao().trim().toUpperCase());
         produtoExistente.setDescricao(produtoAtualizado.getDescricao().trim().toUpperCase());
         produtoExistente.setCategoria(categoriaAtualizada.orElseThrow());
-        produtoExistente.setPrecoCompra(produtoAtualizado.getPrecoCompra());
-        produtoExistente.setPrecoVenda(produtoAtualizado.getPrecoVenda());
+       // produtoExistente.setPrecoCompra(produtoAtualizado.getPrecoCompra());
+       // produtoExistente.setPrecoVenda(produtoAtualizado.getPrecoVenda());
         produtoExistente.setUnidadeMedida(produtoAtualizado.getUnidadeMedida());
 
         return produtoRepository.save(produtoExistente);
@@ -107,7 +107,7 @@ public class ProdutoService {
             ProdutoFornecedorDTO dto = new ProdutoFornecedorDTO();
             dto.setProdutoId(p.getId());
             dto.setNome(p.getNome());
-            dto.setPrecoVenda(p.getPrecoVenda());
+           // dto.setPrecoVenda(p.getPrecoVenda());
             dto.setUnidade(String.valueOf(p.getUnidadeMedida()));
             return dto;
         }).collect(Collectors.toList());

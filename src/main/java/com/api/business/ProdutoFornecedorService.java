@@ -43,12 +43,8 @@ public class ProdutoFornecedorService {
             produtoFornecedor.setFornecedor(fornecedor);
         }
 
-        produtoFornecedor.setQuantidade(produto.getEstoque());
         produtoFornecedor.setUnidade(produto.getUnidadeMedida().toString());
-        produtoFornecedor.setDataValidade(produto.getDataValidade());
         produtoFornecedor.setDataEntrada(LocalDateTime.now());
-        produtoFornecedor.setPrecoCompra(produto.getPrecoCompra());
-        produtoFornecedor.setPrecoVenda(produto.getPrecoVenda());
         produtoFornecedor.setProdutoAtivo(true);
 
         return repositoryPF.save(produtoFornecedor);
