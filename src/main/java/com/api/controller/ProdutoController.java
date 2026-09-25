@@ -4,8 +4,12 @@ import com.api.business.ProdutoFornecedorService;
 import com.api.dto.requests.ProdutoRequest;
 import com.api.entity.Produto;
 import com.api.business.ProdutoService;
+import com.api.entity.ProdutoFornecedor;
 import com.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,13 +32,19 @@ public class ProdutoController {
     @PostMapping("/cadastrar")
     public Produto salvar(@RequestBody ProdutoRequest produtoRequest){
         Produto responseProduto = produtoService.salvar(produtoRequest);
+        ProdutoFornecedor produtoFornecedor = servicePF.cadastrarProdutoFornecedor(responseProduto, produtoRequest, produtoRequest.getFornecedorId());
 
         return responseProduto;
     }
 
     @GetMapping("/listar")
-    public List<Produto> listar(){
-        return produtoService.listar();
+    public Page<Produto> listar(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String termo) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        return produtoService.listarOuBuscar(termo, pageable);
     }
 
     @GetMapping("/{id}")

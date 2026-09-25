@@ -7,6 +7,8 @@ import com.api.repository.CategoriaRepository;
 import com.api.repository.ProdutoFornecedorRepository;
 import com.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -63,8 +65,28 @@ public class ProdutoService {
         return produtoRepository.save(produto);
     }
 
-    public List<Produto> listar(){
-        return produtoRepository.findAll();
+    public Page<Produto> listar(Pageable pageable) {
+        Page<Produto> paginaProdutos = produtoRepository.findAll(pageable);
+
+        // 🔍 Debug no console do Backend Java
+        System.out.println("=== DEBUG SPRING PAGE ===");
+        System.out.println("Total de elementos na base: " + paginaProdutos.getTotalElements());
+        System.out.println("Total de páginas: " + paginaProdutos.getTotalPages());
+        System.out.println("Elementos nesta página (content size): " + paginaProdutos.getContent().size());
+        System.out.println("Primeiro produto: " + (paginaProdutos.getContent().isEmpty() ? "Vazio" : paginaProdutos.getContent().get(0).getNome()));
+
+        return paginaProdutos;
+    }
+
+    public Page<Produto> listarOuBuscar(String termo, Pageable pageable) {
+        if (termo != null && !termo.isBlank()) {
+            return produtoRepository.findByFlexivelPaginado(termo.trim(), pageable);
+        }
+        return produtoRepository.findAll(pageable);
+    }
+
+    public Page<Produto> listarPaginado(Pageable pageable) {
+        return produtoRepository.findAll(pageable);
     }
 
     public Produto buscar(Long id){

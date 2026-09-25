@@ -102,6 +102,7 @@ public class EstoqueService {
         produtoFornecedorExistente.setDataEntrada(LocalDateTime.now());
         produtoFornecedorExistente.setPrecoCompra(dto.getPrecoCompra());
         produtoFornecedorExistente.setQuantidade(produtoFornecedorExistente.getQuantidade().add(dto.getQuantidade()));
+        produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
 
         if (dto.getFornecedorId() == null) {
             produtoFornecedorExistente.setFornecedor(fornecedor);

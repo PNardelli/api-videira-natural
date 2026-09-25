@@ -31,6 +31,8 @@ public class ProdutoFornecedor {
     private BigDecimal precoVenda;
     private LocalDate dataValidade;
     private String unidade;
+
+    @Column(name = "quantidade", precision = 10, scale = 3)
     private BigDecimal quantidade;
     private Boolean produtoAtivo;
 }
