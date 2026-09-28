@@ -11,8 +11,7 @@ import java.time.LocalDate;
 @Setter
 public class ProdutoRequest {
 
-    private String codigoProduto;
-    private String codigoBarra;
+    private String codigoProdutoCodigoBarras;
     private String nome;
     private String descricao;
     private BigDecimal precoCompra;

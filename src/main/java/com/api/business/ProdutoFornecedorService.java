@@ -81,7 +81,7 @@ public class ProdutoFornecedorService {
                 RoundingMode.HALF_UP
         );
         produtoRequest.setProdutoId(produtoFornecedorList.get(0).getProduto().getId());
-        produtoRequest.setCodigoProduto(produtoFornecedorList.get(0).getProduto().getCodigoProduto());
+        produtoRequest.setCodigoProdutoCodigoBarras(produtoFornecedorList.get(0).getProduto().getCodigoProduto());
         produtoRequest.setEstoque(pesoComprado);
         produtoRequest.setPrecoVenda(produtoFornecedorList.get(0).getPrecoVenda());
         produtoRequest.setNome(produtoFornecedorList.get(0).getProduto().getNome());

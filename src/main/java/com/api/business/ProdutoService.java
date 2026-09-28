@@ -2,14 +2,15 @@ package com.api.business;
 
 import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.requests.ProdutoRequest;
-import com.api.entity.*;
+import com.api.entity.Categoria;
+import com.api.entity.Produto;
+import com.api.entity.ProdutoFornecedor;
 import com.api.repository.CategoriaRepository;
 import com.api.repository.ProdutoFornecedorRepository;
 import com.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -37,12 +38,12 @@ public class ProdutoService {
 
         Produto produto = new Produto();
 
-        produto.setCodigoBarras(
-                (req.getCodigoBarra() == null || req.getCodigoBarra().isBlank())
-                        ? req.getCodigoProduto().trim().toUpperCase()
-                        : req.getCodigoBarra()
-        );
-        produto.setCodigoProduto(req.getCodigoProduto().isEmpty() || req.getCodigoProduto().isBlank() ? req.getCodigoBarra().trim().toUpperCase() : req.getCodigoProduto().trim().toUpperCase());
+        if (req.getCodigoProdutoCodigoBarras().length() <= 6){
+            produto.setCodigoProduto(req.getCodigoProdutoCodigoBarras());
+        }else{
+            produto.setCodigoBarras(req.getCodigoProdutoCodigoBarras());
+        }
+
         produto.setNome(req.getNome().trim().toUpperCase());
         produto.setDescricao(
                 (req.getDescricao() == null || req.getDescricao().isBlank())
@@ -52,6 +53,8 @@ public class ProdutoService {
 
         produto.setUnidadeMedida(req.getUnidadeMedida());
         produto.setDataCriacao(LocalDate.now());
+        produto.setUltimaAtualizacao(LocalDate.now());
+        produto.setPrecoVenda(req.getPrecoVenda());
         produto.setObservacao(
                 (req.getObservacao() == null || req.getObservacao().isBlank())
                         ? "OBSERVAÇÃO NÃO CADASTRADA"
@@ -97,8 +100,12 @@ public class ProdutoService {
 
         Optional<Categoria> categoriaAtualizada = categoriaRepository.findById(produtoAtualizado.getCategoriaId());
 
-        produtoExistente.setCodigoProduto(produtoAtualizado.getCodigoProduto().trim().toUpperCase());
-        produtoExistente.setCodigoBarras(produtoAtualizado.getCodigoBarra().trim().toUpperCase());
+        if (produtoAtualizado.getCodigoProdutoCodigoBarras().length() <= 6){
+            produtoExistente.setCodigoProduto(produtoAtualizado.getCodigoProdutoCodigoBarras());
+        }else{
+            produtoExistente.setCodigoBarras(produtoAtualizado.getCodigoProdutoCodigoBarras());
+        }
+
        // produtoExistente.setDataValidade(produtoAtualizado.getDataValidade());
         produtoExistente.setObservacao(produtoAtualizado.getObservacao().isEmpty() || produtoAtualizado.getObservacao().isBlank() ? produtoExistente.getObservacao().trim().toUpperCase() : produtoExistente.getObservacao().trim().toUpperCase());
         produtoExistente.setDescricao(produtoAtualizado.getDescricao().trim().toUpperCase());

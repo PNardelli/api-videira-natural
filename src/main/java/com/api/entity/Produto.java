@@ -26,10 +26,8 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(unique = true, nullable = false)
     private String codigoProduto;
 
-    @Nullable
     private String codigoBarras;
 
     private String nome;
@@ -43,10 +41,15 @@ public class Produto {
     @Enumerated(EnumType.STRING)
     private UnidadeMedida unidadeMedida;
 
+    private BigDecimal precoVenda;
+
     private boolean ativo = true;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate dataCriacao;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private LocalDate ultimaAtualizacao;
 
     @Nullable
     private String observacao;

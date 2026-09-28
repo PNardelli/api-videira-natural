@@ -139,7 +139,7 @@ public class XmlImportService {
                     produtoRequest.setCategoriaId(cat.getId());
                 }
 
-                produtoRequest.setCodigoProduto(item.getCodigoProdutoInterno());
+                //produtoRequest.setCodigoProduto(item.getCodigoProdutoInterno());
                 produtoRequest.setNome(item.getNomeSugerido()); // Nome que você editou no Vue!
                 produtoRequest.setUnidadeMedida(UnidadeMedida.valueOf(item.getUnidadeMedida().toUpperCase().trim()));
                 produtoRequest.setCodigoFornecedorXml(Long.valueOf(item.getCodigoFornecedor()));
