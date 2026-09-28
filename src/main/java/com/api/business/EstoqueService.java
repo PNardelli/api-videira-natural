@@ -84,7 +84,7 @@ public class EstoqueService {
 
                 return;
             } else {
-                throw new RuntimeException("SALDO ATUAL INSUFICIENTE");
+                throw new RuntimeException("INFO - SALDO ATUAL INSUFICIENTE");
             }
         }
 
@@ -98,10 +98,14 @@ public class EstoqueService {
             }
         }
 
+        if (dto.getTipo() == ENTRADA){
+            produtoFornecedorExistente.setQuantidade(produtoFornecedorExistente.getQuantidade()
+                    .add(dto.getQuantidade()));
+        }
+        produtoFornecedorExistente.setEstoqueMinimo(dto.getEstoqueMinimo());
         produtoFornecedorExistente.setPrecoVenda(dto.getPrecoVenda());
         produtoFornecedorExistente.setDataEntrada(LocalDateTime.now());
         produtoFornecedorExistente.setPrecoCompra(dto.getPrecoCompra());
-        produtoFornecedorExistente.setQuantidade(produtoFornecedorExistente.getQuantidade().add(dto.getQuantidade()));
         produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
 
         if (dto.getFornecedorId() == null) {
@@ -134,6 +138,7 @@ public class EstoqueService {
         novoProdutoFornecedor.setFornecedor(fornecedor);
 
         // Dados da carga atual
+        novoProdutoFornecedor.setEstoqueMinimo(dto.getEstoqueMinimo());
         novoProdutoFornecedor.setQuantidade(dto.getQuantidade());
         novoProdutoFornecedor.setDataEntrada(LocalDateTime.now());
         novoProdutoFornecedor.setDataValidade(dto.getDataValidade());

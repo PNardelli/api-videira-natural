@@ -1,6 +1,7 @@
 package com.api.repository;
 
 import com.api.dto.AlertaEstoqueDTO;
+import com.api.dto.ProdutoFornecedorDTO;
 import com.api.entity.Fornecedor;
 import com.api.entity.Produto;
 import com.api.entity.ProdutoFornecedor;
@@ -54,6 +55,9 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
             "FROM ProdutoFornecedor pf JOIN pf.produto p " +
             "WHERE pf.quantidade <= :minimo AND pf.quantidade > 0 AND pf.produtoAtivo = true")
     List<AlertaEstoqueDTO> buscarEstoqueBaixo(@Param("minimo") BigDecimal minimo);
+
+    @Query("SELECT pf FROM ProdutoFornecedor pf JOIN FETCH pf.produto p WHERE pf.quantidade <= pf.estoqueMinimo")
+    List<ProdutoFornecedor> findEstoqueCritico();
 
 }
 

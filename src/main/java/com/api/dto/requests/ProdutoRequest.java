@@ -21,8 +21,11 @@ public class ProdutoRequest {
     private UnidadeMedida unidadeMedida;
     private LocalDate dataValidade;
     private Long dataValidadeDias;
+    private BigDecimal estoqueMinimo;
     private Long codigoFornecedorXml;
     private String observacao;
+
+
 
     private Long produtoId;
     private Long fornecedorId;

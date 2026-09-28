@@ -9,6 +9,7 @@ import com.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ public class ProdutoService {
     @Autowired
     private ProdutoRepository produtoRepository;
 
+    @Autowired
     private ProdutoFornecedorRepository produtoFornecedorRepository;
 
     @Autowired
@@ -47,11 +49,8 @@ public class ProdutoService {
                         ? "DESCRIÇÃO NÃO CADASTRADA"
                         : req.getDescricao().trim().toUpperCase()
         );        produto.setCategoria(categoria);
-        //produto.setPrecoVenda(req.getPrecoVenda());
-        //produto.setPrecoCompra(req.getPrecoCompra());
+
         produto.setUnidadeMedida(req.getUnidadeMedida());
-       // produto.setEstoque(req.getEstoque());
-        //produto.setDataValidade(req.getDataValidade());
         produto.setDataCriacao(LocalDate.now());
         produto.setObservacao(
                 (req.getObservacao() == null || req.getObservacao().isBlank())
@@ -115,6 +114,18 @@ public class ProdutoService {
         produtoRepository.deleteById(id);
     }
 
+    public Produto ativarInativar(Long id){
+        Produto produto =  produtoRepository.findById(id).orElseThrow();
+
+        if (produto.isAtivo()){
+            produto.setAtivo(false);
+        }else{
+            produto.setAtivo(true);
+        };
+
+        return produtoRepository.save(produto);
+    }
+
 
   private LocalDate adicionarDataValidadeDias(Long data){
       return (data != null) ? LocalDate.now().plusDays(data) : LocalDate.now();
@@ -122,9 +133,6 @@ public class ProdutoService {
 
     public List<ProdutoFornecedorDTO> buscarFlexivel(String termo) {
         List<Produto> produtos = produtoRepository.findByFlexivel(termo);
-
-
-
         return produtos.stream().map(p -> {
             ProdutoFornecedorDTO dto = new ProdutoFornecedorDTO();
             dto.setProdutoId(p.getId());
@@ -133,5 +141,9 @@ public class ProdutoService {
             dto.setUnidade(String.valueOf(p.getUnidadeMedida()));
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    public List<ProdutoFornecedor> listarEstoqueCriticoOtimizado() {
+        return produtoFornecedorRepository.findEstoqueCritico();
     }
 }

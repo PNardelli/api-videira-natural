@@ -34,5 +34,9 @@ public class ProdutoFornecedor {
 
     @Column(name = "quantidade", precision = 10, scale = 3)
     private BigDecimal quantidade;
+
+    @Column(name = "estoque_minimo", precision = 10, scale = 3)
+    private BigDecimal estoqueMinimo;
+
     private Boolean produtoAtivo;
 }

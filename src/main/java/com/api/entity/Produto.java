@@ -43,7 +43,7 @@ public class Produto {
     @Enumerated(EnumType.STRING)
     private UnidadeMedida unidadeMedida;
 
-    private Boolean ativo = true;
+    private boolean ativo = true;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate dataCriacao;

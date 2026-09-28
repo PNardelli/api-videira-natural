@@ -20,5 +20,7 @@ public class ProdutoFornecedorDTO {
     private BigDecimal quantidade;
     private BigDecimal precoVenda;
     private BigDecimal precoCompra;
+    private BigDecimal estoqueMinimo;
+
 
 }

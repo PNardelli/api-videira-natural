@@ -11,6 +11,8 @@ public class MovimentacaoDTO {
     private Long produtoId;
     private Long fornecedorId;
     private BigDecimal quantidade;
+
+    private BigDecimal estoqueMinimo;
     private TipoMovimentacao tipo;
     private BigDecimal precoVenda;
     private BigDecimal precoCompra;

@@ -1,6 +1,7 @@
 package com.api.controller;
 
 import com.api.business.ProdutoFornecedorService;
+import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.requests.ProdutoRequest;
 import com.api.entity.Produto;
 import com.api.business.ProdutoService;
@@ -49,7 +50,6 @@ public class ProdutoController {
 
     @GetMapping("/{id}")
     public Produto buscar(@PathVariable Long id){
-
         return produtoService.buscar(id);
     }
 
@@ -66,9 +66,21 @@ public class ProdutoController {
         return ResponseEntity.ok(produtos);
     }
 
-    @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id){
-        produtoService.deletar(id);
+    @PutMapping("/ativar-inativar/{id}")
+    public ResponseEntity<Produto> ativarInativar(@PathVariable Long id){
+        return ResponseEntity.ok(produtoService.ativarInativar(id));
+    }
+
+    @GetMapping("/estoque/geral")
+    public ResponseEntity<List<Produto>> listarEstoqueGeral() {
+        // Retorna todos os produtos ou faz um fetch otimizado para o estoque
+        List<Produto> produtos = produtoRepository.findAll(); // ou produtoRepository.findAll()
+        return ResponseEntity.ok(produtos);
+    }
+
+    @GetMapping("/estoque/critico-estoque")
+    public ResponseEntity<List<ProdutoFornecedor>> listarEstoqueCritico() {
+        return ResponseEntity.ok(produtoService.listarEstoqueCriticoOtimizado());
     }
 
 }
