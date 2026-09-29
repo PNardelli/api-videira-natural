@@ -27,7 +27,7 @@ public class ParceiroService {
         }
         
         Parceiros parceiro = new Parceiros();
-        parceiro.setNomeParceiro(parceirosDTO.getNomeParceiro());
+        parceiro.setNomeParceiro(parceirosDTO.getNomeParceiro().toUpperCase());
         parceiro.setPercentualDesconto(parceirosDTO.getPercentualDesconto());
         parceiro.setInstagram(parceirosDTO.getInstagram());
         parceiro.setDataCadastro(LocalDate.now());

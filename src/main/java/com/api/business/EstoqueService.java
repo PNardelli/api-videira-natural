@@ -96,6 +96,8 @@ public class EstoqueService {
             if (dto.getDataValidade() != null) {
                 produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
             }
+
+
         }
 
         if (dto.getTipo() == ENTRADA){
@@ -106,8 +108,10 @@ public class EstoqueService {
         produtoFornecedorExistente.setPrecoVenda(dto.getPrecoVenda());
         produtoFornecedorExistente.setDataEntrada(LocalDateTime.now());
         produtoFornecedorExistente.setPrecoCompra(dto.getPrecoCompra());
-        produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
 
+        if (dto.getDataValidade() != null){
+            produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
+        }
         if (dto.getFornecedorId() == null) {
             produtoFornecedorExistente.setFornecedor(fornecedor);
         }
@@ -116,6 +120,7 @@ public class EstoqueService {
 
         produtoFornecedorRepository.save(produtoFornecedorExistente);
 
+        produtoService.atualizarPreco(dto.getProdutoId(), dto.getPrecoVenda());
         desativarProdutoFornecedor(null, produtoFornecedorExistente.getProduto().getId());
 
         registrarHistorico(dto, produtoFornecedorExistente, fornecedor);

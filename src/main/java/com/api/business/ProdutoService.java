@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -108,6 +109,7 @@ public class ProdutoService {
         }else{
             produtoExistente.setCodigoBarras(produtoAtualizado.getCodigoProdutoCodigoBarras());
         }
+        produtoExistente.setNome(produtoAtualizado.getNome());
         produtoExistente.setUnidadeMedida(produtoAtualizado.getUnidadeMedida());
         produtoExistente.setPrecoVenda(produtoAtualizado.getPrecoVenda());
         produtoExistente.setUltimaAtualizacao(LocalDate.now());
@@ -150,5 +152,11 @@ public class ProdutoService {
 
     public List<ProdutoFornecedor> listarEstoqueCriticoOtimizado() {
         return produtoFornecedorRepository.findEstoqueCritico();
+    }
+
+    public void atualizarPreco(Long id, BigDecimal preco){
+        Produto produto = produtoRepository.findById(id).orElseThrow();
+        produto.setPrecoVenda(preco);
+        produtoRepository.save(produto);
     }
 }
