@@ -98,21 +98,19 @@ public class ProdutoService {
     public Produto atualizarProduto(Long id, ProdutoRequest produtoAtualizado) {
         Produto produtoExistente = produtoRepository.findById(id).orElseThrow();
 
-        Optional<Categoria> categoriaAtualizada = categoriaRepository.findById(produtoAtualizado.getCategoriaId());
+        if (produtoAtualizado.getCategoriaId() != null){
+            Optional<Categoria> categoriaAtualizada = categoriaRepository.findById(produtoAtualizado.getCategoriaId());
+            produtoExistente.setCategoria(categoriaAtualizada.orElseThrow());
+        }
 
         if (produtoAtualizado.getCodigoProdutoCodigoBarras().length() <= 6){
             produtoExistente.setCodigoProduto(produtoAtualizado.getCodigoProdutoCodigoBarras());
         }else{
             produtoExistente.setCodigoBarras(produtoAtualizado.getCodigoProdutoCodigoBarras());
         }
-
-       // produtoExistente.setDataValidade(produtoAtualizado.getDataValidade());
-        produtoExistente.setObservacao(produtoAtualizado.getObservacao().isEmpty() || produtoAtualizado.getObservacao().isBlank() ? produtoExistente.getObservacao().trim().toUpperCase() : produtoExistente.getObservacao().trim().toUpperCase());
-        produtoExistente.setDescricao(produtoAtualizado.getDescricao().trim().toUpperCase());
-        produtoExistente.setCategoria(categoriaAtualizada.orElseThrow());
-       // produtoExistente.setPrecoCompra(produtoAtualizado.getPrecoCompra());
-       // produtoExistente.setPrecoVenda(produtoAtualizado.getPrecoVenda());
         produtoExistente.setUnidadeMedida(produtoAtualizado.getUnidadeMedida());
+        produtoExistente.setPrecoVenda(produtoAtualizado.getPrecoVenda());
+        produtoExistente.setUltimaAtualizacao(LocalDate.now());
 
         return produtoRepository.save(produtoExistente);
     }

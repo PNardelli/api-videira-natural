@@ -33,11 +33,6 @@ public class DashboardService {
         dto.setTotalProdutos(produtoRepository.count());
         dto.setTotalFornecedores(fornecedorRepository.count());
 
-        // 2. Faturamento Periódico
-        dto.setFaturamentoDiario(vendaRepository.calcularFaturamento(hoje, LocalDateTime.now()));
-        dto.setFaturamentoSemanal(vendaRepository.calcularFaturamento(hoje.minusDays(7), LocalDateTime.now()));
-        dto.setFaturamentoMensal(vendaRepository.calcularFaturamento(hoje.withDayOfMonth(1), LocalDateTime.now()));
-
         // 3. Alertas de Validade (Regra: Vence em até 15 dias)
         dto.setProdutosVencendo(pfRepository.buscarProdutosVencendo(LocalDate.from(LocalDateTime.now().plusDays(15))));
 

@@ -27,7 +27,7 @@ public class Cliente {
     @Column(name = "NOME")
     private String nome;
 
-    @Column(name = "EMAIL")
+    @Column(name = "EMAIL", unique = true)
     private String email;
 
     @Column(name = "WHATSAPP", unique = true)
@@ -47,7 +47,7 @@ public class Cliente {
     private String dataNascimento;
 
     @Column(name = "VIDEIRA_SALDO")
-    private Integer videiraSaldo;
+    private Integer videiraSaldo = 50;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn( name = "endereco_id")

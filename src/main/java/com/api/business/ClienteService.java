@@ -32,7 +32,6 @@ public class ClienteService {
         }
 
         Cliente cliente = new Cliente();
-        cliente.setVideiraSaldo(50);
         cliente.setNome(clienteDTO.getNome().trim().toUpperCase());
         cliente.setEmail(clienteDTO.getEmail());
         cliente.setWhatsapp(clienteDTO.getWhatsapp());
