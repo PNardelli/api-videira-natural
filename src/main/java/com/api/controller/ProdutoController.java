@@ -41,7 +41,7 @@ public class ProdutoController {
     @GetMapping("/listar")
     public Page<Produto> listar(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "50") int size,
             @RequestParam(required = false) String termo) {
 
         Pageable pageable = PageRequest.of(page, size);

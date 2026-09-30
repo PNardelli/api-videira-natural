@@ -105,11 +105,13 @@ public class ProdutoService {
         }
 
         if (produtoAtualizado.getCodigoProdutoCodigoBarras().length() <= 6){
+            produtoExistente.setCodigoBarras(null);
             produtoExistente.setCodigoProduto(produtoAtualizado.getCodigoProdutoCodigoBarras());
         }else{
+            produtoExistente.setCodigoProduto(null);
             produtoExistente.setCodigoBarras(produtoAtualizado.getCodigoProdutoCodigoBarras());
         }
-        produtoExistente.setNome(produtoAtualizado.getNome());
+        produtoExistente.setNome(produtoAtualizado.getNome().toUpperCase());
         produtoExistente.setUnidadeMedida(produtoAtualizado.getUnidadeMedida());
         produtoExistente.setPrecoVenda(produtoAtualizado.getPrecoVenda());
         produtoExistente.setUltimaAtualizacao(LocalDate.now());
