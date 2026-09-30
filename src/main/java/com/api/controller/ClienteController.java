@@ -4,6 +4,7 @@ import com.api.business.ClienteService;
 import com.api.dto.ClienteDTO;
 import com.api.dto.ClientePdvDTO;
 import com.api.entity.Cliente;
+import com.api.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,9 @@ import java.util.List;
 public class ClienteController {
 
     @Autowired
+    ClienteRepository clienteRepository;
+
+    @Autowired
     ClienteService clienteService;
 
     // Criar cliente
@@ -24,6 +28,26 @@ public class ClienteController {
     public ResponseEntity<Cliente> criar(@RequestBody ClienteDTO clienteDTO) {
         Cliente salvo = clienteService.salvarCliente(clienteDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
+    }
+
+    @PostMapping("/rapido")
+    public ResponseEntity<Cliente> cadastrarRapido(@RequestBody ClienteDTO dto) {
+        if (dto.getNome() == null || dto.getNome().isBlank()) {
+            throw new RuntimeException("O nome do cliente é obrigatório!");
+        }
+
+        if (dto.getWhatsapp() != null && !dto.getWhatsapp().isBlank()) {
+            if (clienteRepository.existsByWhatsapp(dto.getWhatsapp())) {
+                throw new RuntimeException("CLIENTE JÁ CADASTRADO COM ESTE WHATSAPP!");
+            }
+        }
+
+        Cliente cliente = new Cliente();
+        cliente.setNome(dto.getNome().toUpperCase());
+        cliente.setWhatsapp(dto.getWhatsapp());
+
+        Cliente salvo = clienteRepository.save(cliente);
+        return ResponseEntity.ok(salvo);
     }
 
     // Listar todos

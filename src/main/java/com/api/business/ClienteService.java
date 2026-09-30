@@ -27,9 +27,9 @@ public class ClienteService {
             throw new RuntimeException("NOME E WHATSAPP SÃO OBRIGATÓRIOS!");
         }
 
-        if (clienteRepository.existsByWhatsappOrEmail(clienteDTO.getWhatsapp(), clienteDTO.getEmail())){
-            throw new RuntimeException("CLIENTE JÁ CADASTRADO, VERIFIQUE E TENTE NOVAMENTE!");
-        }
+            if (clienteRepository.existsByWhatsappOrEmail(clienteDTO.getWhatsapp(), clienteDTO.getEmail())){
+                throw new RuntimeException("CLIENTE JÁ CADASTRADO, VERIFIQUE E TENTE NOVAMENTE!");
+            }
 
         Cliente cliente = new Cliente();
         cliente.setNome(clienteDTO.getNome().trim().toUpperCase());
