@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -45,6 +46,8 @@ public class ClienteController {
         Cliente cliente = new Cliente();
         cliente.setNome(dto.getNome().toUpperCase());
         cliente.setWhatsapp(dto.getWhatsapp());
+        cliente.setAtivo(true);
+        cliente.setDataCriacao(LocalDate.now().toString());
 
         Cliente salvo = clienteRepository.save(cliente);
         return ResponseEntity.ok(salvo);

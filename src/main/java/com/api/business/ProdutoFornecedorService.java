@@ -47,6 +47,7 @@ public class ProdutoFornecedorService {
         produtoFornecedor.setQuantidade(produtoRequest.getEstoque());
         produtoFornecedor.setEstoqueMinimo(produtoRequest.getEstoqueMinimo());
         produtoFornecedor.setDataValidade(produtoRequest.getDataValidade());
+        produtoFornecedor.setDataValidadeDias(produtoRequest.getDataValidadeDias().toString());
         produtoFornecedor.setPrecoVenda(produtoRequest.getPrecoVenda());
         produtoFornecedor.setPrecoCompra(produtoRequest.getPrecoCompra());
         produtoFornecedor.setUnidade(produto.getUnidadeMedida().toString());

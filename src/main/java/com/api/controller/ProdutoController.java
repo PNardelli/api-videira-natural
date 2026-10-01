@@ -55,7 +55,7 @@ public class ProdutoController {
 
     @PutMapping("/{id}")
     public Produto atualizar(@PathVariable Long id, @RequestBody ProdutoRequest produtoRequest){
-        produtoService.atualizarProduto(id, produtoRequest);
+        Produto produto = produtoService.atualizarProduto(id, produtoRequest);
         return produtoService.buscar(id);
     }
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
@@ -26,10 +27,15 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(unique = true)
+    @Nullable
     private String codigoProduto;
 
+    @Column(unique = true)
+    @Nullable
     private String codigoBarras;
 
+    @NotNull
     private String nome;
 
     @ManyToOne
@@ -41,6 +47,7 @@ public class Produto {
     @Enumerated(EnumType.STRING)
     private UnidadeMedida unidadeMedida;
 
+    @NotNull
     private BigDecimal precoVenda;
 
     private boolean ativo = true;

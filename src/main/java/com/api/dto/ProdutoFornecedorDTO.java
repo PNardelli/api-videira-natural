@@ -16,6 +16,7 @@ public class ProdutoFornecedorDTO {
     private Long fornecedorId;
     private LocalDateTime dataEntrada;
     private LocalDate dataValidade;
+    private String dataValidadeDias;
     private String unidade;
     private BigDecimal quantidade;
     private BigDecimal precoVenda;
