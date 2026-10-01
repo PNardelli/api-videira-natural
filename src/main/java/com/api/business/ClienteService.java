@@ -3,6 +3,7 @@ package com.api.business;
 import com.api.dto.ClienteDTO;
 import com.api.dto.ClientePdvDTO;
 import com.api.entity.Cliente;
+import com.api.entity.Endereco;
 import com.api.repository.ClienteRepository;
 import com.api.uteis.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,11 +89,23 @@ public class ClienteService {
     public List<ClientePdvDTO> buscarClientesPdv(String termo) {
         return clienteRepository.buscarPorNomeOuWhatsapp(termo)
                 .stream()
-                .map(c -> new ClientePdvDTO(
-                        c.getId(),
-                        c.getNome(),
-                        c.getVideiraSaldo()
-                ))
+                .map(c -> {
+                    Endereco endereco = c.getEndereco(); // Exemplo se o relacionamento for direto
+
+                    return new ClientePdvDTO(
+                            c.getId(),
+                            c.getNome(),
+                            c.getVideiraSaldo(),
+                            endereco != null ? endereco.getCep() : "",
+                            endereco != null ? endereco.getLogradouro() : "",
+                            endereco != null ? endereco.getNumero() : "",
+                            endereco != null ? endereco.getComplemento() : "",
+                            endereco != null ? endereco.getBairro() : "",
+                            endereco != null ? endereco.getLocalidade() : ""
+
+
+                    );
+                })
                 .toList();
     }
 
