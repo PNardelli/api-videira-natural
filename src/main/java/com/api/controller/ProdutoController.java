@@ -86,4 +86,11 @@ public class ProdutoController {
         return ResponseEntity.ok(produtoService.listarEstoqueCriticoOtimizado());
     }
 
+    @GetMapping("/proximo-codigo")
+    public ResponseEntity<Integer> obterProximoCodigo() {
+        Integer proximo = produtoRepository.encontrarMaiorCodigoNumerico();
+        int codigoFinal = (proximo != null) ? proximo : 1;
+        return ResponseEntity.ok(codigoFinal);
+    }
+
 }

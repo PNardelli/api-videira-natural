@@ -6,10 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
+@Transactional(readOnly = true)
 public interface ProdutoRepository extends JpaRepository<Produto, Long > {
     boolean existsByCodigoProduto(String codigoProduto);
 
@@ -40,4 +42,10 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long > {
 
     @Query("SELECT p FROM Produto p WHERE p.categoria.id = :categoriaId AND (LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR p.codigoProduto LIKE CONCAT('%', :termo, '%'))")
     Page<Produto> findByCategoriaAndFlexivelPaginado(@Param("categoriaId") Long categoriaId, @Param("termo") String termo, Pageable pageable);
+
+    @Query(value = "SELECT MAX(CAST(codigo_produto AS INTEGER)) + 1 AS proximo_codigo " +
+            "FROM tb_produto " +
+            "WHERE codigo_produto ~ '^[0-9]+$'",
+            nativeQuery = true)
+    Integer encontrarMaiorCodigoNumerico();
 }
