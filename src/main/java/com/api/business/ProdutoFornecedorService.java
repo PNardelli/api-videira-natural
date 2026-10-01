@@ -63,12 +63,17 @@ public class ProdutoFornecedorService {
     }
 
     public ProdutoRequest recuperarProdutoGranel(String codigoBarra){
+
+        //Recupera em String, converte para numero para remover os 0 a esqueda e reconverte em String.
         String produtoNoCodigoBarra = codigoBarra.substring(1,5);
+        Long idOuCodigoProduto = Long.parseLong(produtoNoCodigoBarra);
+
+
         String valorNoCodigoBarra = codigoBarra.substring(8,12);
 
         ProdutoRequest produtoRequest = new ProdutoRequest();
 
-        List<ProdutoFornecedorDTO> produto = produtoService.buscarFlexivel(produtoNoCodigoBarra);
+        List<ProdutoFornecedorDTO> produto = produtoService.buscarFlexivel(idOuCodigoProduto.toString());
 
         List<ProdutoFornecedor> produtoFornecedorList = repositoryPF.getProdutoFornecedorList(produto.get(0).getProdutoId(), PageRequest.of(0,1));
         //ProdutoFornecedor produtoFornecedor = repositoryPF.getProdutoFornecedor(produto.get(0).getProdutoId());

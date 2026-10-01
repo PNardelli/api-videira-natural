@@ -32,7 +32,6 @@ public class BalancaController {
 
         for (ProdutoFornecedor p : produtos) {
             String codProd = p.getProduto().getCodigoProduto();
-            String codBarras = p.getProduto().getCodigoBarras(); // Ou o nome do campo correspondente ao código de barras
 
             // REGRA: Se o produto não tiver um código de produto curto (ex: PLU até 6 dígitos)
             // e possuir apenas código de barras longo, ele é ignorado pela balança.
@@ -48,17 +47,17 @@ public class BalancaController {
                 // Se não for puramente numérico, ignora
                 continue;
             }
-            String strPlu = String.format("%06d", codigoNumerico);
+            String strPlu = String.format("%07d", codigoNumerico);
 
             // 2. Tipo de Preço (1 para peso/unidade padrão)
-            String tipoPreco = "1";
+            //String tipoPreco = "1";
 
             // 3. Preço multiplicado por 10000 (8 dígitos, com zeros à esquerda)
             long precoCentavos = 0L;
             if (p.getPrecoVenda() != null) {
                 precoCentavos = p.getPrecoVenda().multiply(new java.math.BigDecimal("10000")).longValue();
             }
-            String strPreco = String.format("%08d", precoCentavos);
+            String strPreco = String.format("%07d", precoCentavos);
 
             // 4. Validade em dias (3 dígitos, ex: 000 ou 365, com segurança contra nulos)
             int diasValidadeInt = 0;
@@ -74,8 +73,10 @@ public class BalancaController {
             String nomeFormatado = String.format("%-30.30s", nomeBruto.toUpperCase());
 
             // 6. Montagem da linha completa com o sufixo padrão do MGV Toledo
-            String linha = "0200" + strPlu + tipoPreco + strPreco + validade + nomeFormatado
+            String linha = "02" + strPlu + strPreco + validade + nomeFormatado
                     + "0000000000000000110000000000000000000000000000000000000000000000000000000000000000\r\n";
+
+            System.out.println(linha);
 
             arquivoBuilder.append(linha);
         }

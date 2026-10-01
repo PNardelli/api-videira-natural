@@ -22,6 +22,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long > {
     @Query("SELECT p FROM Produto p WHERE " +
             "CAST(p.id AS string) = :termo OR " +
             "p.codigoBarras = :termo OR " +
+            "p.codigoProduto = :termo OR " +
             "LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%'))")
     List<Produto> findByFlexivel(@Param("termo") String termo);
 
