@@ -207,7 +207,7 @@ public class EstoqueService {
                 ItemVenda item = new ItemVenda();
                 item.setVenda(venda);
                 item.setProduto(pf.getProduto());
-                item.setProdutoFornecedorId(pf); // Rastreabilidade do lote
+                item.setProdutoFornecedor(pf); // Rastreabilidade do lote
                 item.setQuantidade(quantidadeAbatidaDesteLote);
                 item.setPrecoUnitario(pf.getPrecoVenda());
                 item.setSubtotal(pf.getPrecoVenda().multiply(quantidadeAbatidaDesteLote));

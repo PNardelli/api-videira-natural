@@ -28,9 +28,14 @@ public class ItemVenda {
 
     @ManyToOne
     @JoinColumn(name = "produto_fornecedor_id")
-    private ProdutoFornecedor produtoFornecedorId;
+    private ProdutoFornecedor produtoFornecedor;
 
     private BigDecimal quantidade;
+
     private BigDecimal precoUnitario;
+
+    // Essencial para relatórios de margem/lucro precisos (guarda o custo da época da venda)
+    private BigDecimal precoCustoUnitario;
+
     private BigDecimal subtotal;
 }

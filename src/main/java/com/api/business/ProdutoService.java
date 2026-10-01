@@ -81,10 +81,20 @@ public class ProdutoService {
         return paginaProdutos;
     }
 
-    public Page<Produto> listarOuBuscar(String termo, Pageable pageable) {
+    public Page<Produto> listarOuBuscar(String termo, Long categoriaId, Pageable pageable) {
+        // Se passou a categoria e também um termo de busca
+        if (categoriaId != null && termo != null && !termo.isBlank()) {
+            return produtoRepository.findByCategoriaAndFlexivelPaginado(categoriaId, termo.trim(), pageable);
+        }
+        // Se passou apenas a categoria
+        if (categoriaId != null) {
+            return produtoRepository.findByCategoriaId(categoriaId, pageable);
+        }
+        // Se passou apenas o termo de busca
         if (termo != null && !termo.isBlank()) {
             return produtoRepository.findByFlexivelPaginado(termo.trim(), pageable);
         }
+        // Se não passou nada, traz tudo paginado
         return produtoRepository.findAll(pageable);
     }
 
@@ -144,6 +154,15 @@ public class ProdutoService {
         List<Produto> produtos = produtoRepository.findByFlexivel(termo);
         return produtos.stream().map(p -> {
             ProdutoFornecedorDTO dto = new ProdutoFornecedorDTO();
+            ProdutoFornecedor produtoFornecedor = produtoFornecedorRepository.getProdutoFornecedor(p.getId());
+            BigDecimal estoque = produtoFornecedor.getQuantidade();
+
+            if (p.getCodigoProduto() == null){
+                dto.setCodigoProduto(p.getCodigoBarras());
+            }else{
+                dto.setCodigoProduto(p.getCodigoProduto());
+            }
+            dto.setQuantidade(estoque);
             dto.setProdutoId(p.getId());
             dto.setNome(p.getNome());
            // dto.setPrecoVenda(p.getPrecoVenda());

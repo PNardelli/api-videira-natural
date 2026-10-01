@@ -33,4 +33,10 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long > {
             "p.codigoBarras = :termo OR " +
             "LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%'))")
     Page<Produto> findByFlexivelPaginado(@Param("termo") String termo, Pageable pageable);
+
+    @Query("SELECT p FROM Produto p WHERE p.categoria.id = :categoriaId")
+    Page<Produto> findByCategoriaId(@Param("categoriaId") Long categoriaId, Pageable pageable);
+
+    @Query("SELECT p FROM Produto p WHERE p.categoria.id = :categoriaId AND (LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR p.codigoProduto LIKE CONCAT('%', :termo, '%'))")
+    Page<Produto> findByCategoriaAndFlexivelPaginado(@Param("categoriaId") Long categoriaId, @Param("termo") String termo, Pageable pageable);
 }

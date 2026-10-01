@@ -42,10 +42,13 @@ public class ProdutoController {
     public Page<Produto> listar(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size,
-            @RequestParam(required = false) String termo) {
+            @RequestParam(required = false) String termo,
+            @RequestParam(required = false) Long categoriaId) { // Sem vírgula aqui e parêntese fechado corretamente
 
         Pageable pageable = PageRequest.of(page, size);
-        return produtoService.listarOuBuscar(termo, pageable);
+
+        // Repasse o categoriaId para o service para o filtro funcionar no banco
+        return produtoService.listarOuBuscar(termo, categoriaId, pageable);
     }
 
     @GetMapping("/{id}")

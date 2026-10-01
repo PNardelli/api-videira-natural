@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface VendaRepository  extends JpaRepository<Venda, Long> {
 
@@ -22,5 +23,7 @@ public interface VendaRepository  extends JpaRepository<Venda, Long> {
     BigDecimal calcularFaturamentoPorTipo(@Param("inicio") LocalDateTime inicio,
                                           @Param("fim") LocalDateTime fim,
                                           @Param("tipo") String tipo);
+
+    List<Venda> findByDataVendaBetweenOrderByDataVendaDesc(LocalDateTime inicio, LocalDateTime fim);
 
 }
