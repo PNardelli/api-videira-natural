@@ -1,6 +1,7 @@
 package com.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,10 +20,12 @@ public class Fornecedor {
 
     private String nome;
 
+    @Nullable
     private String whatsapp;
 
     @Column(name = "cfp_cnpj")
     @JsonProperty("cpfCnpj")
+    @Nullable
     private String cpfCnpj;
 
     private LocalDate dataCadastro;

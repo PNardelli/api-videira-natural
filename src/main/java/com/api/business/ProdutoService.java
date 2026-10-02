@@ -69,14 +69,7 @@ public class ProdutoService {
     }
 
     public Page<Produto> listar(Pageable pageable) {
-        Page<Produto> paginaProdutos = produtoRepository.findAll(pageable);
-
-        // 🔍 Debug no console do Backend Java
-        System.out.println("=== DEBUG SPRING PAGE ===");
-        System.out.println("Total de elementos na base: " + paginaProdutos.getTotalElements());
-        System.out.println("Total de páginas: " + paginaProdutos.getTotalPages());
-        System.out.println("Elementos nesta página (content size): " + paginaProdutos.getContent().size());
-        System.out.println("Primeiro produto: " + (paginaProdutos.getContent().isEmpty() ? "Vazio" : paginaProdutos.getContent().get(0).getNome()));
+        Page<Produto> paginaProdutos = produtoRepository.findAll(pageable);;
 
         return paginaProdutos;
     }
@@ -150,19 +143,18 @@ public class ProdutoService {
       return (data != null) ? LocalDate.now().plusDays(data) : LocalDate.now();
   }
 
-    public List<ProdutoFornecedorDTO> buscarFlexivel(String termo) {
+    public List<ProdutoFornecedorDTO> buscarFlexivel(String termo, Pageable pageable) {
         List<Produto> produtos = produtoRepository.findByFlexivel(termo);
         return produtos.stream().map(p -> {
             ProdutoFornecedorDTO dto = new ProdutoFornecedorDTO();
-            ProdutoFornecedor produtoFornecedor = produtoFornecedorRepository.getProdutoFornecedor(p.getId());
-            BigDecimal estoque = produtoFornecedor.getQuantidade();
+            List<ProdutoFornecedor> produtoFornecedor = produtoFornecedorRepository.getProdutoFornecedorList(p.getId(), pageable);
 
             if (p.getCodigoProduto() == null){
                 dto.setCodigoProduto(p.getCodigoBarras());
             }else{
                 dto.setCodigoProduto(p.getCodigoProduto());
             }
-            dto.setQuantidade(estoque);
+            dto.setQuantidade(produtoFornecedor.get(0).getQuantidade());
             dto.setProdutoId(p.getId());
             dto.setNome(p.getNome());
             dto.setUnidade(String.valueOf(p.getUnidadeMedida()));

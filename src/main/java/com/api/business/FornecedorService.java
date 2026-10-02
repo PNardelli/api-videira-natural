@@ -20,8 +20,8 @@ public class FornecedorService {
     }
 
     public ResponseEntity<Fornecedor> salvar(Fornecedor payload) {
-            if (payload.getNome().isBlank() || payload.getCpfCnpj().isBlank()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome ou CPF/CNPJ obrigatórios.");
+            if (payload.getNome().isBlank()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome obrigatório.");
         }
 
         Fornecedor fornecedor = new Fornecedor();
