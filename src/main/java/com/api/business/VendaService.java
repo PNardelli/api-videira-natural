@@ -83,6 +83,7 @@ public class VendaService {
             itemParaAdicionar.setPreco(p.get(0).getPrecoVenda());
             itemParaAdicionar.setUnidade(p.get(0).getUnidade());
             itemParaAdicionar.setQuantidade(BigDecimal.ONE);
+            itemParaAdicionar.setEstoque(p.get(0).getQuantidade().toString());
         }
 
 
@@ -97,6 +98,7 @@ public class VendaService {
             itemParaAdicionar.setNome(produtoFornecedor.getProduto().getNome());
             itemParaAdicionar.setPreco(produtoFornecedor.getPrecoVenda());
             itemParaAdicionar.setUnidade(produtoFornecedor.getUnidade().substring(0, 2));
+            itemParaAdicionar.setEstoque(produtoFornecedor.getQuantidade().toString());
 
             if (peso != null) {
                 itemParaAdicionar.setQuantidade(BigDecimal.valueOf(peso));

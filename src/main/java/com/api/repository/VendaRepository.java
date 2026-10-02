@@ -24,6 +24,11 @@ public interface VendaRepository  extends JpaRepository<Venda, Long> {
                                           @Param("fim") LocalDateTime fim,
                                           @Param("tipo") String tipo);
 
-    List<Venda> findByDataVendaBetweenOrderByDataVendaDesc(LocalDateTime inicio, LocalDateTime fim);
+    // Consulta simples por período (sem join fetch de múltiplas listas)
+    @Query("SELECT v FROM Venda v WHERE v.dataVenda BETWEEN :inicio AND :fim ORDER BY v.dataVenda DESC")
+    List<Venda> findByDataVendaBetweenOrderByDataVendaDesc(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
 
+    // Consulta com termo e período
+    @Query("SELECT v FROM Venda v LEFT JOIN v.cliente c WHERE (str(v.id) LIKE %:termo% OR LOWER(c.nome) LIKE LOWER(CONCAT('%', :termo, '%'))) AND v.dataVenda BETWEEN :inicio AND :fim ORDER BY v.dataVenda DESC")
+    List<Venda> findByTermoOrDataVendaBetween(@Param("termo") String termo, @Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
 }
