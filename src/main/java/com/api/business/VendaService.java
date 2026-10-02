@@ -74,8 +74,19 @@ public class VendaService {
             itemParaAdicionar.setPreco(p.getPrecoVenda());
             itemParaAdicionar.setUnidade("KG");
             itemParaAdicionar.setQuantidade(p.getEstoque()); // peso da etiqueta
+        }else if (termo != null && termo.length() >= 13 && termo.charAt(0) != '2'){
+            // CASO B: Produto Industrializado EAN.
+            List<ProdutoFornecedorDTO> p = produtoService.buscarFlexivel(termo);
+
+            itemParaAdicionar.setProdutoId(p.get(0).getProdutoId());
+            itemParaAdicionar.setNome(p.get(0).getNome());
+            itemParaAdicionar.setPreco(p.get(0).getPrecoVenda());
+            itemParaAdicionar.setUnidade(p.get(0).getUnidade());
+            itemParaAdicionar.setQuantidade(BigDecimal.ONE);
         }
-        // CASO B: FRONT (botão capturar peso ou sugestão)
+
+
+        // CASO C: FRONT (botão capturar peso ou sugestão)
         else {
             ProdutoFornecedor produtoFornecedor = produtoFornecedorRepository.getProdutoFornecedorList(codProduto, PageRequest.of(0, 3))
                     .get(0);

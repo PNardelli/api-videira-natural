@@ -76,9 +76,6 @@ public class ProdutoFornecedorService {
         List<ProdutoFornecedorDTO> produto = produtoService.buscarFlexivel(idOuCodigoProduto.toString());
 
         List<ProdutoFornecedor> produtoFornecedorList = repositoryPF.getProdutoFornecedorList(produto.get(0).getProdutoId(), PageRequest.of(0,1));
-        //ProdutoFornecedor produtoFornecedor = repositoryPF.getProdutoFornecedor(produto.get(0).getProdutoId());
-
-
 
         BigDecimal valorConvertido = new BigDecimal(valorNoCodigoBarra).movePointLeft(2);
         BigDecimal pesoComprado = valorConvertido.divide(
