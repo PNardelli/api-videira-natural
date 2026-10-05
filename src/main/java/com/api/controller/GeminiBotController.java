@@ -1,4 +1,4 @@
-package com.api.controller.IA;
+package com.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,13 +30,11 @@ public class GeminiBotController {
     public ResponseEntity<?> perguntarAoGemini(@RequestBody Map<String, String> payload) {
         String pergunta = payload.get("pergunta");
 
-        // URL oficial do modelo Gemini 1.5 Flash (rápido e ideal para chat)
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey;
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=" + geminiApiKey;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // System Instruction + Pergunta do utilizador estructurada para o Gemini
         String promptCompleto = "Tu és o Videira Bot, um assistente virtual especialista em saúde, bem-estar, fitoterapia e suplementos naturais da loja 'Videira Natural'. " +
                 "Dá respostas úteis, empáticas e concisas sobre chás, ervas e produtos naturais. Pergunta do cliente: " + pergunta;
 
@@ -50,10 +48,28 @@ public class GeminiBotController {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-        try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+        // LÓGICA DE RETRY AUTOMÁTICO CASO OCORRA 503 (ALTA DEMANDA)
+        int tentativas = 0;
+        boolean sucesso = false;
+        ResponseEntity<Map> response = null;
 
-            // Extrai o texto da resposta do JSON de retorno do Gemini
+        while (tentativas < 2 && !sucesso) {
+            try {
+                response = restTemplate.postForEntity(url, entity, Map.class);
+                sucesso = true;
+            } catch (Exception e) {
+                tentativas++;
+                if (tentativas >= 2) {
+                    e.printStackTrace();
+                    return ResponseEntity.status(503).body(Map.of("resposta", "O Videira Bot está com um fluxo intenso de consultas neste momento. Por favor, clica em enviar novamente em instantes! 🌱"));
+                }
+                try {
+                    Thread.sleep(1000); // Aguarda 1 segundo antes de tentar de novo
+                } catch (InterruptedException ignored) {}
+            }
+        }
+
+        try {
             Map candidate = (Map) ((List) response.getBody().get("candidates")).get(0);
             Map content = (Map) candidate.get("content");
             Map part = (Map) ((List) content.get("parts")).get(0);
@@ -61,7 +77,8 @@ public class GeminiBotController {
 
             return ResponseEntity.ok(Map.of("resposta", respostaTexto));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("resposta", "Desculpa, tive uma pequena instabilidade ao consultar o meu sistema de IA. Podes tentar novamente?"));
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("resposta", "Desculpa, tive uma pequena instabilidade ao processar a resposta. Podes tentar novamente?"));
         }
     }
 }
