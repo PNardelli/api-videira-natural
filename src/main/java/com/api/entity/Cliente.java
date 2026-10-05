@@ -15,7 +15,13 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "TB_CLIENTE")
+@Table(
+        name = "tb_cliente",
+        indexes = {
+                @Index(name = "idx_cliente_whatsapp", columnList = "whatsapp"),
+                @Index(name = "idx_cliente_nome", columnList = "nome")
+        }
+)
 public class Cliente {
 
     @Id

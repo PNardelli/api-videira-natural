@@ -9,6 +9,7 @@ import com.api.repository.FornecedorRepository;
 import com.api.repository.ProdutoFornecedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -62,7 +63,7 @@ public class ProdutoFornecedorService {
          return response;
     }
 
-    public ProdutoRequest recuperarProdutoGranel(String codigoBarra){
+    public ProdutoRequest recuperarProdutoGranel(String codigoBarra, Pageable pageable){
 
         //Recupera em String, converte para numero para remover os 0 a esqueda e reconverte em String.
         String produtoNoCodigoBarra = codigoBarra.substring(1,5);
@@ -73,7 +74,7 @@ public class ProdutoFornecedorService {
 
         ProdutoRequest produtoRequest = new ProdutoRequest();
 
-        List<ProdutoFornecedorDTO> produto = produtoService.buscarFlexivel(idOuCodigoProduto.toString());
+        List<ProdutoFornecedorDTO> produto = produtoService.buscarFlexivel(idOuCodigoProduto.toString(), pageable);
 
         List<ProdutoFornecedor> produtoFornecedorList = repositoryPF.getProdutoFornecedorList(produto.get(0).getProdutoId(), PageRequest.of(0,1));
 

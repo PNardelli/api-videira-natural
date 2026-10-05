@@ -12,6 +12,7 @@ import com.api.dto.VendaDTO;
 import com.api.entity.Venda;
 import com.api.repository.ProdutoFornecedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +44,7 @@ public class VendaController {
 
     // PORTA 1: Só para sugestões na tela
     @GetMapping("/buscar")
-    public ResponseEntity<?> buscarParaPDV(@RequestParam String termo) {
+    public ResponseEntity<?> buscarParaPDV(@RequestParam String termo, Pageable pageable) {
         // SE BIPAR BALANÇA: Comando de inserção automática
         if (termo.length() == 13 && termo.startsWith("2")) {
             return ResponseEntity.accepted().header("X-Action", "PROCESSAR").build();
@@ -55,13 +56,13 @@ public class VendaController {
         }
 
         // SE ESTIVER APENAS DIGITANDO NOME: Retorna lista de sugestões
-        return ResponseEntity.ok(produtoService.buscarFlexivel(termo));
+        return ResponseEntity.ok(produtoService.buscarFlexivel(termo, pageable));
     }
 
     // PORTA 2: Onde a mágica da Videira Natural acontece
     @PostMapping("/processar-item")
-    public ResponseEntity<List<ItemCarrinhoRequest>> processar(@RequestBody PdvRequest request) {
+    public ResponseEntity<List<ItemCarrinhoRequest>> processar(@RequestBody PdvRequest request, Pageable pageable) {
         // Aqui você chama o Service que tem a regra da balança e do "UN vs KG"
-        return ResponseEntity.ok(vendaService.processarAdicao(request.getTermo(), request.getCarrinho(), request.getProdutoId(), request.getPeso()));
+        return ResponseEntity.ok(vendaService.processarAdicao(request.getTermo(),pageable,  request.getCarrinho(), request.getProdutoId(), request.getPeso()));
     }
 }

@@ -20,7 +20,10 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@Table(name = "TB_PRODUTO")
+@Table(name = "tb_produto", indexes = {
+        @Index(name = "idx_produto_codigo_barras", columnList = "codigo_barras"),
+        @Index(name = "idx_produto_codigo_produto", columnList = "codigo_produto")
+})
 public class Produto {
 
     @Id

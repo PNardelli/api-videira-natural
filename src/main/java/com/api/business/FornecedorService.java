@@ -2,6 +2,8 @@ package com.api.business;
 
 import com.api.entity.Fornecedor;
 import com.api.repository.FornecedorRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,9 +21,11 @@ public class FornecedorService {
         this.repository = repository;
     }
 
+
+    @CacheEvict(value = "fornecedores", allEntries = true)
     public ResponseEntity<Fornecedor> salvar(Fornecedor payload) {
-            if (payload.getNome().isBlank() || payload.getCpfCnpj().isBlank()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome ou CPF/CNPJ obrigatórios.");
+            if (payload.getNome().isBlank()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome obrigatório.");
         }
 
         Fornecedor fornecedor = new Fornecedor();
@@ -35,6 +39,7 @@ public class FornecedorService {
         return ResponseEntity.ok(fornecedor);
     }
 
+    @Cacheable(value = "fornecedores")
     public List<Fornecedor> listar() {
         return repository.findAll();
     }

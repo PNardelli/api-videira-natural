@@ -47,6 +47,7 @@ public class ClienteController {
         cliente.setNome(dto.getNome().toUpperCase());
         cliente.setWhatsapp(dto.getWhatsapp());
         cliente.setAtivo(true);
+        cliente.setPossuiContaApp(false);
         cliente.setDataCriacao(LocalDate.now().toString());
 
         Cliente salvo = clienteRepository.save(cliente);

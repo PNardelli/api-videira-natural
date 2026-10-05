@@ -41,7 +41,7 @@ public class ProdutoController {
     @GetMapping("/listar")
     public Page<Produto> listar(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "200") int size,
             @RequestParam(required = false) String termo,
             @RequestParam(required = false) Long categoriaId) { // Sem vírgula aqui e parêntese fechado corretamente
 
@@ -65,7 +65,7 @@ public class ProdutoController {
     @GetMapping("/buscar")
     public ResponseEntity<List<Produto>> buscarProdutos(@RequestParam("termo") String termo) {
         // Busca por código exato OU por parte do nome
-        List<Produto> produtos = produtoRepository.findByCodigoProdutoOrNomeContainingIgnoreCase(termo, termo);
+        List<Produto> produtos = produtoRepository.findByFlexivel(termo);
         return ResponseEntity.ok(produtos);
     }
 

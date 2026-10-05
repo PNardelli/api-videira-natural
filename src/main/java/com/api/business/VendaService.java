@@ -14,6 +14,7 @@ import com.api.repository.ProdutoRepository;
 import com.api.repository.VendaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +58,7 @@ public class VendaService {
         return estoqueService.processarNovaVenda(dto);
     }
 
-    public List<ItemCarrinhoRequest> processarAdicao(String termo,
+    public List<ItemCarrinhoRequest> processarAdicao(String termo, Pageable pageable,
                                                      List<ItemCarrinhoRequest> carrinho,
                                                      Long codProduto,
                                                      Double peso) {
@@ -67,7 +68,7 @@ public class VendaService {
         // CASO A: BALANÇA (etiqueta)
         if (termo != null && termo.length() == 13 && termo.startsWith("2")) {
 
-            ProdutoRequest p = produtoFornecedorService.recuperarProdutoGranel(termo);
+            ProdutoRequest p = produtoFornecedorService.recuperarProdutoGranel(termo, pageable);
 
             itemParaAdicionar.setProdutoId(p.getProdutoId());
             itemParaAdicionar.setNome(p.getNome());
@@ -76,14 +77,16 @@ public class VendaService {
             itemParaAdicionar.setQuantidade(p.getEstoque()); // peso da etiqueta
         }else if (termo != null && termo.length() >= 13 && termo.charAt(0) != '2'){
             // CASO B: Produto Industrializado EAN.
-            List<ProdutoFornecedorDTO> p = produtoService.buscarFlexivel(termo);
+            List<ProdutoFornecedorDTO> p = produtoService.buscarFlexivel(termo, pageable);
 
             itemParaAdicionar.setProdutoId(p.get(0).getProdutoId());
             itemParaAdicionar.setNome(p.get(0).getNome());
             itemParaAdicionar.setPreco(p.get(0).getPrecoVenda());
             itemParaAdicionar.setUnidade(p.get(0).getUnidade());
             itemParaAdicionar.setQuantidade(BigDecimal.ONE);
-            itemParaAdicionar.setEstoque(p.get(0).getQuantidade().toString());
+
+            BigDecimal estoqueConvertidoParaUnidade = p.get(0).getQuantidade();
+            itemParaAdicionar.setEstoque(estoqueConvertidoParaUnidade.stripTrailingZeros().toString());
         }
 
 
