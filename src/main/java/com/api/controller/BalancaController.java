@@ -57,7 +57,7 @@ public class BalancaController {
             if (p.getPrecoVenda() != null) {
                 precoCentavos = p.getPrecoVenda().multiply(new java.math.BigDecimal("10000")).longValue();
             }
-            String strPreco = String.format("%07d", precoCentavos);
+            String strPreco = String.format("%06d", precoCentavos);
 
             // 4. Validade em dias (3 dígitos, ex: 000 ou 365, com segurança contra nulos)
             int diasValidadeInt = 0;

@@ -92,6 +92,13 @@ public class ClienteController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/cadastrarBot")
+    public ResponseEntity<Cliente> criarViaVideiraBot(@RequestBody ClienteDTO clienteDTO) {
+        clienteDTO.setPossuiConta(true);
+        Cliente salvo = clienteService.salvarCliente(clienteDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
+    }
+
     // Deletar
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {

@@ -1,9 +1,9 @@
 package com.api.repository;
 
-import com.api.entity.Produto;
-import com.api.entity.Venda;
+import com.api.entity.Pedido;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface PedidoRepository extends JpaRepository<Venda, Long> {
-
+@Repository
+public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 }

@@ -39,7 +39,10 @@ public class ClienteService {
         cliente.setDataNascimento(clienteDTO.getDataNascimento());
         cliente.setDataCriacao(LocalDateTime.now().toString());
         cliente.setAtivo(true);
-        cliente.setPossuiContaApp(false);
+        if (clienteDTO.getPossuiConta()){
+            cliente.setPossuiContaApp(true);
+        }else {cliente.setPossuiContaApp(false);}
+
         cliente.setEndereco(clienteDTO.getEndereco() == null ? null : util.formatarEndereco(clienteDTO.getEndereco()));
 
 
