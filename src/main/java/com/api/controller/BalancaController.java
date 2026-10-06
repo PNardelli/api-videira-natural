@@ -42,11 +42,11 @@ public class BalancaController {
             } catch (NumberFormatException e) {
                 continue;
             }
-            String strPlu = String.format("%09d", codigoNumerico);
+            String strPlu = String.format("%07d", codigoNumerico);
 
             long precoCentavos = 0L;
             if (p.getPreco() != null) {
-                precoCentavos = p.getPreco().multiply(new java.math.BigDecimal("10000")).longValue();
+                precoCentavos = p.getPreco().multiply(new java.math.BigDecimal("100")).longValue();
             }
             String strPreco = String.format("%06d", precoCentavos);
 
