@@ -42,7 +42,7 @@ public class BalancaController {
             } catch (NumberFormatException e) {
                 continue;
             }
-            String strPlu = String.format("%07d", codigoNumerico);
+            String strPlu = String.format("%09d", codigoNumerico);
 
             long precoCentavos = 0L;
             if (p.getPreco() != null) {
