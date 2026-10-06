@@ -1,5 +1,6 @@
 package com.api.business;
 
+import com.api.dto.EstoqueItemDTO;
 import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.requests.ProdutoRequest;
 import com.api.entity.Fornecedor;
@@ -51,7 +52,7 @@ public class ProdutoFornecedorService {
         produtoFornecedor.setDataValidadeDias(produtoRequest.getDataValidadeDias().toString());
         produtoFornecedor.setPrecoVenda(produtoRequest.getPrecoVenda());
         produtoFornecedor.setPrecoCompra(produtoRequest.getPrecoCompra());
-        produtoFornecedor.setUnidade(produto.getUnidadeMedida().toString());
+        produtoFornecedor.setUnidadeMedida(produto.getUnidadeMedida().toString());
         produtoFornecedor.setDataEntrada(LocalDateTime.now());
         produtoFornecedor.setProdutoAtivo(true);
 
@@ -62,6 +63,10 @@ public class ProdutoFornecedorService {
          ProdutoFornecedor response = repositoryPF.findById(id).orElseThrow();
          return response;
     }
+
+    public List<EstoqueItemDTO> listarEstoqueCompletoOtimizado(){
+        return repositoryPF.listarEstoqueCompletoOTimizado();
+    };
 
     public ProdutoRequest recuperarProdutoGranel(String codigoBarra, Pageable pageable){
 

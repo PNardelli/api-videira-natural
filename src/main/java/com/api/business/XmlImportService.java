@@ -152,7 +152,7 @@ public class XmlImportService {
 
                 ProdutoFornecedor produtoFornecedorSalvo = produtoFornecedorService.cadastrarProdutoFornecedor(produtoSalvo, null,item.getFornecedorId());
 
-                movimentacaoEstoque.setUnidadeMedida(produtoFornecedorSalvo.getUnidade());
+                movimentacaoEstoque.setUnidadeMedida(produtoFornecedorSalvo.getUnidadeMedida());
                 movimentacaoEstoque.setDataValidade(produtoFornecedorSalvo.getDataValidade());
                 movimentacaoEstoque.setPrecoVenda(produtoFornecedorSalvo.getPrecoVenda());
                 movimentacaoEstoque.setPrecoCompra(produtoFornecedorSalvo.getPrecoCompra());

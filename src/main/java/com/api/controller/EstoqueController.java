@@ -2,11 +2,14 @@ package com.api.controller;
 
 import com.api.business.EstoqueService;
 import com.api.business.ProdutoFornecedorService;
+import com.api.dto.EstoqueItemDTO;
 import com.api.dto.MovimentacaoDTO;
 import com.api.entity.ProdutoFornecedor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/estoque")
@@ -42,4 +45,12 @@ public class EstoqueController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/listar-otimizado")
+    public ResponseEntity<List<EstoqueItemDTO>> listarEstoqueOtimizado() {
+        List<EstoqueItemDTO> lista = pfService.listarEstoqueCompletoOtimizado();
+        return ResponseEntity.ok(lista);
+    }
+
+
 }

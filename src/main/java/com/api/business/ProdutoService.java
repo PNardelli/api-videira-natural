@@ -151,10 +151,17 @@ public class ProdutoService {
 
             if (p.getCodigoProduto() == null){
                 dto.setCodigoProduto(p.getCodigoBarras());
-            }else{
+            } else {
                 dto.setCodigoProduto(p.getCodigoProduto());
             }
-            dto.setQuantidade(produtoFornecedor.get(0).getQuantidade());
+
+            // CORREÇÃO: Verifica se a lista tem itens para evitar IndexOutOfBoundsException
+            if (produtoFornecedor != null && !produtoFornecedor.isEmpty()) {
+                dto.setQuantidade(produtoFornecedor.get(0).getQuantidade());
+            } else {
+                dto.setQuantidade(java.math.BigDecimal.ZERO); // Ou outro valor padrão
+            }
+
             dto.setProdutoId(p.getId());
             dto.setNome(p.getNome());
             dto.setUnidade(String.valueOf(p.getUnidadeMedida()));

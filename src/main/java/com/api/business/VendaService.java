@@ -1,12 +1,9 @@
 package com.api.business;
 
-import com.api.dto.ItemVendaDTO;
-import com.api.dto.PagamentoDTO;
 import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.VendaDTO;
 import com.api.dto.requests.ItemCarrinhoRequest;
 import com.api.dto.requests.ProdutoRequest;
-import com.api.eNum.FormaPagamento;
 import com.api.entity.*;
 import com.api.repository.ClienteRepository;
 import com.api.repository.ProdutoFornecedorRepository;
@@ -15,16 +12,11 @@ import com.api.repository.VendaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class VendaService {
@@ -100,7 +92,7 @@ public class VendaService {
             itemParaAdicionar.setProdutoId(produtoFornecedor.getProduto().getId());
             itemParaAdicionar.setNome(produtoFornecedor.getProduto().getNome());
             itemParaAdicionar.setPreco(produtoFornecedor.getPrecoVenda());
-            itemParaAdicionar.setUnidade(produtoFornecedor.getUnidade().substring(0, 2));
+            itemParaAdicionar.setUnidade(produtoFornecedor.getUnidadeMedida().substring(0, 2));
             itemParaAdicionar.setEstoque(produtoFornecedor.getQuantidade().toString());
 
             if (peso != null) {

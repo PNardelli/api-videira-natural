@@ -148,7 +148,7 @@ public class EstoqueService {
         novoProdutoFornecedor.setDataValidade(dto.getDataValidade());
         novoProdutoFornecedor.setPrecoCompra(dto.getPrecoCompra());
         novoProdutoFornecedor.setPrecoVenda(dto.getPrecoVenda());
-        novoProdutoFornecedor.setUnidade(dto.getUnidadeMedida());
+        novoProdutoFornecedor.setUnidadeMedida(dto.getUnidadeMedida());
         novoProdutoFornecedor.setProdutoAtivo(true);
 
         // 4. Persistência e Histórico

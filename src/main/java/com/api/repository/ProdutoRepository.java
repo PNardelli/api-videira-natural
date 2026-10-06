@@ -1,5 +1,7 @@
 package com.api.repository;
 
+import com.api.dto.BalancaProdutoDTO;
+import com.api.dto.EstoqueItemDTO;
 import com.api.entity.Produto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,4 +50,11 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long > {
             "WHERE codigo_produto ~ '^[0-9]+$'",
             nativeQuery = true)
     Integer encontrarMaiorCodigoNumerico();
+
+    @Query("SELECT NEW com.api.dto.BalancaProdutoDTO(p.codigoProduto, p.nome, MAX(f.dataValidade), p.precoVenda) " +
+            "FROM Produto p LEFT JOIN p.fornecedores f " +
+            "WHERE p.codigoProduto IS NOT NULL AND p.codigoProduto != '' " +
+            "GROUP BY p.codigoProduto, p.nome, p.precoVenda")
+    List<BalancaProdutoDTO> buscarDadosUnicosParaBalanca();
+
 }
