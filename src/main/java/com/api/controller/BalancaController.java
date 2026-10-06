@@ -4,6 +4,8 @@ import com.api.dto.BalancaProdutoDTO;
 import com.api.repository.ProdutoFornecedorRepository;
 import com.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,7 +61,7 @@ public class BalancaController {
             String nomeBruto = p.getNome() != null ? p.getNome() : "PRODUTO";
             String nomeFormatado = String.format("%-30.30s", nomeBruto.toUpperCase());
 
-            // Linha formatada
+            // Linha formatada com codificação e padrão MGV
             String linha = "02" + strPlu + strPreco + validade + nomeFormatado
                     + "0000000000000000110000000000000000000000000000000000000000000000000000000000000000\r\n";
 
@@ -67,13 +69,13 @@ public class BalancaController {
         }
 
         try {
-            // Converte o conteúdo para bytes utilizando ISO-8859-1 (mantém os acentos corretos como Grão e Moída)
+            // Converte para bytes utilizando ISO-8859-1 para preservar acentos (ex: Grão, Moída)
             byte[] bytesArquivo = arquivoBuilder.toString().getBytes(StandardCharsets.ISO_8859_1);
 
-            // Retorna o ficheiro diretamente como download para o navegador com os dados dos produtos
+            // Retorna o ficheiro diretamente para download no browser
             return ResponseEntity.ok()
-                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ITENSMGV.TXT")
-                    .contentType(org.springframework.http.MediaType.parseMediaType("text/plain; charset=ISO-8859-1"))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ITENSMGV.TXT")
+                    .contentType(MediaType.parseMediaType("text/plain; charset=ISO-8859-1"))
                     .body(bytesArquivo);
 
         } catch (Exception e) {
