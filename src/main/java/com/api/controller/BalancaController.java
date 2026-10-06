@@ -9,16 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/balanca")
@@ -31,7 +23,7 @@ public class BalancaController {
     private ProdutoFornecedorRepository pfRepository;
 
     @GetMapping("/exportar")
-    public ResponseEntity<Map<String, Object>> exportarCargaBalanca() {
+    public ResponseEntity<byte[]> exportarCargaBalanca() {
         List<BalancaProdutoDTO> produtosBalanca = produtoRepository.buscarDadosUnicosParaBalanca();
         StringBuilder arquivoBuilder = new StringBuilder();
 
@@ -74,31 +66,19 @@ public class BalancaController {
             arquivoBuilder.append(linha);
         }
 
-        // Caminho fixo na máquina onde o backend está rodando
-        String caminhoDiretorio = "C:\\sistemavideira\\balanca\\";
-        Path caminhoCompleto = Paths.get(caminhoDiretorio, "ITENSMGV.TXT");
-
         try {
-            // Garante que a pasta existe
-            Files.createDirectories(caminhoCompleto.getParent());
+            // Converte o conteúdo para bytes utilizando ISO-8859-1 (mantém os acentos corretos como Grão e Moída)
+            byte[] bytesArquivo = arquivoBuilder.toString().getBytes(StandardCharsets.ISO_8859_1);
 
-            // GRAVAÇÃO FORÇADA EM ISO-8859-1 (Resolve 100% o problema dos acentos como Grão e Moída)
-            try (BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(caminhoCompleto.toFile()), StandardCharsets.ISO_8859_1))) {
-                writer.write(arquivoBuilder.toString());
-            }
+            // Retorna o ficheiro diretamente como download para o navegador com os dados dos produtos
+            return ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ITENSMGV.TXT")
+                    .contentType(org.springframework.http.MediaType.parseMediaType("text/plain; charset=ISO-8859-1"))
+                    .body(bytesArquivo);
 
-            // Retorna estritamente um JSON para o front-end exibir apenas o alerta
-            return ResponseEntity.ok(Map.of(
-                    "sucesso", true,
-                    "mensagem", "Carga exportada e salva com sucesso na pasta da balança!"
-            ));
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of(
-                    "sucesso", false,
-                    "mensagem", "Erro ao salvar arquivo no diretório: " + e.getMessage()
-            ));
+            return ResponseEntity.status(500).body(null);
         }
     }
 }
