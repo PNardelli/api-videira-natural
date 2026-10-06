@@ -51,7 +51,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long > {
             nativeQuery = true)
     Integer encontrarMaiorCodigoNumerico();
 
-    @Query("SELECT NEW com.api.dto.BalancaProdutoDTO(p.codigoProduto, p.nome, MAX(f.dataValidade), p.precoVenda) " +
+    @Query("SELECT NEW com.api.dto.BalancaProdutoDTO(p.codigoProduto, p.nome, MAX(f.dataValidade), p.precoVenda, MAX(f.dataValidadeDias)) " +
             "FROM Produto p LEFT JOIN p.fornecedores f " +
             "WHERE p.codigoProduto IS NOT NULL AND p.codigoProduto != '' " +
             "GROUP BY p.codigoProduto, p.nome, p.precoVenda")

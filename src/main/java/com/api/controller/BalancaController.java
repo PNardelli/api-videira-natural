@@ -53,7 +53,7 @@ public class BalancaController {
             int diasValidadeInt = 0;
             if (p.getDataValidade() != null) {
                 try {
-                    diasValidadeInt = Integer.parseInt(String.valueOf(p.getDataValidade()));
+                    diasValidadeInt = Integer.parseInt(String.valueOf(p.getDataValidadeDias()));
                 } catch (NumberFormatException ignored) {}
             }
             String validade = String.format("%03d", diasValidadeInt);
