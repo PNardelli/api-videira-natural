@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -146,6 +148,7 @@ public class EstoqueService {
         novoProdutoFornecedor.setQuantidade(dto.getQuantidade());
         novoProdutoFornecedor.setDataEntrada(LocalDateTime.now());
         novoProdutoFornecedor.setDataValidade(dto.getDataValidade());
+        novoProdutoFornecedor.setDataValidadeDias(obterDiasRestantes(dto.getDataValidade()));
         novoProdutoFornecedor.setPrecoCompra(dto.getPrecoCompra());
         novoProdutoFornecedor.setPrecoVenda(dto.getPrecoVenda());
         novoProdutoFornecedor.setUnidadeMedida(dto.getUnidadeMedida());
@@ -295,6 +298,19 @@ public class EstoqueService {
                     }
                 }
             }
+    }
+
+    private String obterDiasRestantes(LocalDate dataValidade) {
+        if (dataValidade == null) {
+            return "120"; // Evita NullPointerException se a data estiver vazia
+        }
+
+        LocalDate hoje = LocalDate.now(); // 2026-10-06
+
+        // Calcula a diferença exata em dias
+        String converter = String.valueOf(ChronoUnit.DAYS.between(hoje, dataValidade));
+
+        return converter;
     }
 
 
