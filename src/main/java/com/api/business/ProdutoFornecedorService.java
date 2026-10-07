@@ -87,9 +87,10 @@ public class ProdutoFornecedorService {
                 3,
                 RoundingMode.HALF_UP
         );
+        produtoRequest.setPesoComprado(pesoComprado);
         produtoRequest.setProdutoId(produtoUnico.get(0).getProdutoId());
         produtoRequest.setCodigoProdutoCodigoBarras(produtoUnico.get(0).getCodigoProduto());
-        produtoRequest.setEstoque(pesoComprado);
+        produtoRequest.setEstoque(produtoUnico.get(0).getQuantidade());
         produtoRequest.setPrecoVenda(produtoUnico.get(0).getPrecoVenda());
         produtoRequest.setNome(produtoUnico.get(0).getNome());
         produtoRequest.setUnidadeMedida(UnidadeMedida.KG);

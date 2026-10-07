@@ -23,6 +23,7 @@ public class ProdutoRequest {
     private BigDecimal estoqueMinimo;
     private Long codigoFornecedorXml;
     private String observacao;
+    private BigDecimal pesoComprado;
 
 
 

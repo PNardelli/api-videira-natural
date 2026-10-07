@@ -4,13 +4,12 @@ import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.VendaDTO;
 import com.api.dto.requests.ItemCarrinhoRequest;
 import com.api.dto.requests.ProdutoRequest;
-import com.api.entity.*;
+import com.api.entity.Venda;
 import com.api.repository.ClienteRepository;
 import com.api.repository.ProdutoFornecedorRepository;
 import com.api.repository.ProdutoRepository;
 import com.api.repository.VendaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,10 +64,10 @@ public class VendaService {
             itemParaAdicionar.setNome(p.getNome());
             itemParaAdicionar.setPreco(p.getPrecoVenda());
             itemParaAdicionar.setUnidade(p.getUnidadeMedida().toString());
-            itemParaAdicionar.setEstoque(p.getEstoqueMinimo().toString()); // peso da etiqueta
-            itemParaAdicionar.setQuantidade(p.getEstoque());
+            itemParaAdicionar.setEstoque(p.getEstoque().toString()); // peso da etiqueta
+            itemParaAdicionar.setQuantidade(p.getPesoComprado());
 
-        }else if (termo != null && termo.length() >= 13 && termo.charAt(0) != '2'){
+        } else if (termo != null && termo.length() >= 13 && termo.charAt(0) != '2') {
             // CASO B: Produto Industrializado EAN.
             List<ProdutoFornecedorDTO> p = produtoService.buscarFlexivel(termo, pageable);
 
