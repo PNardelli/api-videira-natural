@@ -1,10 +1,16 @@
 package com.api.entity;
 
 import com.api.eNum.UnidadeMedida;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,38 +18,59 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Data
-@Table(name = "TB_PRODUTO")
+@Getter
+@Setter
+@Table(name = "tb_produto", indexes = {
+        @Index(name = "idx_produto_codigo_barras", columnList = "codigo_barras"),
+        @Index(name = "idx_produto_codigo_produto", columnList = "codigo_produto")
+})
 public class Produto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @Column(unique = true)
+    @Nullable
     private String codigoProduto;
 
+    @Column(unique = true)
     @Nullable
     private String codigoBarras;
 
+    @NotNull
     private String nome;
 
     @ManyToOne
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
-    private BigDecimal precoVenda;
-
-    @OneToMany(mappedBy = "produto")
-    private List<ProdutoFornecedor> fornecedores;
+    private String descricao;
 
     @Enumerated(EnumType.STRING)
     private UnidadeMedida unidadeMedida;
 
-    private LocalDate dataValidade;
+    @NotNull
+    private BigDecimal precoVenda;
 
-    private Boolean ativo = true;
-    private LocalDateTime dataCriacao;
+    private boolean ativo = true;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private LocalDate dataCriacao;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private LocalDate ultimaAtualizacao;
+
+    @Nullable
+    private String observacao;
+
+    @Nullable
+    private String codigoFornecedorXml;
+
+    @OneToMany(mappedBy = "produto", fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("produto")
+    private List<ProdutoFornecedor> fornecedores;
+
     private String imagemUrl;
 
 }

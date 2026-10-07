@@ -1,46 +1,42 @@
-//package com.api.controller;
-//
-//import com.api.business.PedidoService;
-//import com.api.dto.ItemPedidoRequest;
-//import com.api.entity.Pedido;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.web.bind.annotation.*;
-//
-//@RestController
-//@RequestMapping("/pedidos")
-//public class PedidoController {
-//
-//    @Autowired
-//    private PedidoService pedidoService;
-//
-//    @PostMapping
-//    public Pedido criar() {
-//        return pedidoService.criarPedido();
-//    }
-//
-//    @PostMapping("/{id}/itens")
-//    public void adicionarItem(@PathVariable Long id,
-//                              @RequestBody ItemPedidoRequest dto) {
-//
-//        pedidoService.adicionarItem(
-//                id,
-//                dto.getProdutoId(),
-//                dto.getQuantidade()
-//        );
-//    }
-//
-//    @DeleteMapping("/itens/{itemId}")
-//    public void removerItem(@PathVariable Long itemId) {
-//        pedidoService.removerItem(itemId);
-//    }
-//
-//    @PutMapping("/{id}/finalizar")
-//    public void finalizar(@PathVariable Long id) {
-//        pedidoService.finalizarPedido(id);
-//    }
-//
-//    @PutMapping("/{id}/cancelar")
-//    public void cancelar(@PathVariable Long id) {
-//        pedidoService.cancelarPedido(id);
-//    }
-//}
+package com.api.controller;
+
+import com.api.eNum.StatusPedido;
+import com.api.entity.Pedido;
+import com.api.repository.PedidoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/pedidos")
+@CrossOrigin(origins = "*")
+public class PedidoController {
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
+
+    @GetMapping
+    public List<Pedido> listarPedidos() {
+        return pedidoRepository.findAll();
+    }
+
+    @PostMapping
+    public ResponseEntity<Pedido> criarPedido(@RequestBody Pedido pedido) {
+        if (pedido.getEtapa() == null) {
+            pedido.setEtapa(StatusPedido.CRIADO);
+        }
+        Pedido novoPedido = pedidoRepository.save(pedido);
+        return ResponseEntity.ok(novoPedido);
+    }
+
+    @PutMapping("/{id}/etapa")
+    public ResponseEntity<Pedido> atualizarEtapa(@PathVariable Long id, @RequestParam StatusPedido etapa) {
+        return pedidoRepository.findById(id).map(pedido -> {
+            pedido.setEtapa(etapa);
+            Pedido atualizado = pedidoRepository.save(pedido);
+            return ResponseEntity.ok(atualizado);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+}

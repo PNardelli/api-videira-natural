@@ -1,9 +1,17 @@
 package com.api.controller;
 
-import com.api.dto.ProdutoRequest;
+import com.api.business.ProdutoFornecedorService;
+import com.api.dto.ProdutoFornecedorDTO;
+import com.api.dto.requests.ProdutoRequest;
 import com.api.entity.Produto;
 import com.api.business.ProdutoService;
+import com.api.entity.ProdutoFornecedor;
+import com.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,14 +24,31 @@ public class ProdutoController {
     @Autowired
     private ProdutoService produtoService;
 
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    @Autowired
+    private ProdutoFornecedorService servicePF;
+
     @PostMapping("/cadastrar")
     public Produto salvar(@RequestBody ProdutoRequest produtoRequest){
-        return produtoService.salvar(produtoRequest);
+        Produto responseProduto = produtoService.salvar(produtoRequest);
+        ProdutoFornecedor produtoFornecedor = servicePF.cadastrarProdutoFornecedor(responseProduto, produtoRequest, produtoRequest.getFornecedorId());
+
+        return responseProduto;
     }
 
-    @GetMapping("/listar-produtos")
-    public List<Produto> listar(){
-        return produtoService.listar();
+    @GetMapping("/listar")
+    public Page<Produto> listar(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "200") int size,
+            @RequestParam(required = false) String termo,
+            @RequestParam(required = false) Long categoriaId) { // Sem vírgula aqui e parêntese fechado corretamente
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Repasse o categoriaId para o service para o filtro funcionar no banco
+        return produtoService.listarOuBuscar(termo, categoriaId, pageable);
     }
 
     @GetMapping("/{id}")
@@ -31,9 +56,41 @@ public class ProdutoController {
         return produtoService.buscar(id);
     }
 
-    @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id){
-        produtoService.deletar(id);
+    @PutMapping("/{id}")
+    public Produto atualizar(@PathVariable Long id, @RequestBody ProdutoRequest produtoRequest){
+        Produto produto = produtoService.atualizarProduto(id, produtoRequest);
+        return produtoService.buscar(id);
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<List<Produto>> buscarProdutos(@RequestParam("termo") String termo) {
+        // Busca por código exato OU por parte do nome
+        List<Produto> produtos = produtoRepository.findByFlexivel(termo);
+        return ResponseEntity.ok(produtos);
+    }
+
+    @PutMapping("/ativar-inativar/{id}")
+    public ResponseEntity<Produto> ativarInativar(@PathVariable Long id){
+        return ResponseEntity.ok(produtoService.ativarInativar(id));
+    }
+
+    @GetMapping("/estoque/geral")
+    public ResponseEntity<List<Produto>> listarEstoqueGeral() {
+        // Retorna todos os produtos ou faz um fetch otimizado para o estoque
+        List<Produto> produtos = produtoRepository.findAll(); // ou produtoRepository.findAll()
+        return ResponseEntity.ok(produtos);
+    }
+
+    @GetMapping("/estoque/critico-estoque")
+    public ResponseEntity<List<ProdutoFornecedor>> listarEstoqueCritico() {
+        return ResponseEntity.ok(produtoService.listarEstoqueCriticoOtimizado());
+    }
+
+    @GetMapping("/proximo-codigo")
+    public ResponseEntity<Integer> obterProximoCodigo() {
+        Integer proximo = produtoRepository.encontrarMaiorCodigoNumerico();
+        int codigoFinal = (proximo != null) ? proximo : 1;
+        return ResponseEntity.ok(codigoFinal);
     }
 
 }

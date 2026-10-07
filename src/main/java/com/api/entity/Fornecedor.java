@@ -1,12 +1,22 @@
 package com.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @Entity
-@Data
+@Getter
+@Setter
+@Table(
+        name = "tb_fornecedor",
+        indexes = {
+                @Index(name = "idx_fornecedor_nome", columnList = "nome")
+        }
+)
 public class Fornecedor {
 
     @Id
@@ -14,10 +24,14 @@ public class Fornecedor {
     private Long id;
 
     private String nome;
-    private String cfpCnpj;
+
+    @Nullable
     private String whatsapp;
 
-    @OneToMany(mappedBy = "fornecedor")
-    private List<ProdutoFornecedor> produtos;
+    @Column(name = "cfp_cnpj")
+    @JsonProperty("cpfCnpj")
+    @Nullable
+    private String cpfCnpj;
 
+    private LocalDate dataCadastro;
 }

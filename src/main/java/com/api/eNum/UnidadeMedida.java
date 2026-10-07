@@ -4,7 +4,8 @@ public enum UnidadeMedida {
 
     KG,
     UNIDADE,
-    GRAMA,
-    LITRO
+    GRAMAS,
+    LITRO,
+    CAIXA
 }
 

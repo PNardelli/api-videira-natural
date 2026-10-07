@@ -1,47 +1,28 @@
 package com.api.entity;
 
-import com.api.eNum.FormaPagamento;
 import com.api.eNum.StatusPedido;
-import com.api.eNum.TipoEntrega;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Data
 @Entity
-@Table(name = "TB_PEDIDO")
+@Table(name = "tb_pedidos")
+@Data
 public class Pedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime data;
+    private String cliente;
+    private String whatsapp;
 
-    private BigDecimal valorTotal;
-
-    private BigDecimal desconto;
-
-    private BigDecimal acrescimo;
+    @Column(columnDefinition = "TEXT")
+    private String produto;
 
     @Enumerated(EnumType.STRING)
-    private FormaPagamento formaPagamento;
+    private StatusPedido etapa = StatusPedido.CRIADO; // Inicia como CRIADO
 
-    @Enumerated(EnumType.STRING)
-    private StatusPedido status;
-
-    @Enumerated(EnumType.STRING)
-    private TipoEntrega tipoEntrega;
-
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
-    private List<ItemPedido> itens;
-
-    @ManyToOne
-    @JoinColumn(name = "cliente_id")
-    private Cliente cliente;
-
+    private LocalDateTime dataHora = LocalDateTime.now();
 }

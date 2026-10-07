@@ -2,12 +2,15 @@ package com.api.controller;
 
 import com.api.business.ClienteService;
 import com.api.dto.ClienteDTO;
+import com.api.dto.ClientePdvDTO;
 import com.api.entity.Cliente;
+import com.api.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -16,19 +19,55 @@ import java.util.List;
 public class ClienteController {
 
     @Autowired
+    ClienteRepository clienteRepository;
+
+    @Autowired
     ClienteService clienteService;
 
     // Criar cliente
     @PostMapping
-    public ResponseEntity<Cliente> criar(@RequestBody Cliente cliente) {
-        Cliente salvo = clienteService.salvarCliente(cliente);
+    public ResponseEntity<Cliente> criar(@RequestBody ClienteDTO clienteDTO) {
+        Cliente salvo = clienteService.salvarCliente(clienteDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
+    @PostMapping("/rapido")
+    public ResponseEntity<Cliente> cadastrarRapido(@RequestBody ClienteDTO dto) {
+        if (dto.getNome() == null || dto.getNome().isBlank()) {
+            throw new RuntimeException("O nome do cliente é obrigatório!");
+        }
+
+        if (dto.getWhatsapp() != null && !dto.getWhatsapp().isBlank()) {
+            if (clienteRepository.existsByWhatsapp(dto.getWhatsapp())) {
+                throw new RuntimeException("CLIENTE JÁ CADASTRADO COM ESTE WHATSAPP!");
+            }
+        }
+
+        Cliente cliente = new Cliente();
+        cliente.setNome(dto.getNome().toUpperCase());
+        cliente.setWhatsapp(dto.getWhatsapp());
+        cliente.setAtivo(true);
+        cliente.setPossuiContaApp(false);
+        cliente.setDataCriacao(LocalDate.now().toString());
+
+        Cliente salvo = clienteRepository.save(cliente);
+        return ResponseEntity.ok(salvo);
+    }
+
     // Listar todos
-    @GetMapping
-    public ResponseEntity<List<Cliente>> listar() {
-        return ResponseEntity.ok(clienteService.listarTodos());
+    @GetMapping("/buscar")
+    public List<Cliente> buscar(@RequestParam(required = false) String termo) {
+        // 👉 SEM termo = comportamento atual (Gestão)
+        if (termo == null || termo.isBlank()) {
+            return clienteService.listarTodos();
+        }
+        // 👉 COM termo = busca otimizada (PDV)
+        return clienteService.buscarPorNomeOuWhatsapp(termo);
+    }
+
+    @GetMapping("/pdv")
+    public List<ClientePdvDTO> buscarPdv(@RequestParam String termo) {
+        return clienteService.buscarClientesPdv(termo);
     }
 
     // Buscar por ID
@@ -51,6 +90,13 @@ public class ClienteController {
     public ResponseEntity<Void> alterarStatus(@PathVariable Long id) {
         clienteService.alterarStatus(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/cadastrarBot")
+    public ResponseEntity<Cliente> criarViaVideiraBot(@RequestBody ClienteDTO clienteDTO) {
+        clienteDTO.setPossuiConta(true);
+        Cliente salvo = clienteService.salvarCliente(clienteDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
     // Deletar
