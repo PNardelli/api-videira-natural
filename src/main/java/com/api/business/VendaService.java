@@ -59,14 +59,15 @@ public class VendaService {
 
         // CASO A: BALANÇA (etiqueta)
         if (termo != null && termo.length() == 13 && termo.startsWith("2")) {
-
             ProdutoRequest p = produtoFornecedorService.recuperarProdutoGranel(termo, pageable);
 
             itemParaAdicionar.setProdutoId(p.getProdutoId());
             itemParaAdicionar.setNome(p.getNome());
             itemParaAdicionar.setPreco(p.getPrecoVenda());
-            itemParaAdicionar.setUnidade("KG");
-            itemParaAdicionar.setQuantidade(p.getEstoque()); // peso da etiqueta
+            itemParaAdicionar.setUnidade(p.getUnidadeMedida().toString());
+            itemParaAdicionar.setEstoque(p.getEstoqueMinimo().toString()); // peso da etiqueta
+            itemParaAdicionar.setQuantidade(p.getEstoque());
+
         }else if (termo != null && termo.length() >= 13 && termo.charAt(0) != '2'){
             // CASO B: Produto Industrializado EAN.
             List<ProdutoFornecedorDTO> p = produtoService.buscarFlexivel(termo, pageable);
@@ -74,7 +75,7 @@ public class VendaService {
             itemParaAdicionar.setProdutoId(p.get(0).getProdutoId());
             itemParaAdicionar.setNome(p.get(0).getNome());
             itemParaAdicionar.setPreco(p.get(0).getPrecoVenda());
-            itemParaAdicionar.setUnidade(p.get(0).getUnidade());
+            itemParaAdicionar.setUnidade(p.get(0).getUnidadeMedida());
             itemParaAdicionar.setQuantidade(BigDecimal.ONE);
 
             BigDecimal estoqueConvertidoParaUnidade = p.get(0).getQuantidade();
@@ -84,21 +85,20 @@ public class VendaService {
 
         // CASO C: FRONT (botão capturar peso ou sugestão)
         else {
-            ProdutoFornecedor produtoFornecedor = produtoFornecedorRepository.getProdutoFornecedorList(codProduto, PageRequest.of(0, 3))
-                    .get(0);
+            List<ProdutoFornecedorDTO> produtoFornecedor = produtoFornecedorRepository.buscarGranelPorCodigoLoja(termo);
 
             if (produtoFornecedor == null) return carrinho;
 
-            itemParaAdicionar.setProdutoId(produtoFornecedor.getProduto().getId());
-            itemParaAdicionar.setNome(produtoFornecedor.getProduto().getNome());
-            itemParaAdicionar.setPreco(produtoFornecedor.getPrecoVenda());
-            itemParaAdicionar.setUnidade(produtoFornecedor.getUnidadeMedida().substring(0, 2));
-            itemParaAdicionar.setEstoque(produtoFornecedor.getQuantidade().toString());
+            itemParaAdicionar.setProdutoId(produtoFornecedor.get(0).getProdutoId());
+            itemParaAdicionar.setNome(produtoFornecedor.get(0).getNome());
+            itemParaAdicionar.setPreco(produtoFornecedor.get(0).getPrecoVenda());
+            itemParaAdicionar.setUnidade(produtoFornecedor.get(0).getUnidadeMedida());
+            itemParaAdicionar.setEstoque(produtoFornecedor.get(0).getEstoqueMinimo().toString()); // peso da etiqueta
 
             if (peso != null) {
                 itemParaAdicionar.setQuantidade(BigDecimal.valueOf(peso));
             } else {
-                itemParaAdicionar.setQuantidade(BigDecimal.ONE);
+                itemParaAdicionar.setQuantidade(produtoFornecedor.get(0).getEstoqueMinimo());
             }
         }
 

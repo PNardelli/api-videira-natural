@@ -1,6 +1,7 @@
 package com.api.repository;
 
 import com.api.dto.AlertaEstoqueDTO;
+import com.api.dto.BalancaProdutoDTO;
 import com.api.dto.EstoqueItemDTO;
 import com.api.dto.ProdutoFornecedorDTO;
 import com.api.entity.Fornecedor;
@@ -13,7 +14,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,6 +68,27 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
             "pf.precoCompra, pf.precoVenda, pf.dataValidade) " +
             "FROM ProdutoFornecedor pf JOIN pf.produto p LEFT JOIN pf.fornecedor f")
     List<EstoqueItemDTO> listarEstoqueCompletoOTimizado();
+
+
+    @Query("""
+                SELECT new com.api.dto.ProdutoFornecedorDTO(
+                    p.codigoProduto,
+                    p.nome,
+                    pf.produto.id,
+                    pf.quantidade,
+                    pf.dataValidade,
+                    pf.precoVenda,
+                    pf.estoqueMinimo,
+                    pf.unidadeMedida
+                )
+                FROM ProdutoFornecedor pf
+                INNER JOIN pf.produto p
+                WHERE p.codigoProduto = :codigoProduto
+                ORDER BY pf.dataValidade ASC
+            """)
+    List<ProdutoFornecedorDTO> buscarGranelPorCodigoLoja(
+            @Param("codigoProduto") String codigoProduto
+    );
 
 }
 

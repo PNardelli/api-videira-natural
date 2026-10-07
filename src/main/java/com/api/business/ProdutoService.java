@@ -164,7 +164,7 @@ public class ProdutoService {
 
             dto.setProdutoId(p.getId());
             dto.setNome(p.getNome());
-            dto.setUnidade(String.valueOf(p.getUnidadeMedida()));
+            dto.setUnidadeMedida(String.valueOf(p.getUnidadeMedida()));
             dto.setPrecoVenda(p.getPrecoVenda());
             return dto;
         }).collect(Collectors.toList());

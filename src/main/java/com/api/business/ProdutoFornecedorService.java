@@ -3,13 +3,13 @@ package com.api.business;
 import com.api.dto.EstoqueItemDTO;
 import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.requests.ProdutoRequest;
+import com.api.eNum.UnidadeMedida;
 import com.api.entity.Fornecedor;
 import com.api.entity.Produto;
 import com.api.entity.ProdutoFornecedor;
 import com.api.repository.FornecedorRepository;
 import com.api.repository.ProdutoFornecedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -71,7 +71,7 @@ public class ProdutoFornecedorService {
     public ProdutoRequest recuperarProdutoGranel(String codigoBarra, Pageable pageable){
 
         //Recupera em String, converte para numero para remover os 0 a esqueda e reconverte em String.
-        String produtoNoCodigoBarra = codigoBarra.substring(1,5);
+        String produtoNoCodigoBarra = codigoBarra.substring(1,6);
         Long idOuCodigoProduto = Long.parseLong(produtoNoCodigoBarra);
 
 
@@ -79,22 +79,21 @@ public class ProdutoFornecedorService {
 
         ProdutoRequest produtoRequest = new ProdutoRequest();
 
-        List<ProdutoFornecedorDTO> produto = produtoService.buscarFlexivel(idOuCodigoProduto.toString(), pageable);
-
-        List<ProdutoFornecedor> produtoFornecedorList = repositoryPF.getProdutoFornecedorList(produto.get(0).getProdutoId(), PageRequest.of(0,1));
+        List<ProdutoFornecedorDTO> produtoUnico = repositoryPF.buscarGranelPorCodigoLoja(idOuCodigoProduto.toString());
 
         BigDecimal valorConvertido = new BigDecimal(valorNoCodigoBarra).movePointLeft(2);
         BigDecimal pesoComprado = valorConvertido.divide(
-                produtoFornecedorList.get(0).getPrecoVenda(),
+                produtoUnico.get(0).getPrecoVenda(),
                 3,
                 RoundingMode.HALF_UP
         );
-        produtoRequest.setProdutoId(produtoFornecedorList.get(0).getProduto().getId());
-        produtoRequest.setCodigoProdutoCodigoBarras(produtoFornecedorList.get(0).getProduto().getCodigoProduto());
+        produtoRequest.setProdutoId(produtoUnico.get(0).getProdutoId());
+        produtoRequest.setCodigoProdutoCodigoBarras(produtoUnico.get(0).getCodigoProduto());
         produtoRequest.setEstoque(pesoComprado);
-        produtoRequest.setPrecoVenda(produtoFornecedorList.get(0).getPrecoVenda());
-        produtoRequest.setNome(produtoFornecedorList.get(0).getProduto().getNome());
-        produtoRequest.setUnidadeMedida(produtoFornecedorList.get(0).getProduto().getUnidadeMedida());
+        produtoRequest.setPrecoVenda(produtoUnico.get(0).getPrecoVenda());
+        produtoRequest.setNome(produtoUnico.get(0).getNome());
+        produtoRequest.setUnidadeMedida(UnidadeMedida.KG);
+        produtoRequest.setEstoqueMinimo(produtoUnico.get(0).getEstoqueMinimo());
 
         return produtoRequest;
     }

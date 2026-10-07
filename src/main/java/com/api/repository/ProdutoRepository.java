@@ -34,7 +34,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long > {
     Page<Produto> findAll(Pageable pageable);
 
     @Query("SELECT p FROM Produto p WHERE " +
-            "STR(p.id) = :termo OR " +
+            "CAST(p.id AS string) = :termo OR " +
             "p.codigoBarras = :termo OR " +
             "LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%'))")
     Page<Produto> findByFlexivelPaginado(@Param("termo") String termo, Pageable pageable);
