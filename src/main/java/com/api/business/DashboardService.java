@@ -26,7 +26,7 @@ public class DashboardService {
 
     public DashboardDTO buscarDadosDashboard() {
         DashboardDTO dto = new DashboardDTO();
-        LocalDateTime hoje = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS);
+        //LocalDateTime hoje = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS);
 
         // 1. Contagens Básicas
         dto.setTotalClientes(clienteRepository.count());

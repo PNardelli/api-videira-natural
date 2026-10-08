@@ -64,8 +64,8 @@ public class VendaService {
             itemParaAdicionar.setNome(p.getNome());
             itemParaAdicionar.setPreco(p.getPrecoVenda());
             itemParaAdicionar.setUnidade(p.getUnidadeMedida().toString());
-            itemParaAdicionar.setEstoque(p.getEstoque().toString()); // peso da etiqueta
-            itemParaAdicionar.setQuantidade(p.getPesoComprado());
+            itemParaAdicionar.setEstoque(p.getEstoque().toString());
+            itemParaAdicionar.setQuantidade(p.getPesoComprado()); // peso da etiqueta
 
         } else if (termo != null && termo.length() >= 13 && termo.charAt(0) != '2') {
             // CASO B: Produto Industrializado EAN.
@@ -92,12 +92,12 @@ public class VendaService {
             itemParaAdicionar.setNome(produtoFornecedor.get(0).getNome());
             itemParaAdicionar.setPreco(produtoFornecedor.get(0).getPrecoVenda());
             itemParaAdicionar.setUnidade(produtoFornecedor.get(0).getUnidadeMedida());
-            itemParaAdicionar.setEstoque(produtoFornecedor.get(0).getEstoqueMinimo().toString()); // peso da etiqueta
+            itemParaAdicionar.setEstoque(produtoFornecedor.get(0).getQuantidade().toString()); // peso da etiqueta
 
             if (peso != null) {
                 itemParaAdicionar.setQuantidade(BigDecimal.valueOf(peso));
             } else {
-                itemParaAdicionar.setQuantidade(produtoFornecedor.get(0).getEstoqueMinimo());
+                itemParaAdicionar.setQuantidade(BigDecimal.ONE.divide(BigDecimal.valueOf(10)));
             }
         }
 

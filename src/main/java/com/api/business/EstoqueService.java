@@ -92,9 +92,7 @@ public class EstoqueService {
 
         if (dto.getTipo() == AJUSTE) {
             produtoFornecedorExistente.setFornecedor(fornecedor);
-            if (dto.getQuantidade().compareTo(BigDecimal.ZERO) > 0) {
-                produtoFornecedorExistente.setQuantidade(dto.getQuantidade());
-            }
+            produtoFornecedorExistente.setQuantidade(dto.getQuantidade());
             if (dto.getDataValidade() != null) {
                 produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
             }
