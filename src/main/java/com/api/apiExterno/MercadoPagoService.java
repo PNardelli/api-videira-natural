@@ -121,9 +121,18 @@ public class MercadoPagoService {
                         "closed".equalsIgnoreCase(statusOrdem) ||
                         "approved".equalsIgnoreCase(statusOrdem);
 
+                boolean recusado = "rejected".equalsIgnoreCase(statusOrdem) ||
+                        "cancelled".equalsIgnoreCase(statusOrdem) ||
+                        "rejected".equalsIgnoreCase(statusDetail);
+
                 boolean creditado = "accredited".equalsIgnoreCase(statusDetail) || aprovado;
 
-                String statusMapeado = (aprovado && creditado) ? "approved" : "pending";
+                String statusMapeado = "pending";
+                if (aprovado) {
+                    statusMapeado = "approved";
+                } else if (recusado) {
+                    statusMapeado = "rejected";
+                }
 
                 return Map.of(
                         "status", statusMapeado,
