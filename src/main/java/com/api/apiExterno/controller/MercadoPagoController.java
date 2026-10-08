@@ -5,10 +5,7 @@ import com.api.apiExterno.PagamentoRequest;
 import com.api.dto.VendaMercadoPagoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -37,5 +34,12 @@ public class MercadoPagoController {
         }
         // Valor padrão caso venha vazio ou inesperado
         return "debit_card";
+    }
+
+    @GetMapping("/status-ordem/{externalReference}")
+    public ResponseEntity<?> verificarStatusOrdem(@PathVariable String externalReference) {
+        // O seu pointService pode buscar a ordem no Mercado Pago pelo external_reference
+        Map<String, Object> statusResponse = pointService.consultarStatusPorReferencia(externalReference);
+        return ResponseEntity.ok(statusResponse);
     }
 }

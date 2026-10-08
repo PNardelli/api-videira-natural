@@ -1,9 +1,6 @@
 package com.api.apiExterno;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -63,5 +60,49 @@ public class MercadoPagoService {
             // Tratar erro da API do MP
             return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getResponseBodyAsString()));
         }
+    }
+
+    public Map<String, Object> consultarStatusPorReferencia(String externalReference) {
+        String url = "https://api.mercadopago.com/v1/orders/search?external_reference=" + externalReference;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken); // Utilize a mesma variável do seu token de acesso
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map<String, Object> body = response.getBody();
+                List<Map<String, Object>> elements = (List<Map<String, Object>>) body.get("elements");
+
+                // Verifica se encontrou alguma ordem com essa referência
+                if (elements != null && !elements.isEmpty()) {
+                    Map<String, Object> ordem = elements.get(0);
+
+                    // O Mercado Pago retorna o status da ordem (ex: "closed" quando concluída/paga)
+                    // Vamos extrair o status e mapear para o front-end
+                    String statusOrdem = (String) ordem.get("status");
+
+                    // Se a ordem estiver fechada ("closed"), consideramos aprovada para o PDV
+                    String statusMapeado = "closed".equals(statusOrdem) ? "approved" : "pending";
+
+                    return Map.of(
+                            "status", statusMapeado,
+                            "raw_status", statusOrdem,
+                            "order_id", ordem.get("id")
+                    );
+                }
+            }
+        } catch (HttpClientErrorException e) {
+            System.err.println("Erro ao consultar status da ordem: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            System.err.println("Erro inesperado ao consultar status: " + e.getMessage());
+        }
+
+        // Retorna pendente caso ainda não tenha retornado sucesso ou não encontre
+        return Map.of("status", "pending");
     }
 }
