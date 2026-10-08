@@ -84,17 +84,23 @@ public class MercadoPagoService {
 
                     // O Mercado Pago retorna o status da ordem (ex: "closed" quando concluída/paga)
                     // Vamos extrair o status e mapear para o front-end
-                    String statusOrdem = (String) ordem.get("status");
+                    String statusOrdem = (String) ordem.get("status"); // Ex: "processed"
+                    String statusDetail = (String) ordem.get("status_detail"); // Ex: "accredited"
 
-                    // Se a ordem estiver fechada ("closed"), consideramos aprovada para o PDV
-                    String statusMapeado = "closed".equals(statusOrdem) ? "approved" : "pending";
+                    System.out.println("STATUS DA ORDEM: " + statusOrdem + " | DETALHE: " + statusDetail);
+
+                    // Consideramos aprovado se a ordem foi processada e o pagamento foi creditado/aprovado
+                    boolean aprovado = "processed".equalsIgnoreCase(statusOrdem) &&
+                            "accredited".equalsIgnoreCase(statusDetail);
+
+                    String statusMapeado = aprovado ? "approved" : "pending";
 
                     return Map.of(
                             "status", statusMapeado,
                             "raw_status", statusOrdem,
                             "order_id", ordem.get("id")
                     );
-                }
+            }
             }
         } catch (HttpClientErrorException e) {
             System.err.println("Erro ao consultar status da ordem: " + e.getResponseBodyAsString());
