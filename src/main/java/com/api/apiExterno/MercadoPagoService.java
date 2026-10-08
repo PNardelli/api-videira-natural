@@ -66,7 +66,7 @@ public class MercadoPagoService {
         String url = "https://api.mercadopago.com/v1/orders/search?external_reference=" + externalReference;
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken); // Utilize a mesma variável do seu token de acesso
+        headers.set("Authorization", "Bearer " + accessToken);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
         RestTemplate restTemplate = new RestTemplate();
@@ -78,29 +78,47 @@ public class MercadoPagoService {
                 Map<String, Object> body = response.getBody();
                 List<Map<String, Object>> elements = (List<Map<String, Object>>) body.get("elements");
 
-                // Verifica se encontrou alguma ordem com essa referência
                 if (elements != null && !elements.isEmpty()) {
                     Map<String, Object> ordem = elements.get(0);
 
-                    // O Mercado Pago retorna o status da ordem (ex: "closed" quando concluída/paga)
-                    // Vamos extrair o status e mapear para o front-end
-                    String statusOrdem = (String) ordem.get("status"); // Ex: "processed"
-                    String statusDetail = (String) ordem.get("status_detail"); // Ex: "accredited"
+                    // Tenta pegar o status direto da ordem ou da transação de pagamento
+                    String statusOrdem = (String) ordem.get("status");
+                    String statusDetail = (String) ordem.get("status_detail");
 
-                    System.out.println("STATUS DA ORDEM: " + statusOrdem + " | DETALHE: " + statusDetail);
+                    // Se não estiver na raiz, procura dentro de transactions.payments
+                    if (ordem.containsKey("transactions")) {
+                        Map<String, Object> transactions = (Map<String, Object>) ordem.get("transactions");
+                        if (transactions != null && transactions.containsKey("payments")) {
+                            List<Map<String, Object>> payments = (List<Map<String, Object>>) transactions.get("payments");
+                            if (payments != null && !payments.isEmpty()) {
+                                Map<String, Object> pagamento = payments.get(0);
+                                if (pagamento.get("status") != null) {
+                                    statusOrdem = (String) pagamento.get("status");
+                                }
+                                if (pagamento.get("status_detail") != null) {
+                                    statusDetail = (String) pagamento.get("status_detail");
+                                }
+                            }
+                        }
+                    }
 
-                    // Consideramos aprovado se a ordem foi processada e o pagamento foi creditado/aprovado
-                    boolean aprovado = "processed".equalsIgnoreCase(statusOrdem) &&
-                            "accredited".equalsIgnoreCase(statusDetail);
+                    System.out.println("STATUS MAPEADO DA ORDEM: " + statusOrdem + " | DETALHE: " + statusDetail);
 
-                    String statusMapeado = aprovado ? "approved" : "pending";
+                    // Verifica se foi aprovado/processado com sucesso
+                    boolean aprovado = "processed".equalsIgnoreCase(statusOrdem) ||
+                            "closed".equalsIgnoreCase(statusOrdem) ||
+                            "approved".equalsIgnoreCase(statusOrdem);
+
+                    boolean creditado = "accredited".equalsIgnoreCase(statusDetail) || aprovado;
+
+                    String statusMapeado = (aprovado && creditado) ? "approved" : "pending";
 
                     return Map.of(
                             "status", statusMapeado,
-                            "raw_status", statusOrdem,
+                            "raw_status", statusOrdem != null ? statusOrdem : "unknown",
                             "order_id", ordem.get("id")
                     );
-            }
+                }
             }
         } catch (HttpClientErrorException e) {
             System.err.println("Erro ao consultar status da ordem: " + e.getResponseBodyAsString());
@@ -108,7 +126,6 @@ public class MercadoPagoService {
             System.err.println("Erro inesperado ao consultar status: " + e.getMessage());
         }
 
-        // Retorna pendente caso ainda não tenha retornado sucesso ou não encontre
         return Map.of("status", "pending");
     }
 }
