@@ -36,10 +36,10 @@ public class MercadoPagoController {
         return "debit_card";
     }
 
-    @GetMapping("/status-ordem/{externalReference}")
-    public ResponseEntity<?> verificarStatusOrdem(@PathVariable String externalReference) {
+    @GetMapping("/status-ordem/{orderID}")
+    public ResponseEntity<?> verificarStatusOrdem(@PathVariable String orderID) {
         // O seu pointService pode buscar a ordem no Mercado Pago pelo external_reference
-        Map<String, Object> statusResponse = pointService.consultarStatusPorReferencia(externalReference);
+        Map<String, Object> statusResponse = pointService.consultarStatusPorReferencia(orderID);
         return ResponseEntity.ok(statusResponse);
     }
 }
