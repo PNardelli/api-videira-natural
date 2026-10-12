@@ -31,4 +31,13 @@ public interface VendaRepository  extends JpaRepository<Venda, Long> {
     // Consulta com termo e período
     @Query("SELECT v FROM Venda v LEFT JOIN v.cliente c WHERE (str(v.id) LIKE %:termo% OR LOWER(c.nome) LIKE LOWER(CONCAT('%', :termo, '%'))) AND v.dataVenda BETWEEN :inicio AND :fim ORDER BY v.dataVenda DESC")
     List<Venda> findByTermoOrDataVendaBetween(@Param("termo") String termo, @Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+
+    @Query("SELECT v FROM Venda v WHERE v.dataVenda BETWEEN :inicio AND :fim ORDER BY v.dataVenda DESC")
+    List<Venda> findByDataVendaBetween(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+
+    @Query("SELECT SUM(v.total) FROM Venda v WHERE v.dataVenda BETWEEN :inicio AND :fim")
+    BigDecimal somarFaturamentoPorPeriodo(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+
+    @Query("SELECT COUNT(v) FROM Venda v WHERE v.dataVenda BETWEEN :inicio AND :fim")
+    Long contarVendasPorPeriodo(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
 }
