@@ -259,6 +259,7 @@ public class EstoqueService {
         mov.setUnidadeMedida(dto.getUnidadeMedida());
         mov.setData(LocalDateTime.now());
         mov.setDataValidade(dto.getDataValidade());
+        mov.setObservacao(dto.getObservacao());
 
         if (fornecedor != null) {
             mov.setFornecedor(fornecedor);
