@@ -77,8 +77,9 @@ public class VendaService {
             itemParaAdicionar.setUnidade(p.get(0).getUnidadeMedida());
             itemParaAdicionar.setQuantidade(BigDecimal.ONE);
 
-            BigDecimal estoqueConvertidoParaUnidade = p.get(0).getQuantidade();
-            itemParaAdicionar.setEstoque(estoqueConvertidoParaUnidade.stripTrailingZeros().toString());
+            Integer estoqueConvertidoParaUnidade = p.get(0).getQuantidade().intValue();
+            String unidadeConvertida = estoqueConvertidoParaUnidade.toString();
+            itemParaAdicionar.setEstoque(unidadeConvertida);
         }
 
 

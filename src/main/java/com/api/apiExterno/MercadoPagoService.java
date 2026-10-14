@@ -1,15 +1,14 @@
 package com.api.apiExterno;
 
+import com.api.dto.requests.ItemCarrinhoRequest;
+import com.api.entity.Pedido;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class MercadoPagoService {
@@ -149,4 +148,182 @@ public class MercadoPagoService {
 
         return Map.of("status", "pending");
     }
+
+    /**
+     * Gera a preferência de pagamento online e retorna o link (init_point) real
+     */
+
+
+    public String criarPreferenciaCheckout(
+            Pedido pedido,
+            List<ItemCarrinhoRequest> itens) {
+
+        String url = "https://api.mercadopago.com/checkout/preferences";
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(accessToken);
+
+            List<Map<String, Object>> itemsList = new ArrayList<>();
+
+            // 1. Adiciona cada produto individualmente
+            if (itens != null) {
+                for (ItemCarrinhoRequest item : itens) {
+
+                    if (item == null) {
+                        continue;
+                    }
+
+                    BigDecimal quantidade = item.getQuantidade() != null
+                            ? item.getQuantidade()
+                            : BigDecimal.ONE;
+
+                    BigDecimal preco = item.getPreco() != null
+                            ? item.getPreco()
+                            : BigDecimal.ZERO;
+
+                    if (quantidade.compareTo(BigDecimal.ZERO) <= 0) {
+                        continue;
+                    }
+
+                    if (preco.compareTo(BigDecimal.ZERO) < 0) {
+                        throw new IllegalArgumentException(
+                                "Preço de produto inválido.");
+                    }
+
+                    // A API de preferências utiliza quantidade inteira.
+                    // Para quantidade fracionária, converte para uma unidade
+                    // com o preço total do item.
+                    boolean quantidadeInteira =
+                            quantidade.stripTrailingZeros().scale() <= 0;
+
+                    int quantidadeMP;
+                    BigDecimal precoMP;
+
+                    if (quantidadeInteira) {
+                        quantidadeMP = quantidade.intValueExact();
+                        precoMP = preco.setScale(
+                                2, java.math.RoundingMode.HALF_UP);
+                    } else {
+                        quantidadeMP = 1;
+                        precoMP = preco.multiply(quantidade).setScale(
+                                2, java.math.RoundingMode.HALF_UP);
+                    }
+
+                    Map<String, Object> produto = new HashMap<>();
+
+                    String nome = item.getNome() != null
+                            && !item.getNome().isBlank()
+                            ? item.getNome()
+                            : "Produto Videira Natural";
+
+                    produto.put("title", nome);
+                    produto.put("quantity", quantidadeMP);
+                    produto.put("unit_price", precoMP);
+                    produto.put("currency_id", "BRL");
+
+                    itemsList.add(produto);
+                }
+            }
+
+            // 2. Obtém o frete
+            BigDecimal frete = pedido.getValorFrete() != null
+                    ? pedido.getValorFrete().setScale(
+                    2, java.math.RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+
+            if (frete.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException(
+                        "Valor de frete inválido.");
+            }
+
+            // 3. Adiciona o frete como um item independente
+            if (frete.compareTo(BigDecimal.ZERO) > 0) {
+                Map<String, Object> itemFrete = new HashMap<>();
+
+                itemFrete.put("title", "Frete / Taxa de Entrega");
+                itemFrete.put("quantity", 1);
+                itemFrete.put("unit_price", frete);
+                itemFrete.put("currency_id", "BRL");
+
+                itemsList.add(itemFrete);
+            }
+
+            // 4. Não cria preferência vazia
+            if (itemsList.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "O pedido não possui produtos ou frete para cobrar.");
+            }
+
+            // 5. Monta a preferência
+            Map<String, Object> body = new HashMap<>();
+
+            body.put("items", itemsList);
+            body.put("external_reference", String.valueOf(pedido.getId()));
+
+            Map<String, String> backUrls = new HashMap<>();
+            backUrls.put("success",
+                    "https://videiranatural.com.br/news");
+            backUrls.put("pending",
+                    "https://videiranatural.com.br/news");
+            backUrls.put("failure",
+                    "https://videiranatural.com.br/falha");
+
+            body.put("back_urls", backUrls);
+
+            // Registra exatamente o que será enviado
+            System.out.println(
+                    "Itens enviados ao Mercado Pago: " + itemsList);
+
+            HttpEntity<Map<String, Object>> entity =
+                    new HttpEntity<>(body, headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    Map.class);
+
+            if (response.getStatusCode().is2xxSuccessful()
+                    && response.getBody() != null) {
+
+                Map responseBody = response.getBody();
+
+                System.out.println(
+                        "ID da preferência Mercado Pago: "
+                                + responseBody.get("id"));
+
+                System.out.println(
+                        "Link de pagamento: "
+                                + responseBody.get("init_point"));
+
+                Object initPoint = responseBody.get("init_point");
+
+                if (initPoint instanceof String
+                        && !((String) initPoint).isBlank()) {
+                    return (String) initPoint;
+                }
+            }
+
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            System.err.println(
+                    "Erro Mercado Pago: "
+                            + e.getStatusCode()
+                            + " - "
+                            + e.getResponseBodyAsString());
+
+        } catch (Exception e) {
+            System.err.println(
+                    "Erro ao criar preferência: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private String produtoDescricaoPadrao(ItemCarrinhoRequest item) {
+        return item.getNome() != null ? item.getNome() : "Produto Videira Natural";
+    }
+
 }
