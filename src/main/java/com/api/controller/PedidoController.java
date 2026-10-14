@@ -1,12 +1,17 @@
-package com.api.controller;
+package com.api.controller; // Ajuste para o seu pacote correto
 
+import com.api.apiExterno.MercadoPagoService;
+import com.api.business.PedidoService;
+import com.api.dto.requests.PedidoRequest;
 import com.api.eNum.StatusPedido;
 import com.api.entity.Pedido;
 import com.api.repository.PedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -17,18 +22,20 @@ public class PedidoController {
     @Autowired
     private PedidoRepository pedidoRepository;
 
+    @Autowired
+    private PedidoService pedidoService;
+
+    @Autowired
+    private MercadoPagoService mercadoPagoService;
+
     @GetMapping
     public List<Pedido> listarPedidos() {
         return pedidoRepository.findAll();
     }
 
     @PostMapping
-    public ResponseEntity<Pedido> criarPedido(@RequestBody Pedido pedido) {
-        if (pedido.getEtapa() == null) {
-            pedido.setEtapa(StatusPedido.CRIADO);
-        }
-        Pedido novoPedido = pedidoRepository.save(pedido);
-        return ResponseEntity.ok(novoPedido);
+    public ResponseEntity<?> criarPedido(@RequestBody PedidoRequest request) {
+        return pedidoService.criarPedidoPDV(request);
     }
 
     @PutMapping("/{id}/etapa")

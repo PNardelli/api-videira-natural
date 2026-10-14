@@ -98,6 +98,7 @@ public class ClienteService {
                     return new ClientePdvDTO(
                             c.getId(),
                             c.getNome(),
+                            c.getWhatsapp(),
                             c.getVideiraSaldo(),
                             endereco != null ? endereco.getCep() : "",
                             endereco != null ? endereco.getLogradouro() : "",
