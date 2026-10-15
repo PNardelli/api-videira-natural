@@ -24,6 +24,6 @@ public interface VendaRepository  extends JpaRepository<Venda, Long> {
             "ORDER BY v.id DESC")
     List<Venda> buscarVendasGerais(@Param("termo") String termo);
 
-    @Query("SELECT SUM(v.total) FROM Venda v WHERE v.dataVenda >= :inicioPeriodo")
+    @Query("SELECT SUM(v.total) FROM Venda v WHERE v.statusPedido = 'FINALIZADO' AND v.dataVenda >= :inicioPeriodo")
     BigDecimal somarVendasAPartirDe(@Param("inicioPeriodo") LocalDateTime inicioPeriodo);
 }
