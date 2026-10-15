@@ -12,6 +12,15 @@ public record VendaHistoricoDTO(
         LocalDateTime dataVenda,
         String clienteNome,
         String clienteWhatsapp,
+
+        //Endereço Mapper
+        String logradouroEntrega,
+        String numeroEntrega,
+        String bairroEntrega,
+        String cep,
+        String complementoEntrega,
+        String localidade,
+
         BigDecimal subtotal,
         BigDecimal desconto,
         BigDecimal frete,
@@ -64,6 +73,15 @@ public record VendaHistoricoDTO(
                 venda.getDataVenda(),
                 venda.getCliente() != null ? venda.getCliente().getNome() : "VENDA SEM CLIENTE",
                 venda.getCliente() != null ? venda.getCliente().getWhatsapp() : null,
+
+                // Proteção completa contra cliente nulo e endereço nulo
+                venda.getCliente() != null && venda.getCliente().getEndereco() != null ? venda.getCliente().getEndereco().getLogradouro() : null,
+                venda.getCliente() != null && venda.getCliente().getEndereco() != null ? venda.getCliente().getEndereco().getNumero() : null,
+                venda.getCliente() != null && venda.getCliente().getEndereco() != null ? venda.getCliente().getEndereco().getBairro() : null,
+                venda.getCliente() != null && venda.getCliente().getEndereco() != null ? venda.getCliente().getEndereco().getCep() : null,
+                venda.getCliente() != null && venda.getCliente().getEndereco() != null ? venda.getCliente().getEndereco().getComplemento() : null,
+                venda.getCliente() != null && venda.getCliente().getEndereco() != null ? venda.getCliente().getEndereco().getLocalidade() : null,
+
                 venda.getSubtotal(),
                 venda.getDesconto(),
                 venda.getFrete(),
