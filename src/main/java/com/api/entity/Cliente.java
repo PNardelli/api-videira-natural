@@ -33,7 +33,7 @@ public class Cliente {
     @Column(name = "NOME")
     private String nome;
 
-    @Column(name = "EMAIL", unique = true)
+    @Column(name = "EMAIL")
     private String email;
 
     @Column(name = "WHATSAPP", unique = true)
