@@ -55,4 +55,14 @@ public class FornecedorService {
         return fornecedorParaAtualizar;
     }
 
+    public Fornecedor intativarAtivaFornecedor(Long id) {
+        Fornecedor fornecedorParaAtualizar = repository.findById(id).orElseThrow();
+
+        if (fornecedorParaAtualizar.isAtivo()){
+            fornecedorParaAtualizar.setAtivo(false);
+        }else {fornecedorParaAtualizar.setAtivo(true);}
+
+        return repository.save(fornecedorParaAtualizar);
+    }
+
 }

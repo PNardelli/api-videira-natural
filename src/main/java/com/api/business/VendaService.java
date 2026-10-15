@@ -4,6 +4,7 @@ import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.VendaDTO;
 import com.api.dto.requests.ItemCarrinhoRequest;
 import com.api.dto.requests.ProdutoRequest;
+import com.api.eNum.StatusPedido;
 import com.api.entity.Venda;
 import com.api.repository.ClienteRepository;
 import com.api.repository.ProdutoFornecedorRepository;
@@ -130,5 +131,26 @@ public class VendaService {
         carrinho.add(itemParaAdicionar);
         return carrinho;
     }
+
+    /**
+     * PARTE DE VERIFICAR AS VENDAS PARA DASHBOARD
+     */
+    public List<Venda> listarHistoricoGeral(String termo) {
+        return vendaRepository.buscarVendasGerais(termo);
+    }
+
+    @Transactional
+    public void cancelarVenda(Long id) {
+        Venda venda = vendaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venda não encontrada com o ID: " + id));
+
+        // Atualiza o status do pedido para CANCELADO
+        venda.setStatusPedido(StatusPedido.CANCELADO);
+
+        // Se desejar estornar estoque dos itens da venda, você pode adicionar a lógica aqui.
+
+        vendaRepository.save(venda);
+    }
+
 
 }

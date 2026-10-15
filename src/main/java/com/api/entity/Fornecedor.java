@@ -33,5 +33,7 @@ public class Fornecedor {
     @Nullable
     private String cpfCnpj;
 
+    private boolean ativo = true;
+
     private LocalDate dataCadastro;
 }

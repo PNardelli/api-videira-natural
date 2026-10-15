@@ -1,10 +1,14 @@
 package com.api.controller;
 
+import com.api.business.VendaService;
 import com.api.dto.RelatorioVendasDTO;
+import com.api.dto.historicoVendas.VendaHistoricoDTO;
 import com.api.entity.Venda;
 import com.api.repository.VendaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -23,6 +27,9 @@ public class VendaRelatorioController {
 
     @Autowired
     private VendaRepository vendaRepository;
+
+    @Autowired
+    private VendaService vendaService;
 
     @GetMapping("/relatorio-completo")
     public ResponseEntity<RelatorioVendasDTO> gerarRelatorio(
@@ -105,4 +112,33 @@ public class VendaRelatorioController {
         RelatorioVendasDTO respostaFinal = new RelatorioVendasDTO(resumoDto, graficoDto, listaDetalhes);
         return ResponseEntity.ok(respostaFinal);
     }
+
+    /**
+     * VENDA PARA DASHBOARD
+     */
+    @Transactional(readOnly = true)
+    @GetMapping("/historico-geral")
+    public ResponseEntity<List<VendaHistoricoDTO>> listarHistoricoVendas(@RequestParam(required = false, name = "termo") String termo) {
+        List<Venda> vendas = vendaService.listarHistoricoGeral(termo);
+
+        // Converte a lista de entidades Venda para o DTO limpo
+        List<VendaHistoricoDTO> dtos = vendas.stream()
+                .map(VendaHistoricoDTO::de)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @Transactional
+    @DeleteMapping("/{id}/cancelar")
+    public ResponseEntity<?> cancelarVenda(@PathVariable Long id) {
+        try {
+            vendaService.cancelarVenda(id);
+            return ResponseEntity.ok().body("Venda cancelada com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao cancelar a venda: " + e.getMessage());
+        }
+    }
+
 }

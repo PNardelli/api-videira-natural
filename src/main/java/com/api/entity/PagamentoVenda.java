@@ -1,6 +1,7 @@
 package com.api.entity;
 
 import com.api.eNum.FormaPagamento;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,7 @@ public class PagamentoVenda {
 
     @ManyToOne
     @JoinColumn(name = "venda_id")
+    @JsonIgnore
     private Venda venda;
 
     @Enumerated(EnumType.STRING)

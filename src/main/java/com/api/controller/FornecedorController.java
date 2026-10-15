@@ -36,8 +36,13 @@ public class FornecedorController {
     @PutMapping("/atualizar/{id}")
     public ResponseEntity<Fornecedor> atualizar(@PathVariable Long id,
                                                 @RequestBody Fornecedor fornecedor){
-
         Fornecedor atualizado = service.atualizarFornecedor(id, fornecedor);
+        return ResponseEntity.ok(atualizado);
+    }
+
+    @PutMapping("/ativar-inativar/{id}")
+    public ResponseEntity<Fornecedor>inativarFornecedor(@PathVariable Long id){
+        Fornecedor atualizado = service.intativarAtivaFornecedor(id);
         return ResponseEntity.ok(atualizado);
     }
 

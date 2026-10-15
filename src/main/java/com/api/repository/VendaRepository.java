@@ -40,4 +40,10 @@ public interface VendaRepository  extends JpaRepository<Venda, Long> {
 
     @Query("SELECT COUNT(v) FROM Venda v WHERE v.dataVenda BETWEEN :inicio AND :fim")
     Long contarVendasPorPeriodo(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+
+    @Query("SELECT DISTINCT v FROM Venda v " +
+            "LEFT JOIN v.cliente c " +
+            "WHERE (:termo IS NULL OR :termo = '' OR CAST(v.id AS string) LIKE %:termo% OR (c IS NOT NULL AND LOWER(c.nome) LIKE LOWER(CONCAT('%', :termo, '%')))) " +
+            "ORDER BY v.id DESC")
+    List<Venda> buscarVendasGerais(@Param("termo") String termo);
 }
