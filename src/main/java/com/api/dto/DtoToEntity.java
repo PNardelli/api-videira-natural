@@ -53,6 +53,18 @@ public class DtoToEntity {
             venda.setCliente(cliente);
         }
 
+        System.out.println("JVM: " + java.time.ZoneId.systemDefault());
+
+        System.out.println("LocalDateTime padrão: "
+                + java.time.LocalDateTime.now());
+
+        System.out.println("LocalDateTime Recife: "
+                + java.time.LocalDateTime.now(
+                java.time.ZoneId.of("America/Recife")));
+
+        System.out.println("Instant UTC: "
+                + java.time.Instant.now());
+
         return venda;
 
     }

@@ -4,12 +4,13 @@ import com.api.entity.Venda;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public record VendaHistoricoDTO(
         Long id,
-        LocalDateTime dataVenda,
+        String dataVendaFormatada,
         String clienteNome,
         String clienteWhatsapp,
 
@@ -70,7 +71,11 @@ public record VendaHistoricoDTO(
 
         return new VendaHistoricoDTO(
                 venda.getId(),
-                venda.getDataVenda(),
+                venda.getDataVenda() != null
+                ? venda.getDataVenda().format(
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+        )
+                : "-",
                 venda.getCliente() != null ? venda.getCliente().getNome() : "VENDA SEM CLIENTE",
                 venda.getCliente() != null ? venda.getCliente().getWhatsapp() : null,
 
