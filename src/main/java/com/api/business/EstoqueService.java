@@ -33,6 +33,9 @@ public class EstoqueService {
     private ClienteRepository clienteRepository;
 
     @Autowired
+    private EstoqueRepository estoqueRepository;
+
+    @Autowired
     DtoToEntity dtoToEntity;
 
     @Autowired
@@ -49,7 +52,8 @@ public class EstoqueService {
     @Transactional
     public void processarMovimentacao(MovimentacaoDTO dto) {
 
-        ProdutoFornecedor produtoFornecedorExistente = produtoFornecedorRepository.findById(dto.getProdutoId()).orElseThrow();
+        ProdutoFornecedor produtoFornecedorExistente = estoqueRepository.recuperarProdutoFornecedorLista(dto.getProdutoId(), dto.getFornecedorId()).orElseThrow();
+
 
         Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
                 .orElseThrow(() -> new RuntimeException("FORNECEDOR NÃO ENCONTRADO"));

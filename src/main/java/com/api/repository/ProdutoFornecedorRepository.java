@@ -39,6 +39,16 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
             @Param("qtd") BigDecimal qtd
     );
 
+    @Query("""
+        SELECT pf FROM ProdutoFornecedor pf 
+        WHERE pf.produto.id = :produtoId 
+          AND pf.fornecedor.id = :fornecedorId 
+        ORDER BY pf.dataValidade ASC
+        """)
+    Optional<ProdutoFornecedor> getProdutoFornecedor(
+            @Param("produtoId") Long produtoId,
+            @Param("fornecedorId") Long fornecedorId);
+
 
     @Query("SELECT pf FROM ProdutoFornecedor pf JOIN FETCH pf.produto p " +
             "WHERE p.id = :produtoId AND pf.produtoAtivo = true AND pf.quantidade > 0 " +
@@ -71,21 +81,22 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
 
 
     @Query("""
-                SELECT new com.api.dto.ProdutoFornecedorDTO(
-                    p.codigoProduto,
-                    p.nome,
-                    pf.produto.id,
-                    pf.quantidade,
-                    pf.dataValidade,
-                    pf.precoVenda,
-                    pf.estoqueMinimo,
-                    pf.unidadeMedida
-                )
-                FROM ProdutoFornecedor pf
-                INNER JOIN pf.produto p
-                WHERE p.codigoProduto = :codigoProduto
-                ORDER BY pf.dataValidade ASC
-            """)
+            SELECT new com.api.dto.ProdutoFornecedorDTO(
+                p.codigoProduto,
+                p.nome,
+                pf.produto.id,
+                pf.quantidade,
+                pf.dataValidade,
+                pf.precoVenda,
+                pf.estoqueMinimo,
+                pf.unidadeMedida
+            )
+            FROM ProdutoFornecedor pf
+            INNER JOIN pf.produto p
+            WHERE p.codigoProduto = :codigoProduto
+              AND pf.quantidade > 0
+            ORDER BY pf.dataValidade ASC
+        """)
     List<ProdutoFornecedorDTO> buscarGranelPorCodigoLoja(
             @Param("codigoProduto") String codigoProduto
     );

@@ -5,6 +5,7 @@ import com.api.business.ProdutoFornecedorService;
 import com.api.dto.EstoqueItemDTO;
 import com.api.dto.MovimentacaoDTO;
 import com.api.entity.ProdutoFornecedor;
+import com.api.repository.ProdutoFornecedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,9 @@ public class EstoqueController {
 
     @Autowired
     private ProdutoFornecedorService pfService;
+
+    @Autowired
+    private ProdutoFornecedorRepository produtoFornecedorRepository;
 
     @PostMapping("/movimentar")
     public ResponseEntity<?> movimentar(@RequestBody MovimentacaoDTO dto) {
@@ -48,8 +52,10 @@ public class EstoqueController {
 
     @GetMapping("/listar-otimizado")
     public ResponseEntity<List<EstoqueItemDTO>> listarEstoqueOtimizado() {
-        List<EstoqueItemDTO> lista = pfService.listarEstoqueCompletoOtimizado();
-        return ResponseEntity.ok(lista);
+
+        return ResponseEntity.ok(produtoFornecedorRepository.listarEstoqueCompletoOTimizado());
+//        List<EstoqueItemDTO> lista = .listarEstoqueCompletoOtimizado();
+//        return ResponseEntity.ok(lista);
     }
 
 
