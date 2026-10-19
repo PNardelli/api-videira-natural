@@ -55,8 +55,11 @@ public class DashboardService {
         // 3. Alertas de Validade (Regra: Vence em até 15 dias)
         dto.setProdutosVencendo(pfRepository.buscarProdutosVencendo(LocalDate.from(agora.plusDays(15))));
 
-        // 4. Alertas de Estoque Baixo (Regra: Menos de 1kg ou 1 unidade)
-        dto.setEstoqueBaixo(pfRepository.buscarEstoqueBaixo(new BigDecimal("1.0")));
+        // 4. Alertas de Estoque Baixo (Recuperar pelo minino cadastrado.)
+        dto.setEstoqueBaixo(pfRepository.buscarEstoqueBaixo());
+
+        // 5. Alertas de Sem Estoque.
+        dto.setSemEstoque(pfRepository.buscarSemEstoque());
 
         return dto;
     }
