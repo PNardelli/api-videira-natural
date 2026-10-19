@@ -2,6 +2,7 @@ package com.api.repository;
 
 import com.api.dto.BalancaProdutoDTO;
 import com.api.dto.EstoqueItemDTO;
+import com.api.dto.ProdutoFornecedorDTO;
 import com.api.entity.Produto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,13 +16,8 @@ import java.util.Optional;
 
 @Transactional(readOnly = true)
 public interface ProdutoRepository extends JpaRepository<Produto, Long > {
-    boolean existsByCodigoProduto(String codigoProduto);
-
-    Optional<Produto> findByCodigoBarras(String codigoBarras);
-
     Optional<Produto> findByCodigoFornecedorXml(String codigoFornecedor);
 
-    List<Produto> findByCodigoProdutoOrNomeContainingIgnoreCase(String codigo, String nome);
 
     @Query("SELECT p FROM Produto p WHERE " +
             "CAST(p.id AS string) = :termo OR " +
@@ -29,6 +25,32 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long > {
             "p.codigoProduto = :termo OR " +
             "LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%'))")
     List<Produto> findByFlexivel(@Param("termo") String termo);
+
+    @Query("""
+    SELECT new com.api.dto.ProdutoFornecedorDTO(
+        p.codigoProduto,
+        p.nome,
+        pf.produto.id,
+        pf.quantidade,
+        pf.dataValidade,
+        pf.precoVenda,
+        pf.estoqueMinimo,
+        pf.unidadeMedida
+    )
+    FROM ProdutoFornecedor pf
+    INNER JOIN pf.produto p
+    WHERE (
+        CAST(p.id AS string) = :termo OR 
+        p.codigoBarras = :termo OR 
+        p.codigoProduto = :termo OR 
+        LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%'))
+    )
+    AND pf.quantidade > 0
+    ORDER BY pf.dataValidade ASC
+""")
+    List<ProdutoFornecedorDTO> findByFlexivelComEstoqueValidade(
+            @Param("termo") String termo
+    );
 
     //NOVO: Método padrão paginado para listar os produtos por blocos (ex: 10 em 10)
     Page<Produto> findAll(Pageable pageable);

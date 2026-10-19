@@ -70,7 +70,8 @@ public class VendaService {
 
         } else if (termo != null && termo.length() >= 13 && termo.charAt(0) != '2') {
             // CASO B: Produto Industrializado EAN.
-            List<ProdutoFornecedorDTO> p = produtoService.buscarFlexivel(termo, pageable);
+            //List<ProdutoFornecedorDTO> p = produtoService.buscarFlexivel(termo, pageable);
+            List<ProdutoFornecedorDTO> p = produtoRepository.findByFlexivelComEstoqueValidade(termo);
 
             itemParaAdicionar.setProdutoId(p.get(0).getProdutoId());
             itemParaAdicionar.setNome(p.get(0).getNome());
@@ -87,6 +88,7 @@ public class VendaService {
         // CASO C: FRONT (botão capturar peso ou sugestão)
         else {
             List<ProdutoFornecedorDTO> produtoFornecedor = produtoFornecedorRepository.buscarGranelPorCodigoLoja(termo);
+            //List<ProdutoFornecedorDTO> produtoFornecedor = produtoService.buscarFlexivel(termo, pageable);
 
             if (produtoFornecedor == null) return carrinho;
 
@@ -99,7 +101,8 @@ public class VendaService {
             if (peso != null) {
                 itemParaAdicionar.setQuantidade(BigDecimal.valueOf(peso));
             } else {
-                itemParaAdicionar.setQuantidade(BigDecimal.ONE.divide(BigDecimal.valueOf(10)));
+                //itemParaAdicionar.setQuantidade(BigDecimal.ONE.divide(BigDecimal.valueOf(10)));
+                itemParaAdicionar.setQuantidade(BigDecimal.ZERO);
             }
         }
 
