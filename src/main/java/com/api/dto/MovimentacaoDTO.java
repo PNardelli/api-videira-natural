@@ -10,6 +10,7 @@ import java.time.LocalDate;
 public class MovimentacaoDTO {
     private Long produtoId;
     private Long fornecedorId;
+    private Long fornecedorIdAntigo;
     private BigDecimal quantidade;
 
     private BigDecimal estoqueMinimo;

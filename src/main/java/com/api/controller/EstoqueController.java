@@ -54,8 +54,6 @@ public class EstoqueController {
     public ResponseEntity<List<EstoqueItemDTO>> listarEstoqueOtimizado() {
 
         return ResponseEntity.ok(produtoFornecedorRepository.listarEstoqueCompletoOTimizado());
-//        List<EstoqueItemDTO> lista = .listarEstoqueCompletoOtimizado();
-//        return ResponseEntity.ok(lista);
     }
 
 

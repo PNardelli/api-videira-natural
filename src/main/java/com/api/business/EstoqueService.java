@@ -8,6 +8,7 @@ import com.api.eNum.UnidadeMedida;
 import com.api.entity.*;
 import com.api.repository.*;
 import jakarta.persistence.EntityNotFoundException;
+import org.apache.velocity.runtime.directive.contrib.For;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static com.api.eNum.TipoMovimentacao.AJUSTE;
 import static com.api.eNum.TipoMovimentacao.ENTRADA;
@@ -46,20 +45,20 @@ public class EstoqueService {
 
     @Autowired
     private FornecedorRepository fornecedorRepository;
+
     @Autowired
     private MovimentacaoEstoqueRepository movimentacaoRepository;
 
     @Transactional
     public void processarMovimentacao(MovimentacaoDTO dto) {
 
-        ProdutoFornecedor produtoFornecedorExistente = estoqueRepository.recuperarProdutoFornecedorLista(dto.getProdutoId(), dto.getFornecedorId()).orElseThrow();
+        ProdutoFornecedor produtoFornecedorExistente = estoqueRepository.recuperarProdutoFornecedorLista(dto.getProdutoId(), dto.getFornecedorIdAntigo()).orElse(null);
 
 
-        Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
-                .orElseThrow(() -> new RuntimeException("FORNECEDOR NÃO ENCONTRADO"));
-
-        if (produtoFornecedorExistente.getFornecedor() == null) {
-            produtoFornecedorExistente.setFornecedor(fornecedor);
+        if (!Objects.equals(dto.getFornecedorId(), dto.getFornecedorIdAntigo())) {
+            Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
+                    .orElseThrow(() -> new RuntimeException("FORNECEDOR NÃO ENCONTRADO"));
+                produtoFornecedorExistente.setFornecedor(fornecedor);
         }
 
         // Se for SAÍDA, checa se tem saldo antes de deixar tirar
@@ -86,7 +85,7 @@ public class EstoqueService {
                 dto.setPrecoCompra(null);
                 dto.setPrecoVenda(null);
 
-                registrarHistorico(dto, produtoFornecedorExistente, fornecedor);
+                registrarHistorico(dto, produtoFornecedorExistente, produtoFornecedorExistente.getFornecedor());
 
                 return;
             } else {
@@ -95,15 +94,14 @@ public class EstoqueService {
         }
 
         if (dto.getTipo() == AJUSTE) {
-            produtoFornecedorExistente.setFornecedor(fornecedor);
             produtoFornecedorExistente.setQuantidade(dto.getQuantidade());
             if (dto.getDataValidade() != null) {
                 produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
             }
-
         }
 
         if (dto.getTipo() == ENTRADA){
+            assert produtoFornecedorExistente != null;
             produtoFornecedorExistente.setQuantidade(produtoFornecedorExistente.getQuantidade()
                     .add(dto.getQuantidade()));
         }
@@ -115,9 +113,6 @@ public class EstoqueService {
         if (dto.getDataValidade() != null){
             produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
         }
-        if (dto.getFornecedorId() == null) {
-            produtoFornecedorExistente.setFornecedor(fornecedor);
-        }
 
         produtoFornecedorExistente.setProdutoAtivo(true);
 
@@ -126,41 +121,59 @@ public class EstoqueService {
         produtoService.atualizarPreco(produtoFornecedorExistente.getProduto().getId(), dto.getPrecoVenda());
         desativarProdutoFornecedor(null, produtoFornecedorExistente.getProduto().getId());
 
-        registrarHistorico(dto, produtoFornecedorExistente, fornecedor);
+        registrarHistorico(dto, produtoFornecedorExistente, produtoFornecedorExistente.getFornecedor());
     }
 
 
     @Transactional
     public void processarNovaEntrada(MovimentacaoDTO dto) {
 
-        //Produto produtoMaster = produtoFornecedorRepository.getProdutoFornecedor(dto.getProdutoId()).getProduto();
-        Produto produtoMasterTeste = produtoService.buscar(dto.getProdutoId());
+        ProdutoFornecedor loteProdutoFornecedor = estoqueRepository.recuperarProdutoFornecedorLista(dto.getProdutoId(), dto.getFornecedorId()).orElse(null);
 
-        // 2. Buscamos o Fornecedor da nota que está entrando
-        Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
-                .orElseThrow(() -> new EntityNotFoundException("Fornecedor não encontrado ID: " + dto.getFornecedorId()));
+        //Se for nulo ele cria um do zero, procurando um Produto Refencia e o Fornecedor
+        if (loteProdutoFornecedor == null) {
 
-        // 3. Criamos o NOVO LOTE (Isolamento de validade e custo)
-        ProdutoFornecedor novoProdutoFornecedor = new ProdutoFornecedor();
-        novoProdutoFornecedor.setProduto(produtoMasterTeste);
-        novoProdutoFornecedor.setFornecedor(fornecedor);
+            loteProdutoFornecedor = new ProdutoFornecedor();
+
+            Produto produtoMaster = produtoService.buscar(dto.getProdutoId());
+            Fornecedor fornecedorMaster = fornecedorRepository.findById(dto.getFornecedorId()).orElseThrow();
+
+                loteProdutoFornecedor.setProduto(produtoMaster);
+                loteProdutoFornecedor.setFornecedor(fornecedorMaster);
+                loteProdutoFornecedor.setProdutoAtivo(false);
+        }
+        //Se não for nulo e já existir um ativo, ele evita de ir no banco e usa o mesmo produto e fornecedor criando um novo lote.
+        if (loteProdutoFornecedor.getProdutoAtivo()){
+            Produto produtoSalvo = loteProdutoFornecedor.getProduto();
+            Fornecedor fornecedorSalvo = loteProdutoFornecedor.getFornecedor();
+
+            loteProdutoFornecedor = new ProdutoFornecedor();
+
+            loteProdutoFornecedor.setProduto(produtoSalvo);
+            loteProdutoFornecedor.setFornecedor(fornecedorSalvo);
+
+        }
 
         // Dados da carga atual
-        novoProdutoFornecedor.setEstoqueMinimo(dto.getEstoqueMinimo());
-        novoProdutoFornecedor.setQuantidade(dto.getQuantidade());
-        novoProdutoFornecedor.setDataEntrada(LocalDateTime.now());
-        novoProdutoFornecedor.setDataValidade(dto.getDataValidade());
-        novoProdutoFornecedor.setDataValidadeDias(obterDiasRestantes(dto.getDataValidade()));
-        novoProdutoFornecedor.setPrecoCompra(dto.getPrecoCompra());
-        novoProdutoFornecedor.setPrecoVenda(dto.getPrecoVenda());
-        novoProdutoFornecedor.setUnidadeMedida(dto.getUnidadeMedida());
-        novoProdutoFornecedor.setProdutoAtivo(true);
+        if (dto.getEstoqueMinimo().equals(BigDecimal.ZERO)){
+            loteProdutoFornecedor.setEstoqueMinimo(new BigDecimal(0.100));
+        }else {
+            loteProdutoFornecedor.setEstoqueMinimo(dto.getEstoqueMinimo());
+        }
+        loteProdutoFornecedor.setQuantidade(dto.getQuantidade());
+        loteProdutoFornecedor.setDataEntrada(LocalDateTime.now());
+        loteProdutoFornecedor.setDataValidade(dto.getDataValidade());
+        loteProdutoFornecedor.setDataValidadeDias(obterDiasRestantes(dto.getDataValidade()));
+        loteProdutoFornecedor.setPrecoCompra(dto.getPrecoCompra());
+        loteProdutoFornecedor.setPrecoVenda(dto.getPrecoVenda());
+        loteProdutoFornecedor.setUnidadeMedida(dto.getUnidadeMedida());
+        loteProdutoFornecedor.setProdutoAtivo(true);
 
         // 4. Persistência e Histórico
-        ProdutoFornecedor pfSalvo = produtoFornecedorRepository.save(novoProdutoFornecedor);
+        ProdutoFornecedor pfSalvo = produtoFornecedorRepository.save(loteProdutoFornecedor);
 
-        produtoService.atualizarPreco(produtoMasterTeste.getId(), dto.getPrecoVenda());
-        registrarHistorico(dto, pfSalvo, fornecedor);
+        produtoService.atualizarPreco(loteProdutoFornecedor.getProduto().getId(), dto.getPrecoVenda());
+        registrarHistorico(dto, pfSalvo, loteProdutoFornecedor.getFornecedor());
     }
 
 
@@ -315,6 +328,4 @@ public class EstoqueService {
 
         return converter;
     }
-
-
 }
