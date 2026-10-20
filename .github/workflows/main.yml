@@ -1,0 +1,54 @@
+name: CI/CD Pipeline Completa (Develop -> Stage -> Main)
+
+on:
+  push:
+    branches:
+      - develop
+      - stage
+      - main
+
+jobs:
+  # 1. Deploy automático em DEV (disparado pelo push em 'develop')
+  deploy-dev:
+    name: Deploy to Dev
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Executar deploy em Dev
+        run: |
+          echo "Fazendo deploy no ambiente de desenvolvimento (DEV)..."
+          # Seus comandos de build e deploy para dev aqui
+
+  # 2. Deploy automático em STAGE (disparado pelo push em 'staging')
+  deploy-stage:
+    name: Deploy to Stage
+    if: github.ref == 'refs/heads/stage'
+    runs-on: ubuntu-latest
+    environment:
+      name: stage
+      url: https://stage.seuprojeto.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Executar deploy em Stage
+        run: |
+          echo "Fazendo deploy no ambiente de homologação (STAGE)..."
+          # Seus comandos de build e deploy para stage aqui
+
+  # 3. Deploy em PRODUÇÃO com aprovação (disparado pelo push em 'main')
+  deploy-prod:
+    name: Deploy to Production (Main)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production # Requer aprovação manual configurada no GitHub
+      url: https://seuprojeto.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Executar deploy em Produção
+        run: |
+          echo "Aprovação concedida! Fazendo deploy em PRODUÇÃO..."
+          # Seus comandos de build e deploy para produção aqui
