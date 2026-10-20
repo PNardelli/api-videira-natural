@@ -42,6 +42,7 @@ public class Produto {
     private String nome;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 

@@ -29,7 +29,7 @@ public class IAServiceController {
     public ResponseEntity<?> perguntarAoBot(@RequestBody Map<String, String> payload) {
         String pergunta = payload.get("pergunta");
 
-        // Monta o payload para a API da OpenAI
+        //API da OpenAI
         String url = "https://api.openai.com/v1/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();

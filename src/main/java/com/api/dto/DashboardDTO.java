@@ -17,7 +17,8 @@ public class DashboardDTO {
 
     // Alertas de Estoque e Validade (Inteligência Videira Natural)
     private List<AlertaEstoqueDTO> produtosVencendo; // Próximos 30 dias
-    private List<AlertaEstoqueDTO> estoqueBaixo;   // Abaixo de 2kg ou 5 unidades
+    private List<AlertaEstoqueDTO> estoqueBaixo;
+    private List<AlertaEstoqueDTO> semEstoque;
 
     // Faturamento Periódico
     private BigDecimal faturamentoDiario;

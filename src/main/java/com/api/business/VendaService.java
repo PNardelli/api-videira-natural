@@ -4,6 +4,7 @@ import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.VendaDTO;
 import com.api.dto.requests.ItemCarrinhoRequest;
 import com.api.dto.requests.ProdutoRequest;
+import com.api.eNum.StatusPedido;
 import com.api.entity.Venda;
 import com.api.repository.ClienteRepository;
 import com.api.repository.ProdutoFornecedorRepository;
@@ -64,12 +65,13 @@ public class VendaService {
             itemParaAdicionar.setNome(p.getNome());
             itemParaAdicionar.setPreco(p.getPrecoVenda());
             itemParaAdicionar.setUnidade(p.getUnidadeMedida().toString());
-            itemParaAdicionar.setEstoque(p.getEstoque().toString()); // peso da etiqueta
-            itemParaAdicionar.setQuantidade(p.getPesoComprado());
+            itemParaAdicionar.setEstoque(p.getEstoque().toString());
+            itemParaAdicionar.setQuantidade(p.getPesoComprado()); // peso da etiqueta
 
         } else if (termo != null && termo.length() >= 13 && termo.charAt(0) != '2') {
             // CASO B: Produto Industrializado EAN.
-            List<ProdutoFornecedorDTO> p = produtoService.buscarFlexivel(termo, pageable);
+            //List<ProdutoFornecedorDTO> p = produtoService.buscarFlexivel(termo, pageable);
+            List<ProdutoFornecedorDTO> p = produtoRepository.findByFlexivelComEstoqueValidade(termo);
 
             itemParaAdicionar.setProdutoId(p.get(0).getProdutoId());
             itemParaAdicionar.setNome(p.get(0).getNome());
@@ -77,14 +79,16 @@ public class VendaService {
             itemParaAdicionar.setUnidade(p.get(0).getUnidadeMedida());
             itemParaAdicionar.setQuantidade(BigDecimal.ONE);
 
-            BigDecimal estoqueConvertidoParaUnidade = p.get(0).getQuantidade();
-            itemParaAdicionar.setEstoque(estoqueConvertidoParaUnidade.stripTrailingZeros().toString());
+            Integer estoqueConvertidoParaUnidade = p.get(0).getQuantidade().intValue();
+            String unidadeConvertida = estoqueConvertidoParaUnidade.toString();
+            itemParaAdicionar.setEstoque(unidadeConvertida);
         }
 
 
         // CASO C: FRONT (botão capturar peso ou sugestão)
         else {
             List<ProdutoFornecedorDTO> produtoFornecedor = produtoFornecedorRepository.buscarGranelPorCodigoLoja(termo);
+            //List<ProdutoFornecedorDTO> produtoFornecedor = produtoService.buscarFlexivel(termo, pageable);
 
             if (produtoFornecedor == null) return carrinho;
 
@@ -92,12 +96,13 @@ public class VendaService {
             itemParaAdicionar.setNome(produtoFornecedor.get(0).getNome());
             itemParaAdicionar.setPreco(produtoFornecedor.get(0).getPrecoVenda());
             itemParaAdicionar.setUnidade(produtoFornecedor.get(0).getUnidadeMedida());
-            itemParaAdicionar.setEstoque(produtoFornecedor.get(0).getEstoqueMinimo().toString()); // peso da etiqueta
+            itemParaAdicionar.setEstoque(produtoFornecedor.get(0).getQuantidade().toString()); // peso da etiqueta
 
             if (peso != null) {
                 itemParaAdicionar.setQuantidade(BigDecimal.valueOf(peso));
             } else {
-                itemParaAdicionar.setQuantidade(produtoFornecedor.get(0).getEstoqueMinimo());
+                //itemParaAdicionar.setQuantidade(BigDecimal.ONE.divide(BigDecimal.valueOf(10)));
+                itemParaAdicionar.setQuantidade(BigDecimal.ZERO);
             }
         }
 
@@ -129,5 +134,26 @@ public class VendaService {
         carrinho.add(itemParaAdicionar);
         return carrinho;
     }
+
+    /**
+     * PARTE DE VERIFICAR AS VENDAS PARA DASHBOARD
+     */
+    public List<Venda> listarHistoricoGeral(String termo) {
+        return vendaRepository.buscarVendasGerais(termo);
+    }
+
+    @Transactional
+    public void cancelarVenda(Long id) {
+        Venda venda = vendaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venda não encontrada com o ID: " + id));
+
+        // Atualiza o status do pedido para CANCELADO
+        venda.setStatusPedido(StatusPedido.CANCELADO);
+
+        // Se desejar estornar estoque dos itens da venda, você pode adicionar a lógica aqui.
+
+        vendaRepository.save(venda);
+    }
+
 
 }

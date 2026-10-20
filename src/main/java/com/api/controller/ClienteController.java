@@ -31,7 +31,7 @@ public class ClienteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
-    @PostMapping("/rapido")
+        @PostMapping("/rapido")
     public ResponseEntity<Cliente> cadastrarRapido(@RequestBody ClienteDTO dto) {
         if (dto.getNome() == null || dto.getNome().isBlank()) {
             throw new RuntimeException("O nome do cliente é obrigatório!");

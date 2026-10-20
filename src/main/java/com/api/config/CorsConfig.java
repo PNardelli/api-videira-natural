@@ -18,11 +18,14 @@ public class CorsConfig {
 
         config.setAllowCredentials(true);
 
-        // Use OriginPatterns para evitar erros de permissão estrita
         config.setAllowedOriginPatterns(Arrays.asList(
                 "https://api-videira-natural-develop.up.railway.app",
+                "https://api-videira-natural-dev-production.up.railway.app",
+                "https://api-videira-natural-prod-production.up.railway.app",
+                "https://videiranatural.com.br",
                 "https://www.videiranatural.com.br",
                 "https://app.videiranatural.com.br",
+                "https://app-videira-natural.vercel.app",
                 "http://localhost:5173",
                 "http://127.0.0.1:5173"
         ));

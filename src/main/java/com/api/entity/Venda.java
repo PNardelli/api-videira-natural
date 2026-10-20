@@ -23,7 +23,7 @@ public class Venda {
     private Long id;
 
     @Column(nullable = false, updatable = false) // Data da venda não muda nunca
-    private LocalDateTime dataVenda = LocalDateTime.now();
+    private LocalDateTime dataVenda;
 
     private LocalDateTime dataUltimaAtualizacao; // Para rastrear mudanças de status
 

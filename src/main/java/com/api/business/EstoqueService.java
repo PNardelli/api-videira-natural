@@ -33,6 +33,9 @@ public class EstoqueService {
     private ClienteRepository clienteRepository;
 
     @Autowired
+    private EstoqueRepository estoqueRepository;
+
+    @Autowired
     DtoToEntity dtoToEntity;
 
     @Autowired
@@ -49,7 +52,8 @@ public class EstoqueService {
     @Transactional
     public void processarMovimentacao(MovimentacaoDTO dto) {
 
-        ProdutoFornecedor produtoFornecedorExistente = produtoFornecedorRepository.findById(dto.getProdutoId()).orElseThrow();
+        ProdutoFornecedor produtoFornecedorExistente = estoqueRepository.recuperarProdutoFornecedorLista(dto.getProdutoId(), dto.getFornecedorId()).orElseThrow();
+
 
         Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
                 .orElseThrow(() -> new RuntimeException("FORNECEDOR NÃO ENCONTRADO"));
@@ -92,9 +96,7 @@ public class EstoqueService {
 
         if (dto.getTipo() == AJUSTE) {
             produtoFornecedorExistente.setFornecedor(fornecedor);
-            if (dto.getQuantidade().compareTo(BigDecimal.ZERO) > 0) {
-                produtoFornecedorExistente.setQuantidade(dto.getQuantidade());
-            }
+            produtoFornecedorExistente.setQuantidade(dto.getQuantidade());
             if (dto.getDataValidade() != null) {
                 produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
             }
@@ -261,6 +263,7 @@ public class EstoqueService {
         mov.setUnidadeMedida(dto.getUnidadeMedida());
         mov.setData(LocalDateTime.now());
         mov.setDataValidade(dto.getDataValidade());
+        mov.setObservacao(dto.getObservacao());
 
         if (fornecedor != null) {
             mov.setFornecedor(fornecedor);

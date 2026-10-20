@@ -22,9 +22,9 @@ public class AlertaEstoqueDTO {
     // Você pode adicionar um método auxiliar para o Front-end
     public String getStatusVencimento() {
         if (dataValidade == null) return "Sem data";
-        long dias = java.time.Duration.between(LocalDateTime.now(), dataValidade).toDays();
-        if (dias < 0) return "Vencido";
-        if (dias <= 7) return "Urgente";
+        //long dias = java.time.Duration.between(LocalDateTime.now(), dataValidade).toDays();
+        //if (dias < 0) return "Vencido";
+        //if (dias <= 7) return "Urgente";
         return "Próximo";
     }
 }

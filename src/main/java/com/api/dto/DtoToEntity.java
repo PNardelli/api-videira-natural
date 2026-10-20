@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +24,12 @@ public class DtoToEntity {
 
     public Venda vendaDtoToEntity(VendaDTO vendaDTO, List<ItemVenda> itemVendaList, Cliente cliente){
 
+
+        LocalDateTime dataRecife = LocalDateTime.now(ZoneId.of("America/Recife"));
+
         Venda venda = new Venda();
+        venda.setDataVenda(dataRecife);
+
         venda.setSubtotal(vendaDTO.getSubtotal());
         venda.setDesconto(vendaDTO.getDesconto());
         venda.setTotal(vendaDTO.getTotalFinal());
