@@ -27,4 +27,6 @@ public class PagamentoVenda {
 
     private BigDecimal valor;
 
+    private Integer parcela;
+
 }
