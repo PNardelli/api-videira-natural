@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Table(name = "tb_usuario")
 @Entity
@@ -21,6 +22,8 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "login", unique = true)
     private String login;
 
     @Column(name = "password")
@@ -33,6 +36,13 @@ public class Usuario {
     @Column(nullable = false)
     private UsuarioRole role;
 
-    public Usuario(String login, String encryptedPassword, UsuarioRole role) {
-    }
+    @OneToOne
+    @JoinColumn(name = "cliente_id", referencedColumnName = "id", nullable = true)
+    private Cliente cliente;
+
+    private LocalDateTime ultimoAcesso;
+
+    private String tokenRecuperarAcesso;
+
+    private Boolean ativo = true; // Útil caso precise banir ou desativar o acesso
 }

@@ -81,7 +81,8 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
             "pf.id, p.id, COALESCE(p.codigoProduto, p.codigoBarras), p.nome, " +
             "f.nome, pf.quantidade, pf.estoqueMinimo, pf.unidadeMedida, " +
             "pf.precoCompra, pf.precoVenda, pf.dataValidade) " +
-            "FROM ProdutoFornecedor pf JOIN pf.produto p LEFT JOIN pf.fornecedor f")
+            "FROM ProdutoFornecedor pf JOIN pf.produto p LEFT JOIN pf.fornecedor f " +
+            "WHERE pf.produtoAtivo = true")
     List<EstoqueItemDTO> listarEstoqueCompletoOTimizado();
 
 

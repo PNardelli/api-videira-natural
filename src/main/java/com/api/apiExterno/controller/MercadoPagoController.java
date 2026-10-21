@@ -21,13 +21,14 @@ public class MercadoPagoController {
         ResponseEntity<Map> resposta = pointService.criarOrdemPagamento(
                 request.getValor(),
                 converterNome(request.getTipoPagamento()),
+                request.getParcela(),
                 request.getExternalReference()
         );
         return ResponseEntity.status(resposta.getStatusCode()).body(resposta.getBody());
     }
 
     private String converterNome(String tipoPagamento) {
-        if ("CARTAO_CREDITO".equals(tipoPagamento)) {
+        if ("CARTAO_CREDITO".equals(tipoPagamento) || "CREDITO_PARCELADO".equals(tipoPagamento)) {
             return "credit_card";
         } else if ("CARTAO_DEBITO".equals(tipoPagamento)) {
             return "debit_card";

@@ -19,7 +19,7 @@ public class MercadoPagoService {
     // Armazena temporariamente o orderId vinculado à externalReference para consulta ultra-rápida por ID
     private final Map<String, String> cacheExternalParaOrderId = new HashMap<>();
 
-    public ResponseEntity<Map> criarOrdemPagamento(BigDecimal valor, String tipoPagamento, String externalReference) {
+    public ResponseEntity<Map> criarOrdemPagamento(BigDecimal valor, String tipoPagamento, Integer parcela, String externalReference) {
         String url = "https://api.mercadopago.com/v1/orders";
 
         HttpHeaders headers = new HttpHeaders();
@@ -30,6 +30,7 @@ public class MercadoPagoService {
         Map<String, Object> body = new HashMap<>();
         body.put("type", "point");
         body.put("external_reference", externalReference);
+        body.put("expiration_time", "PT1M");
         body.put("description", "Videira Natural - Point");
 
         Map<String, Object> paymentMap = new HashMap<>();
@@ -41,14 +42,21 @@ public class MercadoPagoService {
 
         Map<String, Object> pointConfig = new HashMap<>();
         pointConfig.put("terminal_id", "NEWLAND_N950__N950NCC804149944");
+        pointConfig.put("print_on_terminal", "no_ticket");
 
         Map<String, Object> paymentMethodConfig = new HashMap<>();
-        paymentMethodConfig.put("default_type", tipoPagamento);
+        if (tipoPagamento.equals("credit_card")){
+            paymentMethodConfig.put("default_type", tipoPagamento);
+            paymentMethodConfig.put("default_installments", parcela);
+            paymentMethodConfig.put("installments_cost", "seller");
+        }
 
         Map<String, Object> config = new HashMap<>();
         config.put("point", pointConfig);
         config.put("payment_method", paymentMethodConfig);
         body.put("config", config);
+
+        System.out.println(body);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
