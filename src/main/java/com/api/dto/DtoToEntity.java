@@ -41,6 +41,8 @@ public class DtoToEntity {
             PagamentoVenda pv = new PagamentoVenda();
             pv.setTipo(pDto.getTipo());
             pv.setValor(pDto.getValor());
+            pv.setParcela(pDto.getParcela());
+
             pv.setVenda(venda);
             return pv;
         }).collect(Collectors.toList());
