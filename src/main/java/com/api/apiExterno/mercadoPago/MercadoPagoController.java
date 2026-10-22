@@ -2,6 +2,7 @@ package com.api.apiExterno.mercadoPago;
 
 import com.api.dto.VendaMercadoPagoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,6 +50,28 @@ public class MercadoPagoController {
 
         boolean pago = mercadoPagoService.verificarPixPago(valor, inicio);
         return ResponseEntity.ok(Map.of("paid", pago));
+    }
+
+    @PostMapping("/webhook/mercadopago")
+    public ResponseEntity<Void> receberNotificacao(@RequestBody Map<String, Object> payload) {
+        try {
+            String tipo = (String) payload.get("type");
+
+            // O Mercado Pago avisa quando há um novo pagamento
+            if ("payment".equalsIgnoreCase(tipo)) {
+                Map<String, Object> data = (Map<String, Object>) payload.get("data");
+                String paymentId = String.valueOf(data.get("id"));
+
+                // Consulta a API do Mercado Pago usando o paymentId para ver os detalhes e o status
+                // Se aprovado, localiza o pedido pela external_reference e atualiza o status para PAGO
+                mercadoPagoService.processarPagamentoAprovadoPorWebhook(paymentId);
+            }
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.err.println("Erro ao processar webhook do Mercado Pago: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 
