@@ -1,7 +1,5 @@
-package com.api.apiExterno.controller;
+package com.api.apiExterno.mercadoPago;
 
-import com.api.apiExterno.MercadoPagoService;
-import com.api.apiExterno.PagamentoRequest;
 import com.api.dto.VendaMercadoPagoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,11 +12,11 @@ import java.util.Map;
 public class MercadoPagoController {
 
     @Autowired
-    private MercadoPagoService pointService;
+    private MercadoPagoService mercadoPagoService;
 
     @PostMapping("/cobrar")
     public ResponseEntity<?> cobrarNaMaquininha(@RequestBody VendaMercadoPagoDTO request) {
-        ResponseEntity<Map> resposta = pointService.criarOrdemPagamento(
+        ResponseEntity<Map> resposta = mercadoPagoService.criarOrdemPagamento(
                 request.getValor(),
                 converterNome(request.getTipoPagamento()),
                 request.getParcela(),
@@ -40,7 +38,18 @@ public class MercadoPagoController {
     @GetMapping("/status-ordem/{orderID}")
     public ResponseEntity<?> verificarStatusOrdem(@PathVariable String orderID) {
         // O seu pointService pode buscar a ordem no Mercado Pago pelo external_reference
-        Map<String, Object> statusResponse = pointService.consultarStatusPorReferencia(orderID);
+        Map<String, Object> statusResponse = mercadoPagoService.consultarStatusPorReferencia(orderID);
         return ResponseEntity.ok(statusResponse);
     }
+
+    @GetMapping("/pix-estatico/verificar")
+    public ResponseEntity<?> verificarPixEstatico(
+            @RequestParam Double valor,
+            @RequestParam String inicio) {
+
+        boolean pago = mercadoPagoService.verificarPixPago(valor, inicio);
+        return ResponseEntity.ok(Map.of("paid", pago));
+    }
+
+
 }

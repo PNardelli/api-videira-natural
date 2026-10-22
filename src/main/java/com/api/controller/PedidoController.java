@@ -1,17 +1,15 @@
 package com.api.controller; // Ajuste para o seu pacote correto
 
-import com.api.apiExterno.MercadoPagoService;
+import com.api.apiExterno.mercadoPago.MercadoPagoService;
 import com.api.business.PedidoService;
 import com.api.dto.requests.PedidoRequest;
 import com.api.eNum.StatusPedido;
 import com.api.entity.Pedido;
 import com.api.repository.PedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
