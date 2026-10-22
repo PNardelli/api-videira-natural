@@ -1,20 +1,31 @@
-package com.api.apiExterno;
+package com.api.apiExterno.mercadoPago;
 
 import com.api.dto.requests.ItemCarrinhoRequest;
 import com.api.entity.Pedido;
+import com.api.uteis.Util;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
 public class MercadoPagoService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final String accessToken = "APP_USR-5785880777708319-100810-b063e8c14310df0b6562abaade0a4a37-1327545801";
+//    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Autowired
+    private Util restTemplate;
+
+    @Value("${mercadopago.access.token}")
+    private String accessToken;
 
     // Armazena temporariamente o orderId vinculado à externalReference para consulta ultra-rápida por ID
     private final Map<String, String> cacheExternalParaOrderId = new HashMap<>();
@@ -61,7 +72,7 @@ public class MercadoPagoService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<Map> resposta = restTemplate.postForEntity(url, entity, Map.class);
+            ResponseEntity<Map> resposta = restTemplate.restTemplate().postForEntity(url, entity, Map.class);
 
             // Se criou com sucesso, já salvamos o ID da ordem vinculado à externalReference
             if (resposta.getStatusCode().is2xxSuccessful() && resposta.getBody() != null) {
@@ -90,7 +101,7 @@ public class MercadoPagoService {
             if (orderIdSalvo != null) {
                 String urlPorId = "https://api.mercadopago.com/v1/orders/" + orderIdSalvo;
                 try {
-                    ResponseEntity<Map> respId = restTemplate.exchange(urlPorId, HttpMethod.GET, entity, Map.class);
+                    ResponseEntity<Map> respId = restTemplate.restTemplate().exchange(urlPorId, HttpMethod.GET, entity, Map.class);
                     if (respId.getStatusCode().is2xxSuccessful() && respId.getBody() != null) {
                         ordem = respId.getBody();
                     }
@@ -102,7 +113,7 @@ public class MercadoPagoService {
             // TENTATIVA 2: Se não tiver o ID cacheado ou falhou, busca por external_reference (/search)
             if (ordem == null) {
                 String urlSearch = "https://api.mercadopago.com/v1/orders/search?external_reference=" + externalReference;
-                ResponseEntity<Map> response = restTemplate.exchange(urlSearch, HttpMethod.GET, entity, Map.class);
+                ResponseEntity<Map> response = restTemplate.restTemplate().exchange(urlSearch, HttpMethod.GET, entity, Map.class);
 
                 if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                     List<Map<String, Object>> elements = (List<Map<String, Object>>) response.getBody().get("elements");
@@ -160,8 +171,6 @@ public class MercadoPagoService {
     /**
      * Gera a preferência de pagamento online e retorna o link (init_point) real
      */
-
-
     public String criarPreferenciaCheckout(
             Pedido pedido,
             List<ItemCarrinhoRequest> itens) {
@@ -287,7 +296,7 @@ public class MercadoPagoService {
             HttpEntity<Map<String, Object>> entity =
                     new HttpEntity<>(body, headers);
 
-            ResponseEntity<Map> response = restTemplate.exchange(
+            ResponseEntity<Map> response = restTemplate.restTemplate().exchange(
                     url,
                     HttpMethod.POST,
                     entity,
@@ -330,8 +339,64 @@ public class MercadoPagoService {
         return null;
     }
 
+    public boolean verificarPixPago(Double valorEsperado, String horaAberturaModal) {
+
+        // 1. Converte a hora que veio do Vue.js para Instant e ajusta o formato se necessário
+        Instant inicioJanela = Instant.parse(horaAberturaModal);
+
+        // (Opcional) Se quiser dar uma margem de segurança de alguns segundos antes, pode subtrair,
+        // mas o ideal é usar exatamente o momento que abriu ou 30 segundos antes para garantir.
+        String beginDateParam = OffsetDateTime.ofInstant(inicioJanela, ZoneId.of("UTC")).toString();
+
+        // 2. Monta a URL dinamicamente injetando o begin_date exato do modal
+        // Monta a URL de forma limpa por concatenação
+        String url = "https://api.mercadopago.com/v1/payments/search"
+                + "?sort=date_approved"
+                + "&criteria=desc"
+                + "&payment_method_id=pix"
+                + "&begin_date=" + beginDateParam
+                + "&limit=2";
+
+        System.out.println(url);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.restTemplate().exchange(url, HttpMethod.GET, entity, Map.class);
+            Map<String, Object> body = response.getBody();
+
+            if (body != null && body.containsKey("results")) {
+                List<Map<String, Object>> results = (List<Map<String, Object>>) body.get("results");
+
+                for (Map<String, Object> pagamento : results) {
+                    String status = (String) pagamento.get("status");
+                    Double valorPago = Double.valueOf(pagamento.get("transaction_amount").toString());
+                    String dateApprovedStr = (String) pagamento.get("date_approved");
+
+                    // Valida status aprovado e valor exato
+                    if ("approved".equalsIgnoreCase(status) && valorPago.equals(valorEsperado)) {
+
+                        Instant dataAprovacaoPix = OffsetDateTime.parse(dateApprovedStr).toInstant();
+
+                        // Garante que o pagamento ocorreu após o modal abrir e dentro de uma janela razoável
+                        if (!dataAprovacaoPix.isBefore(inicioJanela)) {
+                            return true; // Pagamento encontrado e validado!
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar Pix no Mercado Pago: " + e.getMessage());
+        }
+        return false;
+    }
+
+
     private String produtoDescricaoPadrao(ItemCarrinhoRequest item) {
         return item.getNome() != null ? item.getNome() : "Produto Videira Natural";
     }
-
 }

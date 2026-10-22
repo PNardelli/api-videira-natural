@@ -1,4 +1,4 @@
-package com.api.apiExterno;
+package com.api.apiExterno.mercadoPago;
 
 import com.mercadopago.MercadoPagoConfig;
 import org.springframework.beans.factory.annotation.Value;
