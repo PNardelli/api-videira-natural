@@ -1,7 +1,6 @@
 package com.api.business;
 
-import com.api.apiExterno.MercadoPagoService;
-import com.api.dto.EnderecoDTO;
+import com.api.apiExterno.mercadoPago.MercadoPagoService;
 import com.api.dto.requests.PedidoRequest;
 import com.api.eNum.StatusPedido;
 import com.api.eNum.TipoEntrega;

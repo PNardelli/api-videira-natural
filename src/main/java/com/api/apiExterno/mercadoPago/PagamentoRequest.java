@@ -1,4 +1,4 @@
-package com.api.apiExterno;
+package com.api.apiExterno.mercadoPago;
 
 import lombok.Getter;
 import lombok.Setter;
