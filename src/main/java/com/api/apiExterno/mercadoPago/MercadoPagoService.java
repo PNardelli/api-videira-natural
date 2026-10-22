@@ -1,7 +1,10 @@
 package com.api.apiExterno.mercadoPago;
 
+import com.api.business.PedidoService;
 import com.api.dto.requests.ItemCarrinhoRequest;
+import com.api.eNum.StatusPedido;
 import com.api.entity.Pedido;
+import com.api.repository.PedidoRepository;
 import com.api.uteis.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,10 +22,11 @@ import java.util.*;
 @Service
 public class MercadoPagoService {
 
-//    private final RestTemplate restTemplate = new RestTemplate();
-
     @Autowired
     private Util restTemplate;
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
 
     @Value("${mercadopago.access.token}")
     private String accessToken;
@@ -56,8 +60,8 @@ public class MercadoPagoService {
         pointConfig.put("print_on_terminal", "no_ticket");
 
         Map<String, Object> paymentMethodConfig = new HashMap<>();
+        paymentMethodConfig.put("default_type", tipoPagamento);
         if (tipoPagamento.equals("credit_card")){
-            paymentMethodConfig.put("default_type", tipoPagamento);
             paymentMethodConfig.put("default_installments", parcela);
             paymentMethodConfig.put("installments_cost", "seller");
         }
@@ -243,7 +247,6 @@ public class MercadoPagoService {
                     itemsList.add(produto);
                 }
             }
-
             // 2. Obtém o frete
             BigDecimal frete = pedido.getValorFrete() != null
                     ? pedido.getValorFrete().setScale(
@@ -266,14 +269,12 @@ public class MercadoPagoService {
 
                 itemsList.add(itemFrete);
             }
-
             // 4. Não cria preferência vazia
             if (itemsList.isEmpty()) {
                 throw new IllegalArgumentException(
                         "O pedido não possui produtos ou frete para cobrar.");
             }
-
-            // 5. Monta a preferência
+            // 5. Monta a preferência restringe os meios de pagamento
             Map<String, Object> body = new HashMap<>();
 
             body.put("items", itemsList);
@@ -288,6 +289,25 @@ public class MercadoPagoService {
                     "https://videiranatural.com.br/falha");
 
             body.put("back_urls", backUrls);
+
+            // --- RESTRIÇÃO DE MEIOS DE PAGAMENTO ---
+            Map<String, Object> paymentMethods = new HashMap<>();
+
+            // Exclui tipos indesejados para garantir que aceite apenas Cartão de Crédito, Débito e carteiras associadas
+            List<Map<String, String>> excludedPaymentTypes = new ArrayList<>();
+
+            // Exclui boletos (ticket)
+            excludedPaymentTypes.add(Map.of("id", "ticket"));
+            // Exclui Pix e transferências bancárias (bank_transfer)
+            excludedPaymentTypes.add(Map.of("id", "bank_transfer"));
+
+            paymentMethods.put("excluded_payment_types", excludedPaymentTypes);
+
+            // Se quiser limitar o número máximo de parcelas, por exemplo:
+            paymentMethods.put("installments", 3);
+
+            body.put("payment_methods", paymentMethods);
+            // ---------------------------------------
 
             // Registra exatamente o que será enviado
             System.out.println(
@@ -322,7 +342,6 @@ public class MercadoPagoService {
                     return (String) initPoint;
                 }
             }
-
         } catch (org.springframework.web.client.HttpStatusCodeException e) {
             System.err.println(
                     "Erro Mercado Pago: "
@@ -335,7 +354,6 @@ public class MercadoPagoService {
                     "Erro ao criar preferência: " + e.getMessage());
             e.printStackTrace();
         }
-
         return null;
     }
 
@@ -394,6 +412,47 @@ public class MercadoPagoService {
         }
         return false;
     }
+
+
+    //WEBHOOK PARA PAGAMENTOS ONLINE DE LINK DE PAGAMENTO.
+    public void processarPagamentoAprovadoPorWebhook(String paymentId) {
+        String urlPagamento = "https://api.mercadopago.com/v1/payments/" + paymentId;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            // 1. Consulta os detalhes do pagamento aprovado na API do Mercado Pago
+            ResponseEntity<Map> response = restTemplate.restTemplate().exchange(urlPagamento, HttpMethod.GET, entity, Map.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map<String, Object> paymentData = response.getBody();
+
+                String status = (String) paymentData.get("status"); // Ex: "approved"
+                String externalReference = (String) paymentData.get("external_reference"); // Este é o ID do Pedido que salvamos antes!
+
+                // 2. Se o pagamento foi realmente aprovado
+                if ("approved".equalsIgnoreCase(status) && externalReference != null) {
+                    Long pedidoId = Long.valueOf(externalReference);
+
+                    // 3. Localiza o pedido no seu banco de dados
+                    Pedido pedido = pedidoRepository.findById(pedidoId).orElse(null);
+
+                    if (pedido != null) {
+                        // 4. Atualiza a etapa para PAGO (ou avança de acordo com a sua regra de negócio/delivery)
+                        pedido.setEtapa(StatusPedido.PAGO);
+                        pedidoRepository.save(pedido);
+
+                        System.out.println("Pedido #" + pedidoId + " atualizado para PAGO via webhook do Mercado Pago!");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao processar o pagamento aprovado no webhook: " + e.getMessage());
+        }
+    }
+
 
 
     private String produtoDescricaoPadrao(ItemCarrinhoRequest item) {
