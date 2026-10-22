@@ -20,7 +20,7 @@ public class MercadoPagoController {
         ResponseEntity<Map> resposta = mercadoPagoService.criarOrdemPagamento(
                 request.getValor(),
                 converterNome(request.getTipoPagamento()),
-                request.getParcela(),
+                request.getParcelas(),
                 request.getExternalReference()
         );
         return ResponseEntity.status(resposta.getStatusCode()).body(resposta.getBody());
