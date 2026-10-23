@@ -20,8 +20,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static com.api.eNum.TipoMovimentacao.AJUSTE;
-import static com.api.eNum.TipoMovimentacao.ENTRADA;
+import static com.api.eNum.TipoMovimentacao.*;
+import static java.util.Arrays.stream;
 
 @Service
 public class EstoqueService {
@@ -52,8 +52,7 @@ public class EstoqueService {
     @Transactional
     public void processarMovimentacao(MovimentacaoDTO dto) {
 
-        ProdutoFornecedor produtoFornecedorExistente = estoqueRepository.recuperarProdutoFornecedorLista(dto.getProdutoId(), dto.getFornecedorIdAntigo()).orElse(null);
-
+        ProdutoFornecedor produtoFornecedorExistente = estoqueRepository.findById(dto.getIdVinculo()).orElse(null);
 
         if (!Objects.equals(dto.getFornecedorId(), dto.getFornecedorIdAntigo())) {
             Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
@@ -128,52 +127,59 @@ public class EstoqueService {
     @Transactional
     public void processarNovaEntrada(MovimentacaoDTO dto) {
 
-        ProdutoFornecedor loteProdutoFornecedor = estoqueRepository.recuperarProdutoFornecedorLista(dto.getProdutoId(), dto.getFornecedorId()).orElse(null);
+        ProdutoFornecedor loteEncontrado = null;
+        List<ProdutoFornecedor> loteProdutoFornecedor = estoqueRepository.recuperarProdutoFornecedorLista(dto.getProdutoId(), dto.getFornecedorId());
 
+        if(!loteProdutoFornecedor.isEmpty()){
+        loteEncontrado = loteProdutoFornecedor.stream()
+                .filter(pf -> pf.getProdutoAtivo() != null && !pf.getProdutoAtivo())
+                .findFirst()
+                .orElse(null);
+        }
         //Se for nulo ele cria um do zero, procurando um Produto Refencia e o Fornecedor
-        if (loteProdutoFornecedor == null) {
+        if (loteEncontrado == null) {
 
-            loteProdutoFornecedor = new ProdutoFornecedor();
+            loteProdutoFornecedor = List.of(new ProdutoFornecedor());
 
             Produto produtoMaster = produtoService.buscar(dto.getProdutoId());
             Fornecedor fornecedorMaster = fornecedorRepository.findById(dto.getFornecedorId()).orElseThrow();
 
-                loteProdutoFornecedor.setProduto(produtoMaster);
-                loteProdutoFornecedor.setFornecedor(fornecedorMaster);
-                loteProdutoFornecedor.setProdutoAtivo(false);
+                loteProdutoFornecedor.get(0).setProduto(produtoMaster);
+                loteProdutoFornecedor.get(0).setFornecedor(fornecedorMaster);
+                loteProdutoFornecedor.get(0).setProdutoAtivo(false);
         }
         //Se não for nulo e já existir um ativo, ele evita de ir no banco e usa o mesmo produto e fornecedor criando um novo lote.
-        if (loteProdutoFornecedor.getProdutoAtivo()){
-            Produto produtoSalvo = loteProdutoFornecedor.getProduto();
-            Fornecedor fornecedorSalvo = loteProdutoFornecedor.getFornecedor();
+        if (loteProdutoFornecedor.get(0).getProdutoAtivo()){
+            Produto produtoSalvo = loteProdutoFornecedor.get(0).getProduto();
+            Fornecedor fornecedorSalvo = loteProdutoFornecedor.get(0).getFornecedor();
 
-            loteProdutoFornecedor = new ProdutoFornecedor();
+            loteProdutoFornecedor = List.of(new ProdutoFornecedor());
 
-            loteProdutoFornecedor.setProduto(produtoSalvo);
-            loteProdutoFornecedor.setFornecedor(fornecedorSalvo);
+            loteProdutoFornecedor.get(0).setProduto(produtoSalvo);
+            loteProdutoFornecedor.get(0).setFornecedor(fornecedorSalvo);
 
         }
 
         // Dados da carga atual
         if (dto.getEstoqueMinimo().equals(BigDecimal.ZERO)){
-            loteProdutoFornecedor.setEstoqueMinimo(new BigDecimal(0.100));
+            loteProdutoFornecedor.get(0).setEstoqueMinimo(new BigDecimal(0.100));
         }else {
-            loteProdutoFornecedor.setEstoqueMinimo(dto.getEstoqueMinimo());
+            loteProdutoFornecedor.get(0).setEstoqueMinimo(dto.getEstoqueMinimo() != null ? dto.getEstoqueMinimo() : BigDecimal.valueOf(0.100));
         }
-        loteProdutoFornecedor.setQuantidade(dto.getQuantidade());
-        loteProdutoFornecedor.setDataEntrada(LocalDateTime.now());
-        loteProdutoFornecedor.setDataValidade(dto.getDataValidade());
-        loteProdutoFornecedor.setDataValidadeDias(obterDiasRestantes(dto.getDataValidade()));
-        loteProdutoFornecedor.setPrecoCompra(dto.getPrecoCompra());
-        loteProdutoFornecedor.setPrecoVenda(dto.getPrecoVenda());
-        loteProdutoFornecedor.setUnidadeMedida(dto.getUnidadeMedida());
-        loteProdutoFornecedor.setProdutoAtivo(true);
+        loteProdutoFornecedor.get(0).setQuantidade(dto.getQuantidade());
+        loteProdutoFornecedor.get(0).setDataEntrada(LocalDateTime.now());
+        loteProdutoFornecedor.get(0).setDataValidade(dto.getDataValidade());
+        loteProdutoFornecedor.get(0).setDataValidadeDias(obterDiasRestantes(dto.getDataValidade()));
+        loteProdutoFornecedor.get(0).setPrecoCompra(dto.getPrecoCompra());
+        loteProdutoFornecedor.get(0).setPrecoVenda(dto.getPrecoVenda());
+        loteProdutoFornecedor.get(0).setUnidadeMedida(dto.getUnidadeMedida());
+        loteProdutoFornecedor.get(0).setProdutoAtivo(true);
 
         // 4. Persistência e Histórico
-        ProdutoFornecedor pfSalvo = produtoFornecedorRepository.save(loteProdutoFornecedor);
+        ProdutoFornecedor pfSalvo = produtoFornecedorRepository.save(loteProdutoFornecedor.get(0));
 
-        produtoService.atualizarPreco(loteProdutoFornecedor.getProduto().getId(), dto.getPrecoVenda());
-        registrarHistorico(dto, pfSalvo, loteProdutoFornecedor.getFornecedor());
+        produtoService.atualizarPreco(loteProdutoFornecedor.get(0).getProduto().getId(), dto.getPrecoVenda());
+        registrarHistorico(dto, pfSalvo, loteProdutoFornecedor.get(0).getFornecedor());
     }
 
 

@@ -5,6 +5,7 @@ import com.api.dto.VendaDTO;
 import com.api.dto.requests.ItemCarrinhoRequest;
 import com.api.dto.requests.ProdutoRequest;
 import com.api.eNum.StatusPedido;
+import com.api.entity.ProdutoFornecedor;
 import com.api.entity.Venda;
 import com.api.repository.ClienteRepository;
 import com.api.repository.ProdutoFornecedorRepository;
@@ -88,15 +89,37 @@ public class VendaService {
         // CASO C: FRONT (botão capturar peso ou sugestão)
         else {
             List<ProdutoFornecedorDTO> produtoFornecedor = produtoFornecedorRepository.buscarGranelPorCodigoLoja(termo);
-            //List<ProdutoFornecedorDTO> produtoFornecedor = produtoService.buscarFlexivel(termo, pageable);
+
+            //Estanciando para somar o estoque se tiver mais de 1.
+            BigDecimal somaTotal = BigDecimal.ZERO;
 
             if (produtoFornecedor == null) return carrinho;
+
+            if (produtoFornecedor.size() > 1){
+                for (ProdutoFornecedorDTO pf : produtoFornecedor) {
+                    if (pf.getQuantidade() != null) {
+                        BigDecimal somaQuantidade = pf.getQuantidade();
+
+                        somaTotal = somaTotal.add(somaQuantidade);
+
+                        System.out.println("Soma Total: " + somaTotal);
+                    }
+                }
+            }else {
+                System.out.println("Produto fornecedor: " +  produtoFornecedor.get(0).getQuantidade());
+                somaTotal = produtoFornecedor.get(0).getQuantidade();
+
+                System.out.println("Soma quantidade: " +  somaTotal);
+            };
+
+            System.out.println(somaTotal);
 
             itemParaAdicionar.setProdutoId(produtoFornecedor.get(0).getProdutoId());
             itemParaAdicionar.setNome(produtoFornecedor.get(0).getNome());
             itemParaAdicionar.setPreco(produtoFornecedor.get(0).getPrecoVenda());
             itemParaAdicionar.setUnidade(produtoFornecedor.get(0).getUnidadeMedida());
-            itemParaAdicionar.setEstoque(produtoFornecedor.get(0).getQuantidade().toString()); // peso da etiqueta
+            //itemParaAdicionar.setEstoque(produtoFornecedor.get(0).getQuantidade().toString()); // peso da etiqueta
+            itemParaAdicionar.setEstoque(somaTotal.toString()); // peso da etiqueta
 
             if (peso != null) {
                 itemParaAdicionar.setQuantidade(BigDecimal.valueOf(peso));
