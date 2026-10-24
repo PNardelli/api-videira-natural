@@ -1,6 +1,7 @@
 package com.api.business;
 
 import com.api.dto.CompraDTO;
+import com.api.dto.CompraResumoDTO;
 import com.api.dto.ItemCompraDTO;
 import com.api.entity.Compra;
 import com.api.entity.Fornecedor;
@@ -10,6 +11,7 @@ import com.api.repository.CompraRepository;
 import com.api.repository.FornecedorRepository;
 import com.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,5 +54,10 @@ public class CompraService {
 
         compra.setItens(itens);
         return compraRepository.save(compra);
+    }
+
+    @Transactional(readOnly = true) // <-- Garante sessão aberta para a projeção do DTO
+    public List<CompraResumoDTO> listarResumo() {
+        return compraRepository.listarResumoCompras();
     }
 }
