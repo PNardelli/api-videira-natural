@@ -22,4 +22,11 @@ public interface EstoqueRepository extends JpaRepository<ProdutoFornecedor, Long
             @Param("produtoId") Long produtoId,
             @Param("fornecedorId") Long fornecedorId);
 
+    @Query("""
+    SELECT pf FROM ProdutoFornecedor pf 
+    WHERE pf.produto.id = :produtoId 
+    ORDER BY pf.precoCompra DESC
+    """)
+    ProdutoFornecedor recuperarMaiorValorCompra(@Param("produtoId") Long produtoId);
+
 }

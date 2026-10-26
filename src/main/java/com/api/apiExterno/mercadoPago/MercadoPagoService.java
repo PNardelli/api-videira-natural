@@ -45,7 +45,7 @@ public class MercadoPagoService {
         Map<String, Object> body = new HashMap<>();
         body.put("type", "point");
         body.put("external_reference", externalReference);
-        body.put("expiration_time", "PT1M");
+        body.put("expiration_time", "PT2M");
         body.put("description", "Videira Natural - Point");
 
         Map<String, Object> paymentMap = new HashMap<>();
@@ -60,9 +60,9 @@ public class MercadoPagoService {
         pointConfig.put("print_on_terminal", "no_ticket");
 
         Map<String, Object> paymentMethodConfig = new HashMap<>();
-        paymentMethodConfig.put("default_type", tipoPagamento);
-        if (tipoPagamento.equals("credit_card")){
-            paymentMethodConfig.put("default_installments", parcela);
+        paymentMethodConfig.put("default_type", tipoPagamento); // Aqui já recebe "credit_card" ou "debit_card" limpo!
+        if ("credit_card".equals(tipoPagamento)){
+            paymentMethodConfig.put("default_installments", parcela != null ? parcela : 1);
             paymentMethodConfig.put("installments_cost", "seller");
         }
 
