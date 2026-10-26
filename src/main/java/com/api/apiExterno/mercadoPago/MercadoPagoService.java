@@ -60,11 +60,16 @@ public class MercadoPagoService {
         pointConfig.put("print_on_terminal", "no_ticket");
 
         Map<String, Object> paymentMethodConfig = new HashMap<>();
-        paymentMethodConfig.put("default_type", tipoPagamento); // Aqui já recebe "credit_card" ou "debit_card" limpo!
-        if ("credit_card".equals(tipoPagamento)){
-            paymentMethodConfig.put("default_installments", parcela != null ? parcela : 1);
+
+        if (tipoPagamento == "CARTAO_CREDITO"){
+            tipoPagamento = "credit_card";
+            paymentMethodConfig.put("default_installments", parcela);
             paymentMethodConfig.put("installments_cost", "seller");
         }
+        if (tipoPagamento == "CARTAO_DEBITO"){
+            tipoPagamento = "debit_card";
+        }
+        paymentMethodConfig.put("default_type", tipoPagamento);
 
         Map<String, Object> config = new HashMap<>();
         config.put("point", pointConfig);
