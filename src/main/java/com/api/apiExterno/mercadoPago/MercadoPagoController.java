@@ -18,25 +18,13 @@ public class MercadoPagoController {
     @PostMapping("/cobrar")
     public ResponseEntity<?> cobrarNaMaquininha(@RequestBody VendaMercadoPagoDTO request) {
 
-        String tipoConvertido = converterNome(request.getTipoPagamento());
-
         ResponseEntity<Map> resposta = mercadoPagoService.criarOrdemPagamento(
                 request.getValor(),
-                tipoConvertido,
+                request.getTipoPagamento(),
                 request.getParcelas(),
                 request.getExternalReference()
         );
         return ResponseEntity.status(resposta.getStatusCode()).body(resposta.getBody());
-    }
-
-    private String converterNome(String tipoPagamento) {
-        if ("CARTAO_CREDITO".equals(tipoPagamento) || "CREDITO_PARCELADO".equals(tipoPagamento)) {
-            return "credit_card";
-        } else if ("CARTAO_DEBITO".equals(tipoPagamento)) {
-            return "debit_card";
-        }
-        // Valor padrão caso venha vazio ou inesperado
-        return "debit_card";
     }
 
     @GetMapping("/status-ordem/{orderID}")
