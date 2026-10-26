@@ -17,9 +17,12 @@ public class MercadoPagoController {
 
     @PostMapping("/cobrar")
     public ResponseEntity<?> cobrarNaMaquininha(@RequestBody VendaMercadoPagoDTO request) {
+
+        String tipoConvertido = converterNome(request.getTipoPagamento());
+
         ResponseEntity<Map> resposta = mercadoPagoService.criarOrdemPagamento(
                 request.getValor(),
-                converterNome(request.getTipoPagamento()),
+                tipoConvertido,
                 request.getParcelas(),
                 request.getExternalReference()
         );
