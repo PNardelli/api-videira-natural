@@ -20,6 +20,8 @@ public class Compra {
 
     private LocalDateTime dataHora = LocalDateTime.now();
 
+    private String identificadorNota = "SEM NOTA";
+
     @ManyToOne
     @JoinColumn(name = "fornecedor_id")
     private Fornecedor fornecedor;

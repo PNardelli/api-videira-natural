@@ -18,4 +18,5 @@ public class CompraResumoDTO {
     private String status;
     private LocalDate previsaoEntrega;
     private LocalDate dataEntrega;
+    private String identificadorNota;
 }
