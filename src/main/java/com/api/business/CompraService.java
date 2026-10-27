@@ -5,9 +5,10 @@ import com.api.dto.CompraDetalheDTO;
 import com.api.dto.CompraResumoDTO;
 import com.api.dto.ItemCompraDTO;
 import com.api.entity.*;
-import com.api.repository.*;
+import com.api.repository.CompraRepository;
+import com.api.repository.EstoqueRepository;
+import com.api.repository.FornecedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,6 +60,48 @@ public class CompraService {
         return compraRepository.save(compra);
     }
 
+    @Transactional
+    public Compra editarCompraPorId(Long id, CompraDTO compraAlterada) {
+        // 1. Busca a compra existente no banco com seus itens atuais
+        Compra compra = compraRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Compra não encontrada."));
+
+        // Mapeia os itens atuais que já estão no banco por ID para facilitar a localização
+        Map<Long, ItemCompra> itensAtuaisMap = compra.getItens().stream()
+                .filter(item -> item.getId() != null)
+                .collect(Collectors.toMap(ItemCompra::getId, item -> item));
+
+        List<ItemCompra> novaListaItens = new ArrayList<>();
+
+        if (compraAlterada.getItens() != null) {
+            for (var itemDto : compraAlterada.getItens()) {
+                ItemCompra item;
+
+                // Se o DTO trouxer um ID e ele já existir no banco, aproveitamos o registro (mantém o ID antigo!)
+                if (itemDto.getId() != null && itensAtuaisMap.containsKey(itemDto.getId())) {
+                    item = itensAtuaisMap.get(itemDto.getId());
+                } else {
+                    // Se for um item novo adicionado na tela, criamos um novo objeto
+                    item = new ItemCompra();
+                    item.setCompra(compra);
+                }
+
+                // Atualiza os valores direto no item (existente ou novo)
+                item.setQuantidade(itemDto.getQuantidade());
+                item.setValorUnitario(itemDto.getValorUnitario());
+
+                novaListaItens.add(item);
+            }
+        }
+
+        // 2. Atualiza a lista da compra (o JPA vai atualizar os modificados, inserir os novos e remover os que sumiram da lista)
+        compra.getItens().clear();
+        compra.getItens().addAll(novaListaItens);
+
+        // 3. Salva e retorna
+        return compraRepository.save(compra);
+    }
+
     @Transactional(readOnly = true) // <-- Garante sessão aberta para a projeção do DTO
     public List<CompraResumoDTO> listarResumo() {
         return compraRepository.listarResumoCompras();
@@ -95,28 +139,49 @@ public class CompraService {
         );
     }
 
-    @Transactional(readOnly = true)
+
+    @Transactional
+    public void deletarItemCompra(Long id, Long idCompra){
+        compraRepository.excluirItemDaCompra(id, idCompra);
+    }
+
+    @Transactional
     public Compra ajustarPrevisao(@PathVariable Long id, LocalDate previsao) {
         Compra compra = compraRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Compra não encontrada"));
-        compra.setDataEntrega(previsao);
-        return ResponseEntity.ok(compra).getBody();
+        compra.setPrevisaoEntrega(previsao);
+        compra.setStatus("AGUARDANDO");
+        return compraRepository.save(compra);
     }
 
 
-        @Transactional
-    public void processarRecebimentoEstoque(Long id) {
+    @Transactional
+    public void processarRecebimentoEstoque(Long id, String notaFiscal) {
         Compra compra = compraRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Compra não encontrada"));
 
-        // Atualiza o status para recebida e define a data de entrega atual
+        // Valida se já não foi recebida para evitar duplicidade de estoque
+        if ("RECEBIDA".equals(compra.getStatus())) {
+            throw new RuntimeException("Esta compra já foi recebida e integrada ao estoque.");
+        }
+
+        // Atualiza o status, número da nota e a data de entrega atual
         compra.setStatus("RECEBIDA");
+        compra.setIdentificadorNota(notaFiscal);
         compra.setDataEntrega(LocalDate.now());
 
-        // Se você tiver a lógica de somar os itens ao estoque dos produtos, chame aqui:
-        // for (ItemCompra item : compra.getItens()) {
-        //     produtoService.adicionarEstoque(item.getProduto().getId(), item.getQuantidadePedida());
-        // }
+        // Percorre item por item para dar entrada no estoque do produto
+//        for (ItemCompra item : compra.getItens()) {
+//            if (item.getProduto() != null) {
+//                Long produtoId = item.getProduto().getId();
+//
+//                // Pega a quantidade conferida/pedida do item
+//                Double quantidadeRecebida = item.getQuantidade(); // ou getQuantidadePedida(), dependendo do seu modelo
+//
+//                // Chama o serviço responsável por somar o estoque
+//                produtoService.adicionarEstoque(produtoId, quantidadeRecebida);
+//            }
+//        }
 
         compraRepository.save(compra);
     }
