@@ -27,6 +27,9 @@ public class CompraService {
     private CompraRepository compraRepository;
 
     @Autowired
+    private EstoqueService estoqueService;
+
+    @Autowired
     private FornecedorRepository fornecedorRepository;
 
     @Autowired
@@ -45,14 +48,15 @@ public class CompraService {
 
         List<ItemCompra> itens = new ArrayList<>();
         for (ItemCompraDTO itemDto : dto.getItens()) {
-            Produto produto = produtoRepository.buscar(itemDto.getProdutoId());
-            ProdutoFornecedor produtoFornecedor = estoqueRepository.recuperarMaiorValorCompra(itemDto.getProdutoId());
+            List<ProdutoFornecedor> produtoFornecedor = estoqueRepository.recuperarProdutoFornecedorLista(itemDto.getProdutoId(), fornecedor.getId());
 
             ItemCompra item = new ItemCompra();
             item.setCompra(compra);
-            item.setProdutoFornecedor(produtoFornecedor);
+            item.setProdutoFornecedor(produtoFornecedor.get(0));
             item.setQuantidade(itemDto.getQuantidade());
-            item.setValorUnitario(produtoFornecedor.getPrecoCompra() != null ? produtoFornecedor.getPrecoCompra().doubleValue() : 0.0);
+            item.setValorUnitario(produtoFornecedor.get(0).getPrecoCompra() != null ? produtoFornecedor.get(0).getPrecoCompra().doubleValue() : 0.0);
+            item.setValorVenda(produtoFornecedor.get(0).getPrecoVenda().doubleValue());
+            item.setProdutoId(produtoFornecedor.get(0).getProduto().getId());
             itens.add(item);
         }
 
@@ -89,6 +93,7 @@ public class CompraService {
                 // Atualiza os valores direto no item (existente ou novo)
                 item.setQuantidade(itemDto.getQuantidade());
                 item.setValorUnitario(itemDto.getValorUnitario());
+                item.setValorVenda(itemDto.getValorVenda());
 
                 novaListaItens.add(item);
             }
@@ -121,7 +126,8 @@ public class CompraService {
                         item.getProdutoFornecedor().getProduto() != null ? item.getProdutoFornecedor().getProduto().getUnidadeMedida().toString() : "UN", // unidadeMedida
                         item.getQuantidade(),                                           // quantidade
                         item.getValorUnitario(),
-                        item.getValorUnitario()
+                        item.getValorUnitario(),
+                        item.getValorVenda()
 
                 )
         ).collect(Collectors.toList());
@@ -141,7 +147,7 @@ public class CompraService {
 
 
     @Transactional
-    public void deletarItemCompra(Long id, Long idCompra){
+    public void deletarItemCompra(Long id, Long idCompra) {
         compraRepository.excluirItemDaCompra(id, idCompra);
     }
 
@@ -154,35 +160,31 @@ public class CompraService {
         return compraRepository.save(compra);
     }
 
-
     @Transactional
-    public void processarRecebimentoEstoque(Long id, String notaFiscal) {
-        Compra compra = compraRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Compra não encontrada"));
+    public void processarRecebimentoEstoque(Long id, String numeroNotaFiscal) throws Exception {
+        try{
 
-        // Valida se já não foi recebida para evitar duplicidade de estoque
-        if ("RECEBIDA".equals(compra.getStatus())) {
-            throw new RuntimeException("Esta compra já foi recebida e integrada ao estoque.");
+            Compra compra = compraRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Compra não encontrada"));
+
+            if ("RECEBIDA".equals(compra.getStatus())) {
+                throw new RuntimeException("Esta compra já foi recebida.");
+            }
+
+            // Percorre os itens e chama o método que está no outro Service
+            for (ItemCompra item : compra.getItens()) {
+                if (item.getProdutoFornecedor().getProduto().getId() != null) {
+                    estoqueService.novaEntradaViaCompras(item);
+                }
+            }
+            compra.setStatus("RECEBIDA");
+            compra.setIdentificadorNota(numeroNotaFiscal);
+            compra.setDataEntrega(LocalDate.now());
+
+            compraRepository.save(compra);
+
+        }catch (Exception e){
+            throw new Exception(e.getMessage());
         }
-
-        // Atualiza o status, número da nota e a data de entrega atual
-        compra.setStatus("RECEBIDA");
-        compra.setIdentificadorNota(notaFiscal);
-        compra.setDataEntrega(LocalDate.now());
-
-        // Percorre item por item para dar entrada no estoque do produto
-//        for (ItemCompra item : compra.getItens()) {
-//            if (item.getProduto() != null) {
-//                Long produtoId = item.getProduto().getId();
-//
-//                // Pega a quantidade conferida/pedida do item
-//                Double quantidadeRecebida = item.getQuantidade(); // ou getQuantidadePedida(), dependendo do seu modelo
-//
-//                // Chama o serviço responsável por somar o estoque
-//                produtoService.adicionarEstoque(produtoId, quantidadeRecebida);
-//            }
-//        }
-
-        compraRepository.save(compra);
     }
 }

@@ -51,7 +51,7 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
 
 
     @Query("SELECT pf FROM ProdutoFornecedor pf JOIN FETCH pf.produto p " +
-            "WHERE p.id = :produtoId AND pf.produtoAtivo = true AND pf.quantidade > 0 " +
+            "WHERE p.id = :produtoId AND pf.produtoAtivo = true AND pf.quantidade >= 0 " +
             "ORDER BY pf.dataValidade ASC")
     List<ProdutoFornecedor> findAtivosPorProduto(@Param("produtoId") Long produtoId);
 
