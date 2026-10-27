@@ -61,12 +61,12 @@ public class MercadoPagoService {
 
         Map<String, Object> paymentMethodConfig = new HashMap<>();
 
-        if (tipoPagamento == "CARTAO_CREDITO"){
+        if (tipoPagamento.equals("CARTAO_CREDITO")){
             tipoPagamento = "credit_card";
             paymentMethodConfig.put("default_installments", parcela);
             paymentMethodConfig.put("installments_cost", "seller");
         }
-        if (tipoPagamento == "CARTAO_DEBITO"){
+        if (tipoPagamento.equals("CARTAO_DEBITO")){
             tipoPagamento = "debit_card";
         }
         paymentMethodConfig.put("default_type", tipoPagamento);
