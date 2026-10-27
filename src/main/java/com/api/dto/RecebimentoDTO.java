@@ -5,4 +5,5 @@ import lombok.Data;
 @Data
 public class RecebimentoDTO {
     private String numeroNotaFiscal;
+    private Long fornecedorId;
 }

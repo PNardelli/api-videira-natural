@@ -20,7 +20,10 @@ public class ItemCompra {
     @JoinColumn(name = "produto_fornecedor_id")
     private ProdutoFornecedor produtoFornecedor;
 
+    private Long produtoId;
+
     private Integer quantidade;
     private Double valorUnitario;
+    private Double valorVenda;
 
 }

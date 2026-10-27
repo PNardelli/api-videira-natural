@@ -175,9 +175,9 @@ public class ProdutoService {
         return produtoFornecedorRepository.findEstoqueCritico();
     }
 
-    public void atualizarPreco(Long id, BigDecimal preco){
+    public void atualizarPreco(Long id, BigDecimal precoVenda){
         Produto produto = produtoRepository.findById(id).orElseThrow();
-        produto.setPrecoVenda(preco);
+        produto.setPrecoVenda(precoVenda);
         produtoRepository.save(produto);
     }
 }

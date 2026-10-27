@@ -251,6 +251,50 @@ public class EstoqueService {
         return venda;
     }
 
+    @Transactional
+    public void novaEntradaViaCompras(ItemCompra itemCompra) {
+        List<ProdutoFornecedor> produtoFornecedorList = produtoFornecedorRepository.getProdutoFornecedorList(itemCompra.getProdutoId(), null);
+
+        ProdutoFornecedor produtoFornecedorUnico = null;
+
+        for (ProdutoFornecedor pf : produtoFornecedorList) {
+            boolean ehOFornecedorDaCompra = pf.getFornecedor() != null && pf.getFornecedor().getId().equals(itemCompra.getProdutoFornecedor().getFornecedor().getId());
+
+            if (ehOFornecedorDaCompra) {
+                // Encontramos o vínculo correto!
+                produtoFornecedorUnico = pf;
+            } else {
+                // Se NÃO for o fornecedor da compra, e o estoque estiver zerado (ou <= 0), desativa
+                BigDecimal estoquePf = pf.getQuantidade() != null ? pf.getQuantidade() : BigDecimal.ZERO;
+                if (estoquePf.compareTo(BigDecimal.ZERO) == 0) {
+                    pf.setProdutoAtivo(false);
+                    produtoFornecedorRepository.save(pf);
+                }
+            }
+        }
+
+        // 3. Se por acaso o produto nunca teve um vínculo com esse fornecedor, você pode criar um novo aqui
+        if (produtoFornecedorUnico == null) {
+            produtoFornecedorUnico = new ProdutoFornecedor();
+            // Atribui o produto e o fornecedor ao novo objeto
+            // vinculoAlvo.setProduto(produtoRepository.findById(produtoId).orElseThrow(...));
+            // vinculoAlvo.setFornecedor(fornecedorRepository.findById(fornecedorId).orElseThrow(...));
+        }
+
+        // 4. Atualiza os dados do vínculo correto (ativa ele, soma o estoque e atualiza o valor se precisar)
+        produtoFornecedorUnico.setProdutoAtivo(true);
+
+        BigDecimal estoqueAtual = produtoFornecedorUnico.getQuantidade() != null ? produtoFornecedorUnico.getQuantidade() : BigDecimal.ZERO;
+        produtoFornecedorUnico.setQuantidade(estoqueAtual.add(BigDecimal.valueOf(itemCompra.getQuantidade())));
+        produtoFornecedorUnico.setPrecoVenda(BigDecimal.valueOf(itemCompra.getValorVenda()));
+        produtoFornecedorUnico.setPrecoCompra(BigDecimal.valueOf(itemCompra.getValorUnitario()));
+
+        produtoService.atualizarPreco(itemCompra.getProdutoId(), BigDecimal.valueOf(itemCompra.getValorVenda()));
+
+        produtoFornecedorRepository.save(produtoFornecedorUnico);
+
+    }
+
 
     //REGISTRAR NA TABELA DE HISTORICO.
     private void registrarHistorico(MovimentacaoDTO dto, ProdutoFornecedor pfSalvo, Fornecedor fornecedor) {

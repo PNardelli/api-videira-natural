@@ -14,5 +14,6 @@ public class ItemCompraDTO {
     private String unidadeMedida;
     private Integer quantidade;
     private Double valorUnitario;
-    private Double valorOriginal; // <-- Para comparar se houve alteração
+    private Double valorOriginal;
+    private Double valorVenda;// <-- Para comparar se houve alteração
 }

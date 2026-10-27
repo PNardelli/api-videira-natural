@@ -53,16 +53,16 @@ public class CompraController {
     }
 
     @PostMapping("/{id}/previsao/{previsao}")
-    public ResponseEntity<Compra> ajustarPrevisao(@PathVariable Long id,
+    public void ajustarPrevisao(@PathVariable Long id,
                                                   @PathVariable
                                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                                   LocalDate previsao) {
         Compra response = compraService.ajustarPrevisao(id, previsao);
-        return ResponseEntity.ok(response);
+        //return ResponseEntity.ok().body();
     }
 
     @PostMapping("/{id}/receber")
-    public ResponseEntity<Void> confirmarRecebimento(@PathVariable Long id, @RequestBody RecebimentoDTO notaFiscal ) {
+    public ResponseEntity<Void> confirmarRecebimento(@PathVariable Long id, @RequestBody RecebimentoDTO notaFiscal ) throws Exception {
         compraService.processarRecebimentoEstoque(id, notaFiscal.getNumeroNotaFiscal());
         return ResponseEntity.ok().build();
     }
