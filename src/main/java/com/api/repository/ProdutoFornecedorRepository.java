@@ -101,7 +101,7 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
             FROM ProdutoFornecedor pf
             INNER JOIN pf.produto p
             WHERE p.codigoProduto = :codigoProduto
-              AND pf.quantidade >= 0
+              AND pf.quantidade >= 0 AND pf.produtoAtivo = true
             ORDER BY pf.dataValidade ASC
         """)
     List<ProdutoFornecedorDTO> buscarGranelPorCodigoLoja(
