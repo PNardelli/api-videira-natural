@@ -31,7 +31,7 @@ public class PedidoController {
         return pedidoRepository.findAll();
     }
 
-    @PostMapping
+    @PostMapping("/criar")
     public ResponseEntity<?> criarPedido(@RequestBody PedidoRequest request) {
         return pedidoService.criarPedidoPDV(request);
     }

@@ -101,18 +101,11 @@ public class VendaService {
                         BigDecimal somaQuantidade = pf.getQuantidade();
 
                         somaTotal = somaTotal.add(somaQuantidade);
-
-                        System.out.println("Soma Total: " + somaTotal);
                     }
                 }
             }else {
-                System.out.println("Produto fornecedor: " +  produtoFornecedor.get(0).getQuantidade());
                 somaTotal = produtoFornecedor.get(0).getQuantidade();
-
-                System.out.println("Soma quantidade: " +  somaTotal);
             };
-
-            System.out.println(somaTotal);
 
             itemParaAdicionar.setProdutoId(produtoFornecedor.get(0).getProdutoId());
             itemParaAdicionar.setNome(produtoFornecedor.get(0).getNome());
