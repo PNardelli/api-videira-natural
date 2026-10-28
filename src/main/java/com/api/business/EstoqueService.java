@@ -285,7 +285,7 @@ public class EstoqueService {
         produtoFornecedorUnico.setProdutoAtivo(true);
 
         BigDecimal estoqueAtual = produtoFornecedorUnico.getQuantidade() != null ? produtoFornecedorUnico.getQuantidade() : BigDecimal.ZERO;
-        produtoFornecedorUnico.setQuantidade(estoqueAtual.add(BigDecimal.valueOf(itemCompra.getQuantidade())));
+        produtoFornecedorUnico.setQuantidade(estoqueAtual.add(itemCompra.getQuantidade()));
         produtoFornecedorUnico.setPrecoVenda(BigDecimal.valueOf(itemCompra.getValorVenda()));
         produtoFornecedorUnico.setPrecoCompra(BigDecimal.valueOf(itemCompra.getValorUnitario()));
 

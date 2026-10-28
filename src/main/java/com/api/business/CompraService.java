@@ -40,10 +40,11 @@ public class CompraService {
 
     @Transactional
     public Compra salvarCompra(CompraDTO dto) {
+        Compra compra = new Compra();
+
         Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
                 .orElseThrow(() -> new RuntimeException("Fornecedor não encontrado"));
 
-        Compra compra = new Compra();
         compra.setFornecedor(fornecedor);
 
         List<ItemCompra> itens = new ArrayList<>();
@@ -51,15 +52,31 @@ public class CompraService {
             List<ProdutoFornecedor> produtoFornecedor = estoqueRepository.recuperarProdutoFornecedorLista(itemDto.getProdutoId(), fornecedor.getId());
 
             ItemCompra item = new ItemCompra();
-            item.setCompra(compra);
-            item.setProdutoFornecedor(produtoFornecedor.get(0));
-            item.setQuantidade(itemDto.getQuantidade());
-            item.setValorUnitario(produtoFornecedor.get(0).getPrecoCompra() != null ? produtoFornecedor.get(0).getPrecoCompra().doubleValue() : 0.0);
-            item.setValorVenda(produtoFornecedor.get(0).getPrecoVenda().doubleValue());
-            item.setProdutoId(produtoFornecedor.get(0).getProduto().getId());
-            itens.add(item);
-        }
+            if (produtoFornecedor.isEmpty()){
+                ProdutoFornecedor produtoFornecedorNaoCriado = estoqueRepository.recuperarMaiorValorCompra(itemDto.getProdutoId());
+                //Alterando para criar o fornecedor novo no produto que não existe ainda, primeiro pedido.
 
+                item.setCompra(compra);
+                produtoFornecedorNaoCriado.setFornecedor(fornecedor);
+                item.setProdutoFornecedor(produtoFornecedorNaoCriado);
+                item.setQuantidade(itemDto.getQuantidade());
+                item.setValorUnitario(produtoFornecedorNaoCriado.getPrecoCompra() != null ? produtoFornecedorNaoCriado.getPrecoCompra().doubleValue() : 0.0);
+                item.setValorVenda(produtoFornecedorNaoCriado.getPrecoVenda().doubleValue());
+                item.setProdutoId(item.getProdutoId());
+                itens.add(item);
+
+            }else {
+                item.setCompra(compra);
+                item.setProdutoFornecedor(produtoFornecedor.get(0));
+                item.setQuantidade(itemDto.getQuantidade());
+                item.setValorUnitario(produtoFornecedor.get(0).getPrecoCompra() != null ? produtoFornecedor.get(0).getPrecoCompra().doubleValue() : 0.0);
+                item.setValorVenda(produtoFornecedor.get(0).getPrecoVenda().doubleValue());
+                item.setProdutoId(produtoFornecedor.get(0).getProduto().getId());
+                itens.add(item);
+
+            }
+
+        }
         compra.setItens(itens);
         return compraRepository.save(compra);
     }

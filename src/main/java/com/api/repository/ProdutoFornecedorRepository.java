@@ -69,7 +69,7 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
 
     @Query("SELECT new com.api.dto.AlertaEstoqueDTO(p.nome, pf.quantidade, pf.dataValidade) " +
             "FROM ProdutoFornecedor pf JOIN pf.produto p " +
-            "WHERE pf.quantidade <= 0 AND p.ativo = true")
+            "WHERE pf.quantidade = 0 AND pf.produtoAtivo = true")
     List<AlertaEstoqueDTO> buscarSemEstoque();
 
     @Query("SELECT pf FROM ProdutoFornecedor pf JOIN FETCH pf.produto p WHERE pf.quantidade <= pf.estoqueMinimo")
@@ -100,7 +100,7 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
             FROM ProdutoFornecedor pf
             INNER JOIN pf.produto p
             WHERE p.codigoProduto = :codigoProduto
-              AND pf.quantidade > 0
+              AND pf.quantidade >= 0
             ORDER BY pf.dataValidade ASC
         """)
     List<ProdutoFornecedorDTO> buscarGranelPorCodigoLoja(

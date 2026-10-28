@@ -19,7 +19,8 @@ public interface CompraRepository extends JpaRepository<Compra, Long> {
             "FROM Compra c " +
             "LEFT JOIN c.fornecedor f " +
             "LEFT JOIN c.itens i " +
-            "GROUP BY c.id, c.dataHora, f.nome, c.status, c.previsaoEntrega, c.dataEntrega")
+            "GROUP BY c.id, c.dataHora, f.nome, c.status, c.previsaoEntrega, c.dataEntrega " +
+            "ORDER BY c.id DESC")
     List<CompraResumoDTO> listarResumoCompras();
 
     @Modifying
