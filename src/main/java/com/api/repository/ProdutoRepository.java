@@ -64,7 +64,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long > {
     @Query("SELECT p FROM Produto p WHERE p.categoria.id = :categoriaId")
     Page<Produto> findByCategoriaId(@Param("categoriaId") Long categoriaId, Pageable pageable);
 
-    @Query("SELECT p FROM Produto p WHERE p.categoria.id = :categoriaId AND (LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR p.codigoProduto LIKE CONCAT('%', :termo, '%'))")
+    @Query("SELECT p FROM Produto p WHERE p.categoria.id = :categoriaId AND (LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR p.codigoProduto LIKE CONCAT('%', :termo, '%')) ORDER BY p.id DESC")
     Page<Produto> findByCategoriaAndFlexivelPaginado(@Param("categoriaId") Long categoriaId, @Param("termo") String termo, Pageable pageable);
 
     @Query(value = "SELECT MAX(CAST(codigo_produto AS INTEGER)) + 1 AS proximo_codigo " +

@@ -2,6 +2,9 @@ package com.api.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -22,7 +25,7 @@ public class ItemCompra {
 
     private Long produtoId;
 
-    private Integer quantidade;
+    private BigDecimal quantidade;
     private Double valorUnitario;
     private Double valorVenda;
 
