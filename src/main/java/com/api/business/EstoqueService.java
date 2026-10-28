@@ -295,7 +295,6 @@ public class EstoqueService {
 
     }
 
-
     //REGISTRAR NA TABELA DE HISTORICO.
     private void registrarHistorico(MovimentacaoDTO dto, ProdutoFornecedor pfSalvo, Fornecedor fornecedor) {
 
