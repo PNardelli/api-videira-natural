@@ -26,8 +26,9 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
 
     @Query("""
             SELECT pf FROM ProdutoFornecedor pf 
-            WHERE pf.produto.id = :produtoId 
-            ORDER BY pf.dataValidade ASC
+            WHERE pf.produto.id = :produtoId
+            AND pf.produtoAtivo = true
+            ORDER BY pf.precoVenda ASC
             """)
     List<ProdutoFornecedor> getProdutoFornecedorList(Long produtoId, Pageable pageable);
 
@@ -67,9 +68,9 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
             "WHERE pf.quantidade <= pf.estoqueMinimo AND pf.quantidade > 0 AND pf.produtoAtivo = true")
     List<AlertaEstoqueDTO> buscarEstoqueBaixo();
 
-    @Query("SELECT new com.api.dto.AlertaEstoqueDTO(p.nome, pf.quantidade, pf.dataValidade) " +
+    @Query("SELECT NEW com.api.dto.AlertaEstoqueDTO(p.nome, pf.quantidade, pf.dataValidade) " +
             "FROM ProdutoFornecedor pf JOIN pf.produto p " +
-            "WHERE pf.quantidade = 0 AND pf.produtoAtivo = true")
+            "WHERE pf.quantidade = 0 AND pf.produtoAtivo = true AND p.ativo = true")
     List<AlertaEstoqueDTO> buscarSemEstoque();
 
     @Query("SELECT pf FROM ProdutoFornecedor pf JOIN FETCH pf.produto p WHERE pf.quantidade <= pf.estoqueMinimo")
@@ -82,7 +83,7 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
             "f.nome, pf.quantidade, pf.estoqueMinimo, pf.unidadeMedida, " +
             "pf.precoCompra, pf.precoVenda, pf.dataValidade) " +
             "FROM ProdutoFornecedor pf JOIN pf.produto p LEFT JOIN pf.fornecedor f " +
-            "WHERE pf.produtoAtivo = true")
+            "WHERE pf.produtoAtivo = true AND p.ativo = true")
     List<EstoqueItemDTO> listarEstoqueCompletoOTimizado();
 
 
