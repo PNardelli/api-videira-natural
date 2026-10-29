@@ -295,6 +295,34 @@ public class EstoqueService {
 
     }
 
+    @Transactional
+    public void cancelamentoVendaEstornoEstoque(Venda venda) {
+
+        for (var item : venda.getItens()) {
+
+            ProdutoFornecedor produtoFornecedor = produtoFornecedorRepository
+                    .findById(item.getProdutoFornecedor().getId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Produto fornecedor não encontrado: "
+                                    + item.getProdutoFornecedor().getId()
+                    ));
+
+            BigDecimal estoqueAtual = produtoFornecedor.getQuantidade();
+            BigDecimal quantidadeEstornar = item.getQuantidade();
+
+            produtoFornecedor.setQuantidade(
+                    estoqueAtual.add(quantidadeEstornar)
+            );
+
+            produtoFornecedorRepository.save(produtoFornecedor);
+        }
+    }
+
+
+    /*
+    * Metodos privados
+    * */
+
     //REGISTRAR NA TABELA DE HISTORICO.
     private void registrarHistorico(MovimentacaoDTO dto, ProdutoFornecedor pfSalvo, Fornecedor fornecedor) {
 
@@ -333,7 +361,6 @@ public class EstoqueService {
 
         movimentacaoRepository.save(mov);
     }
-
 
     //REGRA PARA ATIVAR E DESATIVAR O PRODUTO.
     private void desativarProdutoFornecedor(List<ProdutoFornecedor> todosOsLotes, Long produtoId) {
