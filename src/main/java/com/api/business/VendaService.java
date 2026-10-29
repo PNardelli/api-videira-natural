@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -165,12 +166,12 @@ public class VendaService {
     }
 
     public List<Venda> listarVendasDoisDias(String termo) {
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
 
-        LocalDateTime inicio = hoje.minusDays(1).atStartOfDay();
+        LocalDateTime inicio = hoje.atStartOfDay();
         LocalDateTime fim = hoje.plusDays(1).atStartOfDay();
 
-        return vendaRepository.buscarVendasDoisDias(termo, inicio, fim);
+        return vendaRepository.buscarVendaDia(termo, inicio, fim);
     }
 
     @Transactional

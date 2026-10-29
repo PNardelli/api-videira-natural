@@ -32,14 +32,20 @@ public interface VendaRepository  extends JpaRepository<Venda, Long> {
             "OR CAST(v.id AS string) LIKE CONCAT('%', :termo, '%') " +
             "OR (c IS NOT NULL AND LOWER(c.nome) LIKE LOWER(CONCAT('%', :termo, '%')))) " +
             "ORDER BY v.id DESC")
-    List<Venda> buscarVendasDoisDias(
+    List<Venda> buscarVendaDia(
             @Param("termo") String termo,
             @Param("inicio") LocalDateTime inicio,
             @Param("fim") LocalDateTime fim
     );
 
-    @Query("SELECT SUM(v.total) FROM Venda v WHERE v.statusPedido = 'FINALIZADO' AND v.dataVenda >= :inicioPeriodo")
-    BigDecimal somarVendasAPartirDe(@Param("inicioPeriodo") LocalDateTime inicioPeriodo);
+    @Query("SELECT COALESCE(SUM(v.total), 0) FROM Venda v " +
+            "WHERE v.statusPedido = 'FINALIZADO' " +
+            "AND v.dataVenda >= :inicio " +
+            "AND v.dataVenda < :fim")
+    BigDecimal somarVendasFinalizadasPorPeriodo(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
 
     @Query("SELECT DISTINCT v FROM Venda v " +
             "LEFT JOIN v.cliente c " +
