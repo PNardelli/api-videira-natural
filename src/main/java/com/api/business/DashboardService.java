@@ -6,50 +6,54 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.time.DayOfWeek;
+import java.time.ZoneId;
 
 @Service
 public class DashboardService {
 
     @Autowired
-    private ClienteRepository clienteRepository;
-    @Autowired
-    private ProdutoRepository produtoRepository;
-    @Autowired
     private ProdutoFornecedorRepository pfRepository;
+
     @Autowired
     private VendaRepository vendaRepository;
-    @Autowired
-    private FornecedorRepository fornecedorRepository;
 
     public DashboardDTO buscarDadosDashboard() {
         DashboardDTO dto = new DashboardDTO();
 
         // Referência do dia atual (00:00:00) para a Home
-        LocalDateTime agora = LocalDateTime.now();
-        LocalDateTime inicioDia = agora.truncatedTo(ChronoUnit.DAYS);
+        LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
+        LocalDateTime agora = hoje.atStartOfDay();
 
-        // 1. Contagens Básicas
-        dto.setTotalClientes(clienteRepository.count());
-        dto.setTotalProdutos(produtoRepository.count());
-        dto.setTotalFornecedores(fornecedorRepository.count());
+        // Diário: hoje
+        LocalDateTime inicioDia = hoje.atStartOfDay();
 
-        // 2. Faturamento Diário (Exibido atualmente na Home)
-        BigDecimal diario = vendaRepository.somarVendasAPartirDe(inicioDia);
-        dto.setFaturamentoDiario(diario != null ? diario : BigDecimal.ZERO);
+        BigDecimal diario = vendaRepository.somarVendasFinalizadasPorPeriodo(
+                inicioDia,
+                inicioDia.plusDays(1)
+        );
+        dto.setFaturamentoDiario(diario);
 
-        // --- CAMINHO PREPARADO PARA O FUTURO DASHBOARD (Já populando o DTO no back) ---
-        LocalDateTime inicioSemana = agora.with(DayOfWeek.MONDAY).truncatedTo(ChronoUnit.DAYS);
-        LocalDateTime inicioMes = agora.withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS);
+        // Semanal: segunda-feira até a próxima segunda-feira
+        LocalDate segundaFeira = hoje.with(DayOfWeek.MONDAY);
+        LocalDateTime inicioSemana = segundaFeira.atStartOfDay();
 
-        BigDecimal semanal = vendaRepository.somarVendasAPartirDe(inicioSemana);
-        BigDecimal mensal = vendaRepository.somarVendasAPartirDe(inicioMes);
+        BigDecimal semanal = vendaRepository.somarVendasFinalizadasPorPeriodo(
+                inicioSemana,
+                inicioSemana.plusWeeks(1)
+        );
+        dto.setFaturamentoSemanal(semanal);
 
-        dto.setFaturamentoSemanal(semanal != null ? semanal : BigDecimal.ZERO);
-        dto.setFaturamentoMensal(mensal != null ? mensal : BigDecimal.ZERO);
+        // Mensal: primeiro dia até o primeiro dia do próximo mês
+        LocalDateTime inicioMes = hoje.withDayOfMonth(1).atStartOfDay();
+
+        BigDecimal mensal = vendaRepository.somarVendasFinalizadasPorPeriodo(
+                inicioMes,
+                inicioMes.plusMonths(1)
+        );
+        dto.setFaturamentoMensal(mensal);
         // ---------------------------------------------------------------------------
 
         // 3. Alertas de Validade (Regra: Vence em até 15 dias)
