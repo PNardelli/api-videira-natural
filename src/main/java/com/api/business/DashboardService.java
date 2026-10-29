@@ -18,10 +18,20 @@ public class DashboardService {
     private ProdutoFornecedorRepository pfRepository;
 
     @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    @Autowired
     private VendaRepository vendaRepository;
 
     public DashboardDTO buscarDadosDashboard() {
         DashboardDTO dto = new DashboardDTO();
+
+        // 1. Contagens Básicas
+        dto.setTotalClientes(clienteRepository.count());
+        dto.setTotalProdutos(produtoRepository.count());
 
         // Referência do dia atual (00:00:00) para a Home
         LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
