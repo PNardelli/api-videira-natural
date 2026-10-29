@@ -53,7 +53,7 @@ public class CompraService {
 
             ItemCompra item = new ItemCompra();
             if (produtoFornecedor.isEmpty()){
-                ProdutoFornecedor produtoFornecedorNaoCriado = estoqueRepository.recuperarMaiorValorCompra(itemDto.getProdutoId());
+                ProdutoFornecedor produtoFornecedorNaoCriado = estoqueRepository.recuperarProdutoFornecedor(itemDto.getProdutoId());
                 //Alterando para criar o fornecedor novo no produto que não existe ainda, primeiro pedido.
 
                 item.setCompra(compra);
@@ -62,7 +62,7 @@ public class CompraService {
                 item.setQuantidade(itemDto.getQuantidade());
                 item.setValorUnitario(produtoFornecedorNaoCriado.getPrecoCompra() != null ? produtoFornecedorNaoCriado.getPrecoCompra().doubleValue() : 0.0);
                 item.setValorVenda(produtoFornecedorNaoCriado.getPrecoVenda().doubleValue());
-                item.setProdutoId(item.getProdutoId());
+                item.setProdutoId(produtoFornecedorNaoCriado.getProduto().getId());
                 itens.add(item);
 
             }else {

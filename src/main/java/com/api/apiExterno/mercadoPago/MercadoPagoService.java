@@ -76,8 +76,6 @@ public class MercadoPagoService {
         config.put("payment_method", paymentMethodConfig);
         body.put("config", config);
 
-        System.out.println(body);
-
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
@@ -141,8 +139,6 @@ public class MercadoPagoService {
             if (ordem != null) {
                 String statusOrdem = (String) ordem.get("status");
                 String statusDetail = (String) ordem.get("status_detail");
-
-                System.out.println("STATUS DA ORDEM: " + statusOrdem + " | DETALHE: " + statusDetail);
 
                 boolean aprovado = "processed".equalsIgnoreCase(statusOrdem) ||
                         "closed".equalsIgnoreCase(statusOrdem) ||
@@ -314,9 +310,6 @@ public class MercadoPagoService {
             body.put("payment_methods", paymentMethods);
             // ---------------------------------------
 
-            // Registra exatamente o que será enviado
-            System.out.println(
-                    "Itens enviados ao Mercado Pago: " + itemsList);
 
             HttpEntity<Map<String, Object>> entity =
                     new HttpEntity<>(body, headers);
@@ -331,14 +324,6 @@ public class MercadoPagoService {
                     && response.getBody() != null) {
 
                 Map responseBody = response.getBody();
-
-                System.out.println(
-                        "ID da preferência Mercado Pago: "
-                                + responseBody.get("id"));
-
-                System.out.println(
-                        "Link de pagamento: "
-                                + responseBody.get("init_point"));
 
                 Object initPoint = responseBody.get("init_point");
 
@@ -379,8 +364,6 @@ public class MercadoPagoService {
                 + "&payment_method_id=pix"
                 + "&begin_date=" + beginDateParam
                 + "&limit=2";
-
-        System.out.println(url);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
@@ -448,8 +431,6 @@ public class MercadoPagoService {
                         // 4. Atualiza a etapa para PAGO (ou avança de acordo com a sua regra de negócio/delivery)
                         pedido.setEtapa(StatusPedido.PAGO);
                         pedidoRepository.save(pedido);
-
-                        System.out.println("Pedido #" + pedidoId + " atualizado para PAGO via webhook do Mercado Pago!");
                     }
                 }
             }

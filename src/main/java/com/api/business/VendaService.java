@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -101,18 +103,11 @@ public class VendaService {
                         BigDecimal somaQuantidade = pf.getQuantidade();
 
                         somaTotal = somaTotal.add(somaQuantidade);
-
-                        System.out.println("Soma Total: " + somaTotal);
                     }
                 }
             }else {
-                System.out.println("Produto fornecedor: " +  produtoFornecedor.get(0).getQuantidade());
                 somaTotal = produtoFornecedor.get(0).getQuantidade();
-
-                System.out.println("Soma quantidade: " +  somaTotal);
             };
-
-            System.out.println(somaTotal);
 
             itemParaAdicionar.setProdutoId(produtoFornecedor.get(0).getProdutoId());
             itemParaAdicionar.setNome(produtoFornecedor.get(0).getNome());
@@ -165,15 +160,33 @@ public class VendaService {
         return vendaRepository.buscarVendasGerais(termo);
     }
 
+    public List<Venda> pesquisarVendasPorIdOuCliente(String termo) {
+        return vendaRepository.pesquisarVendasPorIdOuCliente(termo);
+    }
+
+    public List<Venda> listarVendasDoisDias(String termo) {
+        LocalDate hoje = LocalDate.now();
+
+        LocalDateTime inicio = hoje.minusDays(1).atStartOfDay();
+        LocalDateTime fim = hoje.plusDays(1).atStartOfDay();
+
+        return vendaRepository.buscarVendasDoisDias(termo, inicio, fim);
+    }
+
     @Transactional
     public void cancelarVenda(Long id) {
         Venda venda = vendaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Venda não encontrada com o ID: " + id));
 
-        // Atualiza o status do pedido para CANCELADO
-        venda.setStatusPedido(StatusPedido.CANCELADO);
+        if (venda.getStatusPedido() == StatusPedido.CANCELADO) {
+            return; // Já cancelada: não estorna o estoque novamente.
+        }
 
         // Se desejar estornar estoque dos itens da venda, você pode adicionar a lógica aqui.
+        estoqueService.cancelamentoVendaEstornoEstoque(venda);
+
+        // Atualiza o status do pedido para CANCELADO
+        venda.setStatusPedido(StatusPedido.CANCELADO);
 
         vendaRepository.save(venda);
     }
