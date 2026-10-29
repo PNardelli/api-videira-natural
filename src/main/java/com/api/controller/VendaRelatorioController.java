@@ -119,7 +119,7 @@ public class VendaRelatorioController {
     @Transactional(readOnly = true)
     @GetMapping("/historico-geral")
     public ResponseEntity<List<VendaHistoricoDTO>> listarHistoricoVendas(@RequestParam(required = false, name = "termo") String termo) {
-        List<Venda> vendas = vendaService.listarHistoricoGeral(termo);
+        List<Venda> vendas = vendaService.listarVendasDoisDias(termo);
 
         // Converte a lista de entidades Venda para o DTO limpo
         List<VendaHistoricoDTO> dtos = vendas.stream()
@@ -127,6 +127,13 @@ public class VendaRelatorioController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/pesquisar-cliente-id")
+    public List<Venda> pesquisarVendasPorIdOuCliente(
+            @RequestParam(required = false) String termo) {
+
+        return vendaService.pesquisarVendasPorIdOuCliente(termo);
     }
 
     @Transactional
