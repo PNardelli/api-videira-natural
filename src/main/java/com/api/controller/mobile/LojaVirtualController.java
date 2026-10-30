@@ -1,4 +1,4 @@
-package com.api.controller;
+package com.api.controller.mobile;
 
 import com.api.entity.Categoria;
 import com.api.entity.Produto;
@@ -25,8 +25,7 @@ public class LojaVirtualController {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
-    // A resposta deste método fica guardada em cache para ser ultra rápida
-    @GetMapping("/vitrine")
+    @GetMapping("/home")
     @Cacheable("vitrineCache")
     public ResponseEntity<Map<String, Object>> obterVitrine() {
         List<Produto> produtos = produtoRepository.findAll();

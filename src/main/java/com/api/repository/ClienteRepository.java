@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
@@ -28,5 +29,11 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
        OR c.whatsapp LIKE CONCAT('%', :termo, '%')
 """)
     List<Cliente> buscarPorNomeOuWhatsapp(@Param("termo") String termo);
+
+    @Query("""
+    SELECT c FROM Cliente c
+    WHERE c.whatsapp = :whatsapp
+""")
+    Optional<Cliente> buscarPorWhatsapp(@Param("whatsapp") String whatsapp);
 
 }

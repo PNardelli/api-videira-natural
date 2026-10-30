@@ -3,10 +3,7 @@ package com.api.entity;
 import com.api.eNum.UsuarioRole;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,6 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "tb_usuario")
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor // <-- Esta anotação do Lombok cria o construtor com todos os argumentos
 @EqualsAndHashCode(of = "id")
@@ -42,7 +40,11 @@ public class Usuario {
 
     private LocalDateTime ultimoAcesso;
 
-    private String tokenRecuperarAcesso;
+    @Column(name = "token_acesso")
+    private String tokenAcesso;
+
+    @Column(name = "token_expiracao")
+    private LocalDateTime tokenExpiracao;
 
     private Boolean ativo = true; // Útil caso precise banir ou desativar o acesso
 }

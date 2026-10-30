@@ -123,6 +123,12 @@
 			<version>2.11.4</version>
 		</dependency>
 
+		<!-- Serviço de EMAIL-->
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
 		<!--MERCADO PAGO -->
 		<dependency>
 			<groupId>com.mercadopago</groupId>
