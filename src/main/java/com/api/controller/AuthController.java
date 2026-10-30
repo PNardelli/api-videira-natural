@@ -1,5 +1,6 @@
 package com.api.controller;
 
+import com.api.dto.AuthenticationDTO;
 import com.api.entity.Usuario;
 import com.api.repository.UsuarioRepository;
 import io.jsonwebtoken.Jwts;
@@ -23,20 +24,22 @@ public class AuthController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Chave secreta segura gerada dinamicamente para assinar o token
+    // Chave secreta segura para assinar o token
     private final Key chaveSecreta = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     @PostMapping("/login")
-    public ResponseEntity<?> fazerLogin(@RequestBody Usuario dadosLogin) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByLogin(dadosLogin.getLogin());
+    public ResponseEntity<?> fazerLogin(@RequestBody AuthenticationDTO dadosLogin) {
+        // O 'login' enviado pelo front é o whatsapp limpo
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByLogin(dadosLogin.login());
 
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
 
-            // Validação simples da senha
-            if (usuario.getPassword().equals(dadosLogin.getPassword())) {
+            // Validação da senha (se estiver usando BCrypt no cadastro, use passwordEncoder.matches,
+            // se estiver comparando texto puro conforme seu código anterior, mantenha o .equals)
+            if (usuario.getPassword().equals(dadosLogin.senha())) {
 
-                // Gera um JWT real válido por 24 horas
+                // Gera o JWT real válido por 24 horas
                 String tokenJwt = Jwts.builder()
                         .setSubject(usuario.getLogin())
                         .claim("role", usuario.getRole())
@@ -45,14 +48,25 @@ public class AuthController {
                         .signWith(chaveSecreta)
                         .compact();
 
+                // Monta a resposta contendo o token, a role e os dados do cliente vinculado
                 Map<String, Object> resposta = new HashMap<>();
                 resposta.put("token", tokenJwt);
-                resposta.put("role", usuario.getRole() != null ? usuario.getRole() : "ADMIN");
+                resposta.put("role", usuario.getRole() != null ? usuario.getRole().toString() : "CLIENTE");
+
+                // Adiciona os dados do cliente para o front-end conseguir saudar o usuário na loja
+                Map<String, Object> clienteMap = new HashMap<>();
+                if (usuario.getCliente() != null) {
+                    clienteMap.put("id", usuario.getCliente().getId());
+                    clienteMap.put("nome", usuario.getCliente().getNome());
+                    clienteMap.put("whatsapp", usuario.getCliente().getWhatsapp());
+                    clienteMap.put("email", usuario.getCliente().getEmail());
+                }
+                resposta.put("cliente", clienteMap);
 
                 return ResponseEntity.ok(resposta);
             }
         }
 
-        return ResponseEntity.status(401).body("Usuário ou senha incorretos");
+        return ResponseEntity.status(401).body("WhatsApp ou senha incorretos");
     }
 }
