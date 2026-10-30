@@ -74,7 +74,10 @@ public class ClienteAppController {
             }
 
             // Define para qual e-mail enviar o token
-            String emailDestino = (cliente != null && !cliente.getEmail().isEmpty()) ? cliente.getEmail() : dto.getEmail();
+            // Verifica com segurança se o cliente existe E se tem um e-mail preenchido
+            String emailDestino = (cliente != null && cliente.getEmail() != null && !cliente.getEmail().isEmpty())
+                    ? cliente.getEmail()
+                    : dto.getEmail();
 
             if (emailDestino == null || emailDestino.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("E-mail obrigatório para o envio do token.");
