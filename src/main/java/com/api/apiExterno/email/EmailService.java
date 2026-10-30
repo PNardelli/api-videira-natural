@@ -31,7 +31,7 @@ public class EmailService {
                     "    " +
                     "    <!-- Cabeçalho com Imagem Embutida -->" +
                     "    <div style='background-color: #0e5227; padding: 20px; text-align: center;'>" +
-                    "      <img src='cid:logoVin' alt='Videira Natural' style='max-height: 50px; display: block; margin: 0 auto;' />" +
+                    "      <img src='cid:logoVin' alt='Videira Natural' style='max-height: 60px; display: block; margin: 0 auto;' />" +
                     "    </div>" +
                     "    " +
                     "    <!-- Conteúdo Principal -->" +
