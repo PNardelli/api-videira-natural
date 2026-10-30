@@ -1,6 +1,7 @@
 package com.api.dto;
 
 import com.api.entity.Endereco;
+import com.api.entity.Usuario;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -21,4 +22,6 @@ public class ClienteDTO {
     private Boolean possuiConta;
     private Endereco endereco;
 
+    //DADOS PARA APP
+    private Usuario usuario;
 }

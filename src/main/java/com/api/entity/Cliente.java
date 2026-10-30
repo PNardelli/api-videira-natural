@@ -48,7 +48,7 @@ public class Cliente {
     @Column(name = "POSSUI_CONTA_APP")
     private Boolean possuiContaApp;
 
-    @Column(name = "TB_CLIENTE_DATA_NASCIMENTO")
+    @Column(name = "DATA_NASCIMENTO")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private String dataNascimento;
 
