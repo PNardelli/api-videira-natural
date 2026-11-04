@@ -3,10 +3,12 @@ package com.api.entity; // Ajuste para o seu pacote correto
 import com.api.dto.EnderecoDTO;
 import com.api.eNum.StatusPedido;
 import com.api.eNum.TipoEntrega;
+import com.api.eNum.TipoVenda;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "tb_pedidos")
@@ -29,6 +31,7 @@ public class Pedido {
 
     @Column(columnDefinition = "TEXT")
     private String produto; // Descrição ou JSON dos itens do carrinho
+    private List<Long> produtoid;
 
     // Campos financeiros e de controle adicionados para o PDV e Online
     private BigDecimal subtotal;
@@ -36,8 +39,9 @@ public class Pedido {
     private BigDecimal totalFinal;
     private BigDecimal valorFrete;
 
-    private String canalVenda;
     // Ex: "PDV", "WHATSAPP_ONLINE"
+    private TipoVenda canalVenda;
+
     @Enumerated(EnumType.STRING)
     private TipoEntrega tipoEntrega;
 

@@ -4,6 +4,7 @@ import com.api.apiExterno.mercadoPago.MercadoPagoService;
 import com.api.dto.requests.PedidoRequest;
 import com.api.eNum.StatusPedido;
 import com.api.eNum.TipoEntrega;
+import com.api.eNum.TipoVenda;
 import com.api.entity.Pedido;
 import com.api.repository.PedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class PedidoService {
@@ -28,11 +31,18 @@ public class PedidoService {
         try {
             Pedido pedido = new Pedido();
 
+            List<Long> listaPedidos = request.getItens()
+                    .stream()
+                    .map(item -> item.getProdutoId())
+                    .distinct()
+                    .toList();
+
+            pedido.setProdutoid(listaPedidos);
+
             if (request.getTipoEntrega().equals(TipoEntrega.DELIVERY)){
                 //TODO: Criar metodo para consultar FRETE GRATIS.
                 verificarFreteMontarEndereco(pedido, request);
             }
-
             // Converte os itens do carrinho em uma string descritiva para o campo 'produto'
             if (request.getItens() != null && !request.getItens().isEmpty()) {
                 StringBuilder sb = new StringBuilder();
@@ -48,14 +58,14 @@ public class PedidoService {
 
             String canal = request.getCanalVenda() != null ? request.getCanalVenda() : "PDV";
             pedido.setTipoEntrega(request.getTipoEntrega());
-            pedido.setCanalVenda(canal);
+            pedido.setCanalVenda(TipoVenda.ONLINE);
             pedido.setClienteNome(request.getCliente().nome());
             pedido.setWhatsapp(request.getCliente().whatsapp());
-            pedido.setClienteId(request.getClienteId());
+            pedido.setClienteId(request.getCliente().id());
             pedido.setEnderecoId(request.getCliente().id());
 
             // Se for venda online via WhatsApp, inicia aguardando pagamento
-            if ("PDV_ONLINE".equals(canal)) {
+            if ("ONLINE".equals(canal)) {
                 pedido.setEtapa(StatusPedido.AGUARDANDO_PAGAMENTO);
 
                 // Salva primeiro para gerar o ID do pedido
@@ -81,6 +91,14 @@ public class PedidoService {
                     .body("Erro ao criar pedido: " + e.getMessage());
         }
     }
+
+
+    public ResponseEntity<?> movimentarEstoque(Pedido resquest){
+        System.out.println(resquest);
+
+        return null;
+    }
+
 
     private Pedido verificarFreteMontarEndereco(Pedido pedido, PedidoRequest request){
         if ((request.getCliente().cep().equals("51160-070") && request.getCliente().numero().equals("245")) ||
