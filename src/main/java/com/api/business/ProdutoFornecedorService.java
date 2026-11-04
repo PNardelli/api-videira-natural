@@ -1,14 +1,19 @@
 package com.api.business;
 
 import com.api.dto.EstoqueItemDTO;
+import com.api.dto.MovimentacaoDTO;
 import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.requests.ProdutoRequest;
+import com.api.eNum.TipoMovimentacao;
 import com.api.eNum.UnidadeMedida;
 import com.api.entity.Fornecedor;
+import com.api.entity.MovimentacaoEstoque;
 import com.api.entity.Produto;
 import com.api.entity.ProdutoFornecedor;
 import com.api.repository.FornecedorRepository;
+import com.api.repository.MovimentacaoEstoqueRepository;
 import com.api.repository.ProdutoFornecedorRepository;
+import com.api.uteis.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,7 +33,10 @@ public class ProdutoFornecedorService {
     FornecedorRepository fornecedorRepository;
 
     @Autowired
-    ProdutoService produtoService;
+    Util util;
+
+    @Autowired
+    EstoqueService estoqueService;
 
     public ProdutoFornecedor salvar(ProdutoFornecedorDTO produtoFornecedorDTO){
         ProdutoFornecedor produtoFornecedor = new ProdutoFornecedor();
@@ -56,7 +64,15 @@ public class ProdutoFornecedorService {
         produtoFornecedor.setDataEntrada(LocalDateTime.now());
         produtoFornecedor.setProdutoAtivo(true);
 
-        return repositoryPF.save(produtoFornecedor);
+         ProdutoFornecedor produtoCriado = repositoryPF.save(produtoFornecedor);
+         MovimentacaoDTO response = util.montarRegistroHistorico(produtoFornecedor);
+         response.setOrigemMovimentacao("NOVO PRODUTO");
+         response.setObservacao("Novo produto cadastrado");
+
+         estoqueService.registrarHistorico(response, produtoCriado, produtoCriado.getFornecedor());
+
+         return produtoCriado;
+
     }
 
     public ProdutoFornecedor recuperarProduto(Long id) {
@@ -98,4 +114,11 @@ public class ProdutoFornecedorService {
 
         return produtoRequest;
     }
+
+
+
+    /*
+    Metodos Privados/
+     */
+
 }

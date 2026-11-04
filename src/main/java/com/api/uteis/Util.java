@@ -1,6 +1,10 @@
 package com.api.uteis;
 
+import com.api.dto.MovimentacaoDTO;
+import com.api.eNum.TipoMovimentacao;
 import com.api.entity.Endereco;
+import com.api.entity.MovimentacaoEstoque;
+import com.api.entity.ProdutoFornecedor;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -35,6 +39,24 @@ public class Util {
 
         String prefixo = String.valueOf(hora+min+seg);
         return prefixo;
+    }
+
+    public MovimentacaoDTO montarRegistroHistorico(ProdutoFornecedor registro){
+        MovimentacaoDTO movimentacaoEstoque = new MovimentacaoDTO();
+
+        movimentacaoEstoque.setTipo(TipoMovimentacao.ENTRADA);
+        movimentacaoEstoque.setFornecedorId(registro.getFornecedor().getId());
+        movimentacaoEstoque.setIdVinculo(registro.getId());
+        movimentacaoEstoque.setProdutoId(registro.getProduto().getId());
+        movimentacaoEstoque.setCodigoProdutoFornecedor(registro.getId().toString());
+        movimentacaoEstoque.setNotaFiscal(null);
+        movimentacaoEstoque.setPrecoVenda(registro.getPrecoVenda());
+        movimentacaoEstoque.setDataValidade(registro.getDataValidade());
+        movimentacaoEstoque.setPrecoCompra(registro.getPrecoCompra());
+        movimentacaoEstoque.setUnidadeMedida(registro.getUnidadeMedida());
+        movimentacaoEstoque.setQuantidade(registro.getQuantidade());
+
+        return movimentacaoEstoque;
     }
 
 }

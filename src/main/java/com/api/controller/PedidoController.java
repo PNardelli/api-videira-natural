@@ -39,6 +39,9 @@ public class PedidoController {
     @PutMapping("/{id}/etapa")
     public ResponseEntity<Pedido> atualizarEtapa(@PathVariable Long id, @RequestParam StatusPedido etapa) {
         return pedidoRepository.findById(id).map(pedido -> {
+            pedidoService.movimentarEstoque(pedido);
+
+
             pedido.setEtapa(etapa);
             Pedido atualizado = pedidoRepository.save(pedido);
             return ResponseEntity.ok(atualizado);

@@ -319,12 +319,8 @@ public class EstoqueService {
     }
 
 
-    /*
-    * Metodos privados
-    * */
-
     //REGISTRAR NA TABELA DE HISTORICO.
-    private void registrarHistorico(MovimentacaoDTO dto, ProdutoFornecedor pfSalvo, Fornecedor fornecedor) {
+    public void registrarHistorico(MovimentacaoDTO dto, ProdutoFornecedor pfSalvo, Fornecedor fornecedor) {
 
         // 1. Tratamento de Unidade (Gramas para KG ou vice-versa)
         if (Boolean.TRUE.equals(dto.getIsGramas())) {
@@ -359,8 +355,15 @@ public class EstoqueService {
             mov.setFornecedor(fornecedor);
         }
 
+        mov.setNotaFiscal(dto.getNotaFiscal() == null ? null : dto.getNotaFiscal());
+
         movimentacaoRepository.save(mov);
     }
+
+
+    /*
+    METODOS PRIVADOS
+    */
 
     //REGRA PARA ATIVAR E DESATIVAR O PRODUTO.
     private void desativarProdutoFornecedor(List<ProdutoFornecedor> todosOsLotes, Long produtoId) {
