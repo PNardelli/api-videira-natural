@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -99,6 +100,7 @@ public class ProdutoService {
         return produtoRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public Produto atualizarProduto(Long id, ProdutoRequest produtoAtualizado) {
         Produto produtoExistente = produtoRepository.findById(id).orElseThrow();
 
@@ -118,6 +120,8 @@ public class ProdutoService {
         produtoExistente.setUnidadeMedida(produtoAtualizado.getUnidadeMedida());
         produtoExistente.setPrecoVenda(produtoAtualizado.getPrecoVenda());
         produtoExistente.setUltimaAtualizacao(LocalDate.now());
+
+        produtoFornecedorRepository.atualizarPrecoVendaPorProduto(produtoExistente.getId(), produtoAtualizado.getPrecoVenda());
 
         return produtoRepository.save(produtoExistente);
     }

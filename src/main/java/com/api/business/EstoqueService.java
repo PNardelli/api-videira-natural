@@ -4,13 +4,16 @@ import com.api.dto.DtoToEntity;
 import com.api.dto.ItemVendaDTO;
 import com.api.dto.MovimentacaoDTO;
 import com.api.dto.VendaDTO;
+import com.api.eNum.StatusItemPedido;
+import com.api.eNum.StatusPedido;
+import com.api.eNum.TipoVenda;
 import com.api.eNum.UnidadeMedida;
 import com.api.entity.*;
 import com.api.repository.*;
-import jakarta.persistence.EntityNotFoundException;
-import org.apache.velocity.runtime.directive.contrib.For;
+import com.api.uteis.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +21,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 import static com.api.eNum.TipoMovimentacao.*;
-import static java.util.Arrays.stream;
 
 @Service
 public class EstoqueService {
@@ -33,6 +38,12 @@ public class EstoqueService {
 
     @Autowired
     private EstoqueRepository estoqueRepository;
+
+    @Autowired
+    private Util util;
+
+    @Autowired
+    private ItemPedidoRepository itemPedidoRepository;
 
     @Autowired
     DtoToEntity dtoToEntity;
@@ -84,7 +95,19 @@ public class EstoqueService {
                 dto.setPrecoCompra(null);
                 dto.setPrecoVenda(null);
 
-                registrarHistorico(dto, produtoFornecedorExistente, produtoFornecedorExistente.getFornecedor());
+                MovimentacaoDTO responseHistrico = util.montarRegistroHistorico(produtoFornecedorExistente);
+                responseHistrico.setTipo(dto.getTipo());
+                if (dto.getTipo().equals(PERDA)){
+                    responseHistrico.setTipo(dto.getTipo());
+                    responseHistrico.setOrigemMovimentacao("PERDA MANUAL: " + dto.getQuantidade() + " " + produtoFornecedorExistente.getUnidadeMedida());
+                    responseHistrico.setObservacao(dto.getObservacao().toUpperCase());
+                }else {
+                    responseHistrico.setTipo(dto.getTipo());
+                    responseHistrico.setOrigemMovimentacao("SAIDA MANUAL: " + dto.getQuantidade() + " " + produtoFornecedorExistente.getUnidadeMedida());
+                    responseHistrico.setObservacao(dto.getObservacao().toUpperCase());
+                }
+
+                registrarHistorico(responseHistrico, produtoFornecedorExistente, produtoFornecedorExistente.getFornecedor());
 
                 return;
             } else {
@@ -97,6 +120,13 @@ public class EstoqueService {
             if (dto.getDataValidade() != null) {
                 produtoFornecedorExistente.setDataValidade(dto.getDataValidade());
             }
+
+            MovimentacaoDTO responseHistrico = util.montarRegistroHistorico(produtoFornecedorExistente);
+            responseHistrico.setTipo(dto.getTipo());
+            responseHistrico.setOrigemMovimentacao("AJUSTE MANUAL");
+            responseHistrico.setObservacao(dto.getObservacao().toUpperCase());
+
+            registrarHistorico(responseHistrico, produtoFornecedorExistente, produtoFornecedorExistente.getFornecedor());
         }
 
         if (dto.getTipo() == ENTRADA){
@@ -119,8 +149,6 @@ public class EstoqueService {
 
         produtoService.atualizarPreco(produtoFornecedorExistente.getProduto().getId(), dto.getPrecoVenda());
         desativarProdutoFornecedor(null, produtoFornecedorExistente.getProduto().getId());
-
-        registrarHistorico(dto, produtoFornecedorExistente, produtoFornecedorExistente.getFornecedor());
     }
 
 
@@ -179,9 +207,14 @@ public class EstoqueService {
         ProdutoFornecedor pfSalvo = produtoFornecedorRepository.save(loteProdutoFornecedor.get(0));
 
         produtoService.atualizarPreco(loteProdutoFornecedor.get(0).getProduto().getId(), dto.getPrecoVenda());
-        registrarHistorico(dto, pfSalvo, loteProdutoFornecedor.get(0).getFornecedor());
-    }
 
+        MovimentacaoDTO responseHistorico = util.montarRegistroHistorico(pfSalvo);
+        responseHistorico.setTipo(ENTRADA);
+        responseHistorico.setOrigemMovimentacao("ENTRADA DE PRODUTO");
+        responseHistorico.setObservacao("REPOSIÇÃO DE PRODUTO");
+
+        registrarHistorico(responseHistorico, pfSalvo, pfSalvo.getFornecedor());
+    }
 
     @Transactional
     public Venda processarNovaVenda(VendaDTO vendaDTO) {
@@ -191,18 +224,14 @@ public class EstoqueService {
             clienteVenda = clienteRepository.getReferenceById(vendaDTO.getClienteId());
         }
 
-
         List<ItemVenda> itemVendaList = dtoToEntity.itemVendaDtoToEntity(vendaDTO.getItens());
         Venda venda = dtoToEntity.vendaDtoToEntity(vendaDTO, itemVendaList, clienteVenda);
 
         venda.setItens(new ArrayList<>());
 
         for (ItemVendaDTO itemDto : vendaDTO.getItens()) {
-
             List<ProdutoFornecedor> lotes = produtoFornecedorRepository.findAtivosPorProduto(itemDto.getProdutoId());
-
             BigDecimal quantidadeRestante = itemDto.getQuantidade();
-
 
             BigDecimal estoqueTotal = lotes.stream()
                     .map(ProdutoFornecedor::getQuantidade)
@@ -211,7 +240,6 @@ public class EstoqueService {
             if (estoqueTotal.compareTo(quantidadeRestante) < 0) {
                 throw new RuntimeException("Estoque insuficiente para o produto: " + itemDto.getNome());
             }
-
 
             for (ProdutoFornecedor pf : lotes) {
                 if (quantidadeRestante.compareTo(BigDecimal.ZERO) <= 0) break;
@@ -242,12 +270,20 @@ public class EstoqueService {
                 vendaRepository.save(venda);
 
                 desativarProdutoFornecedor(lotes, null);
+
+                MovimentacaoDTO responseHistorico = util.montarRegistroHistorico(pf);
+                responseHistorico.setTipo(SAIDA);
+                responseHistorico.setOrigemMovimentacao("VENDA PDV #" + venda.getId());
+                responseHistorico.setObservacao("");
+
+                registrarHistorico(responseHistorico, pf, pf.getFornecedor());
             }
         }
 
         if (venda.getCliente() != null){
          clienteRepository.save(venda.getCliente());
         }
+
         return venda;
     }
 
@@ -292,7 +328,50 @@ public class EstoqueService {
         produtoService.atualizarPreco(itemCompra.getProdutoId(), BigDecimal.valueOf(itemCompra.getValorVenda()));
 
         produtoFornecedorRepository.save(produtoFornecedorUnico);
+    }
 
+
+    @Transactional
+    public ResponseEntity<?> novaVendaViaPedidoPago(Pedido pedido) {
+
+        if (pedido.getEtapa() != StatusPedido.PAGO) {
+            return ResponseEntity.ok("PEDIDO EM ANDAMENTO.");
+        }
+
+        try {
+
+            // 1. Recuperar cliente
+            Cliente clienteVenda = clienteRepository.findById(pedido.getClienteId())
+                    .orElseThrow(() -> new RuntimeException("Cliente não encontrado."));
+
+            // 2. Validar itens
+            if (pedido.getItens() == null || pedido.getItens().isEmpty()) {
+                throw new RuntimeException("Pedido não possui itens.");
+            }
+
+            // 7. Montar venda
+            Venda venda = new Venda();
+
+            venda.setDataVenda(LocalDateTime.now());
+            venda.setCanalVenda(TipoVenda.ONLINE);
+            venda.setCliente(clienteVenda);
+            venda.setTotal(pedido.getTotalFinal());
+            venda.setDesconto(pedido.getDesconto());
+            venda.setSubtotal(pedido.getSubtotal());
+            venda.setDataUltimaAtualizacao(LocalDateTime.now());
+            venda.setFrete(pedido.getValorFrete());
+            venda.setTipoEntrega(pedido.getTipoEntrega());
+
+            // 9. Salvar venda
+            vendaRepository.save(venda);
+
+            return ResponseEntity.ok(venda);
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Erro ao converter pedido em venda: " + e.getMessage(), e
+            );
+        }
     }
 
     @Transactional
@@ -315,6 +394,14 @@ public class EstoqueService {
             );
 
             produtoFornecedorRepository.save(produtoFornecedor);
+
+            MovimentacaoDTO responseHistorico = util.montarRegistroHistorico(produtoFornecedor);
+            responseHistorico.setTipo(ENTRADA);
+            responseHistorico.setOrigemMovimentacao("CANCELAMENTO DE VENDA: #" + venda.getId());
+            responseHistorico.setObservacao("PRODUTO VOLTANDO AO ESTOQUE");
+
+            registrarHistorico(responseHistorico, produtoFornecedor, produtoFornecedor.getFornecedor());
+
         }
     }
 
@@ -350,6 +437,7 @@ public class EstoqueService {
         mov.setData(LocalDateTime.now());
         mov.setDataValidade(dto.getDataValidade());
         mov.setObservacao(dto.getObservacao());
+        mov.setOrigemMovimentacao(dto.getOrigemMovimentacao());
 
         if (fornecedor != null) {
             mov.setFornecedor(fornecedor);
@@ -360,6 +448,60 @@ public class EstoqueService {
         movimentacaoRepository.save(mov);
     }
 
+
+    @Transactional
+    public void reservarEstoquePedido(ProdutoFornecedor loteProdutoFornecedor, BigDecimal quantidade) {
+
+        BigDecimal estoqueAtual = loteProdutoFornecedor.getQuantidade();
+
+        if (quantidade == null || quantidade.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Quantidade para reserva inválida.");
+        }
+
+        if (estoqueAtual.compareTo(quantidade) < 0) {
+            throw new RuntimeException(
+                    "Estoque insuficiente para o lote: " + loteProdutoFornecedor
+            );
+        }
+
+        BigDecimal estoqueBaixadoReservar = estoqueAtual.subtract(quantidade);
+
+        loteProdutoFornecedor.setQuantidade(estoqueBaixadoReservar);
+        produtoFornecedorRepository.save(loteProdutoFornecedor);
+    }
+
+    @Transactional
+    public ResponseEntity<Void> cancelarResevaPedido(Long pedidoId){
+        List<ItemPedido> itemPedidoList = itemPedidoRepository.findByPedidoIdAndStatusReserva(pedidoId, StatusItemPedido.RESERVADO);
+
+        List<ItemPedido> itens = new ArrayList<>();
+
+        for(ItemPedido item : itemPedidoList ){
+
+            ProdutoFornecedor produtoFornecedorAtual =
+                    produtoFornecedorRepository.findById(item.getProdutoFornecedor().getId())
+                            .orElseThrow(() ->
+                                    new RuntimeException("Lote de estoque não encontrado.")
+                            );
+
+            BigDecimal quantidadeExistente = produtoFornecedorAtual.getQuantidade();
+            BigDecimal quantidadeEstorno = item.getQuantidade();
+
+            BigDecimal quantidadeAtualizado = quantidadeExistente.add(quantidadeEstorno);
+
+            produtoFornecedorAtual.setQuantidade(quantidadeAtualizado);
+
+            produtoFornecedorRepository.save(produtoFornecedorAtual);
+
+            item.setStatusReserva(StatusItemPedido.CANCELADO);
+
+            itens.add(item);
+        }
+
+        itemPedidoRepository.saveAll(itens);
+
+        return ResponseEntity.ok().build();
+    }
 
     /*
     METODOS PRIVADOS
@@ -377,6 +519,17 @@ public class EstoqueService {
             List<ProdutoFornecedor> lotesComEstoque = todosOsLotes.stream()
                     .filter(lp -> lp.getQuantidade().compareTo(BigDecimal.ZERO) > 0)
                     .toList();
+
+            if (!lotesComEstoque.isEmpty() && !lotesZerados.isEmpty()){
+
+                int tamanho = lotesZerados.size();
+                int i = 0;
+
+                while (i < tamanho){
+                    lotesZerados.get(i).setProdutoAtivo(false);
+                    i++;
+                }
+            }
 
             if (!lotesComEstoque.isEmpty()) {
                 lotesZerados.forEach(lote -> lote.setProdutoAtivo(false));

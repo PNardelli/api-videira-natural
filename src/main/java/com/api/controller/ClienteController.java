@@ -33,24 +33,7 @@ public class ClienteController {
 
         @PostMapping("/rapido")
     public ResponseEntity<Cliente> cadastrarRapido(@RequestBody ClienteDTO dto) {
-        if (dto.getNome() == null || dto.getNome().isBlank()) {
-            throw new RuntimeException("O nome do cliente é obrigatório!");
-        }
-
-        if (dto.getWhatsapp() != null && !dto.getWhatsapp().isBlank()) {
-            if (clienteRepository.existsByWhatsapp(dto.getWhatsapp())) {
-                throw new RuntimeException("CLIENTE JÁ CADASTRADO COM ESTE WHATSAPP!");
-            }
-        }
-
-        Cliente cliente = new Cliente();
-        cliente.setNome(dto.getNome().toUpperCase());
-        cliente.setWhatsapp(dto.getWhatsapp());
-        cliente.setAtivo(true);
-        cliente.setPossuiContaApp(false);
-        cliente.setDataCriacao(LocalDate.now().toString());
-
-        Cliente salvo = clienteRepository.save(cliente);
+        Cliente salvo = clienteService.clienteRapido(dto);
         return ResponseEntity.ok(salvo);
     }
 

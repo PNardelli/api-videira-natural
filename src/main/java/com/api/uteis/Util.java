@@ -44,7 +44,6 @@ public class Util {
     public MovimentacaoDTO montarRegistroHistorico(ProdutoFornecedor registro){
         MovimentacaoDTO movimentacaoEstoque = new MovimentacaoDTO();
 
-        movimentacaoEstoque.setTipo(TipoMovimentacao.ENTRADA);
         movimentacaoEstoque.setFornecedorId(registro.getFornecedor().getId());
         movimentacaoEstoque.setIdVinculo(registro.getId());
         movimentacaoEstoque.setProdutoId(registro.getProduto().getId());

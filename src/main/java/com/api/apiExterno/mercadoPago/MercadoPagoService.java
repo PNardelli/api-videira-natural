@@ -250,8 +250,7 @@ public class MercadoPagoService {
             }
             // 2. Obtém o frete
             BigDecimal frete = pedido.getValorFrete() != null
-                    ? pedido.getValorFrete().setScale(
-                    2, java.math.RoundingMode.HALF_UP)
+                    ? pedido.getValorFrete()
                     : BigDecimal.ZERO;
 
             if (frete.compareTo(BigDecimal.ZERO) < 0) {

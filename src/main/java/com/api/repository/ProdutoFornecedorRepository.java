@@ -9,6 +9,7 @@ import com.api.entity.Produto;
 import com.api.entity.ProdutoFornecedor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,6 +22,8 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
 
     @Query("SELECT pf FROM ProdutoFornecedor pf WHERE produto.id = :produtoId")
     ProdutoFornecedor getProdutoFornecedor(@Param("produtoId") Long produtoId);
+
+    List<ProdutoFornecedor> findByProdutoIdIn(List<Long> produtoIds);
 
     Optional<ProdutoFornecedor> findByProdutoAndFornecedor(Produto produto, Fornecedor fornecedor);
 
@@ -106,6 +109,13 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
         """)
     List<ProdutoFornecedorDTO> buscarGranelPorCodigoLoja(
             @Param("codigoProduto") String codigoProduto
+    );
+
+    @Modifying
+    @Query("UPDATE ProdutoFornecedor pf SET pf.precoVenda = :novoPreco WHERE pf.produto.id = :produtoId AND pf.produtoAtivo = true")
+    int atualizarPrecoVendaPorProduto(
+            @Param("produtoId") Long produtoId,
+            @Param("novoPreco") BigDecimal novoPreco
     );
 
 }

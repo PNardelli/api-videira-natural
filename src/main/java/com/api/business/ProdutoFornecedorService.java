@@ -67,7 +67,8 @@ public class ProdutoFornecedorService {
          ProdutoFornecedor produtoCriado = repositoryPF.save(produtoFornecedor);
          MovimentacaoDTO response = util.montarRegistroHistorico(produtoFornecedor);
          response.setOrigemMovimentacao("NOVO PRODUTO");
-         response.setObservacao("Novo produto cadastrado");
+         response.setObservacao("Novo produto cadastrado".toUpperCase());
+         response.setTipo(TipoMovimentacao.ENTRADA);
 
          estoqueService.registrarHistorico(response, produtoCriado, produtoCriado.getFornecedor());
 

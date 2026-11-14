@@ -67,6 +67,10 @@ public class Venda {
     @Column(name = "coins_geradas")
     private Integer coinsGeradas;
 
+    @OneToOne
+    @JoinColumn(name = "pedido_id", unique = true)
+    private Pedido pedido;
+
     // Helper method para garantir que a data de atualização mude sempre
     @PreUpdate
     @PrePersist
