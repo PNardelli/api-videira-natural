@@ -4,13 +4,12 @@ import com.api.dto.ProdutoFornecedorDTO;
 import com.api.dto.VendaDTO;
 import com.api.dto.requests.ItemCarrinhoRequest;
 import com.api.dto.requests.ProdutoRequest;
+import com.api.eNum.StatusItemPedido;
 import com.api.eNum.StatusPedido;
-import com.api.entity.ProdutoFornecedor;
-import com.api.entity.Venda;
-import com.api.repository.ClienteRepository;
-import com.api.repository.ProdutoFornecedorRepository;
-import com.api.repository.ProdutoRepository;
-import com.api.repository.VendaRepository;
+import com.api.eNum.TipoVenda;
+import com.api.entity.*;
+import com.api.repository.*;
+import com.api.uteis.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,13 +19,18 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class VendaService {
 
     @Autowired
     private EstoqueService estoqueService;
+
+    @Autowired
+    private Util util;
 
     @Autowired
     private VendaRepository vendaRepository;
@@ -48,6 +52,9 @@ public class VendaService {
 
     @Autowired
     private ProdutoFornecedorService produtoFornecedorService;
+
+    @Autowired
+    private ItemPedidoRepository itemPedidoRepository;
 
     @Transactional
     public Venda finalizarVenda(VendaDTO dto) {
@@ -77,13 +84,31 @@ public class VendaService {
             //List<ProdutoFornecedorDTO> p = produtoService.buscarFlexivel(termo, pageable);
             List<ProdutoFornecedorDTO> p = produtoRepository.findByFlexivelComEstoqueValidade(termo);
 
+
+            //Estanciando para somar o estoque se tiver mais de 1.
+            BigDecimal somaTotal = BigDecimal.ZERO;
+
+            if (p == null) return carrinho;
+
+            if (p.size() > 1) {
+                for (ProdutoFornecedorDTO pf : p) {
+                    if (pf.getQuantidade() != null) {
+                        BigDecimal somaQuantidade = pf.getQuantidade();
+
+                        somaTotal = somaTotal.add(somaQuantidade);
+                    }
+                }
+            } else {
+                somaTotal = p.get(0).getQuantidade();
+            }
+
             itemParaAdicionar.setProdutoId(p.get(0).getProdutoId());
             itemParaAdicionar.setNome(p.get(0).getNome());
             itemParaAdicionar.setPreco(p.get(0).getPrecoVenda());
             itemParaAdicionar.setUnidade(p.get(0).getUnidadeMedida());
             itemParaAdicionar.setQuantidade(BigDecimal.ONE);
 
-            Integer estoqueConvertidoParaUnidade = p.get(0).getQuantidade().intValue();
+            Integer estoqueConvertidoParaUnidade = somaTotal.intValue();
             String unidadeConvertida = estoqueConvertidoParaUnidade.toString();
             itemParaAdicionar.setEstoque(unidadeConvertida);
         }
@@ -190,7 +215,93 @@ public class VendaService {
         venda.setStatusPedido(StatusPedido.CANCELADO);
 
         vendaRepository.save(venda);
+
     }
 
+    @Transactional
+    public Venda finalizarVendaPedido(Pedido pedido) {
+
+        Venda venda = new Venda();
+
+        // 1. Buscar itens reservados do pedido
+        List<ItemPedido> itemPedidoList =
+                itemPedidoRepository.findByPedidoIdAndStatusReserva(
+                        pedido.getId(),
+                        StatusItemPedido.RESERVADO
+                );
+
+        if (itemPedidoList.isEmpty()) {
+            throw new RuntimeException(
+                    "Não existem itens reservados para este pedido."
+            );
+        }
+
+        // 2. Recuperar cliente
+        Cliente cliente = clienteRepository.findById(pedido.getClienteId())
+                .orElseThrow(() ->
+                        new RuntimeException("Cliente não encontrado.")
+                );
+
+        // 3. Montar os dados da venda
+        venda.setCliente(cliente);
+        venda.setSubtotal(pedido.getSubtotal());
+        venda.setDesconto(pedido.getDesconto());
+        venda.setFrete(pedido.getValorFrete());
+        venda.setTotal(pedido.getTotalFinal());
+        venda.setPedido(pedido);
+        venda.setCanalVenda(TipoVenda.ONLINE);
+        venda.setTipoEntrega(pedido.getTipoEntrega());
+        venda.setEnderecoEntrega(cliente.getEndereco());
+        venda.setDataVenda(LocalDateTime.now());
+
+        // 4. Depois de obter o ID
+        Venda vendaSalva = vendaRepository.save(venda);
+
+        // 5. Criar os itens da venda
+        List<ItemVenda> itensVenda = new ArrayList<>();
+        List<PagamentoVenda> pagamentos = new ArrayList<>();
+
+        for (ItemPedido itemPedido : itemPedidoList) {
+
+            ItemVenda itemVenda = new ItemVenda();
+            PagamentoVenda pagamentoVenda = new PagamentoVenda();
+
+            pagamentoVenda.setTipo(pedido.getFormaPagamento());
+            pagamentoVenda.setValor(itemPedido.getPrecoUnitario());
+            pagamentoVenda.setParcela(1);
+            pagamentoVenda.setVenda(vendaSalva);
+
+            itemVenda.setVenda(vendaSalva);
+            itemVenda.setProduto(itemPedido.getProdutoFornecedor().getProduto());
+            itemVenda.setNomeProduto(itemPedido.getNomeProduto());
+            itemVenda.setQuantidade(itemPedido.getQuantidade());
+            itemVenda.setPrecoUnitario(itemPedido.getProdutoFornecedor().getPrecoVenda());
+            itemVenda.setSubtotal(itemPedido.getSubtotal());
+            itemVenda.setPrecoCustoUnitario(itemPedido.getPrecoUnitario());
+            itemVenda.setDataCriacao(LocalDateTime.now());
+
+            // Preservar o lote de origem
+            itemVenda.setProdutoFornecedor(
+                    itemPedido.getProdutoFornecedor()
+            );
+
+            pagamentos.add(pagamentoVenda);
+            itensVenda.add(itemVenda);
+
+            // 6. Finalizar reserva
+            itemPedido.setStatusReserva(StatusItemPedido.CONCLUIDO);
+        }
+
+        vendaSalva.setItens(itensVenda);
+        vendaSalva.setPagamentos(pagamentos);
+
+        // 7. Persistir itens da venda
+        vendaRepository.save(vendaSalva);
+
+        // 8. Atualizar itens do pedido
+        itemPedidoRepository.saveAll(itemPedidoList);
+
+        return vendaSalva;
+    }
 
 }

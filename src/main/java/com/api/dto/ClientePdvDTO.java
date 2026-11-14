@@ -1,5 +1,7 @@
 package com.api.dto;
 
+import jakarta.annotation.Nullable;
+
 public record ClientePdvDTO (
      Long id,
      String nome,

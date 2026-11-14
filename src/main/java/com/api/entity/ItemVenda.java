@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -26,6 +27,9 @@ public class ItemVenda {
     @JoinColumn(name = "produto_id")
     private Produto produto;
 
+    @Column(name = "nome_produto")
+    private String nomeProduto;
+
     @ManyToOne
     @JoinColumn(name = "produto_fornecedor_id")
     private ProdutoFornecedor produtoFornecedor;
@@ -38,4 +42,7 @@ public class ItemVenda {
     private BigDecimal precoCustoUnitario;
 
     private BigDecimal subtotal;
+
+    @Column(name = "data_criacao")
+    private LocalDateTime dataCriacao = LocalDateTime.now();
 }

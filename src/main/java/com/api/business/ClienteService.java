@@ -59,6 +59,30 @@ public class ClienteService {
         return clienteRepository.save(cliente);
     }
 
+    public Cliente clienteRapido(ClienteDTO dto ){
+        if (dto.getNome() == null || dto.getNome().isBlank()) {
+            throw new RuntimeException("O nome do cliente é obrigatório!");
+        }
+
+        if (dto.getWhatsapp() != null && !dto.getWhatsapp().isBlank()) {
+            if (clienteRepository.existsByWhatsapp(dto.getWhatsapp())) {
+                throw new RuntimeException("CLIENTE JÁ CADASTRADO COM ESTE WHATSAPP!");
+            }
+        }
+
+        String whatsappLimpo = limparMascara(dto.getWhatsapp());
+
+        Cliente cliente = new Cliente();
+        cliente.setNome(dto.getNome().toUpperCase());
+        cliente.setWhatsapp(whatsappLimpo);
+        cliente.setAtivo(true);
+        cliente.setPossuiContaApp(false);
+        cliente.setDataCriacao(LocalDate.now().toString());
+
+        return clienteRepository.save(cliente);
+
+    }
+
     public List<Cliente> listarTodos() {
         return clienteRepository.findAll();
     }

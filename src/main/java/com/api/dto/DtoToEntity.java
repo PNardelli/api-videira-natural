@@ -1,6 +1,7 @@
 package com.api.dto;
 
 import com.api.eNum.StatusPedido;
+import com.api.eNum.TipoEntrega;
 import com.api.eNum.TipoVenda;
 import com.api.entity.*;
 import com.api.repository.ProdutoFornecedorRepository;
@@ -23,19 +24,19 @@ public class DtoToEntity {
     ProdutoFornecedorRepository produtoFornecedorRepository;
 
     public Venda vendaDtoToEntity(VendaDTO vendaDTO, List<ItemVenda> itemVendaList, Cliente cliente){
-
-
         LocalDateTime dataRecife = LocalDateTime.now(ZoneId.of("America/Recife"));
 
         Venda venda = new Venda();
         venda.setDataVenda(dataRecife);
 
+        venda.setFrete(BigDecimal.ZERO);
         venda.setSubtotal(vendaDTO.getSubtotal());
         venda.setDesconto(vendaDTO.getDesconto());
         venda.setTotal(vendaDTO.getTotalFinal());
         venda.setCanalVenda(vendaDTO.getCanalVenda());
         if (venda.getCanalVenda() == TipoVenda.PDV) {
             venda.setStatusPedido(StatusPedido.FINALIZADO);
+            venda.setTipoEntrega(TipoEntrega.RETIRADA);
         }
         List<PagamentoVenda> pagamentos = vendaDTO.getPagamentos().stream().map(pDto -> {
             PagamentoVenda pv = new PagamentoVenda();
@@ -82,6 +83,7 @@ public class DtoToEntity {
 
             ItemVenda item = new ItemVenda();
             item.setProduto(produtoFornecedorList.get(0).getProduto());
+            item.setNomeProduto(dto.getNome());
             item.setQuantidade(quantidade);
             item.setPrecoUnitario(preco);
             item.setSubtotal(subtotal);
@@ -90,6 +92,24 @@ public class DtoToEntity {
         }
 
         return response;
+
+    }
+
+    public Venda pedidoToVenda(Pedido pedido){
+        LocalDateTime dataRecife = LocalDateTime.now(ZoneId.of("America/Recife"));
+
+        Venda venda = new Venda();
+        venda.setDataVenda(dataRecife);
+
+        venda.setSubtotal(pedido.getSubtotal());
+        venda.setDesconto(pedido.getDesconto());
+        venda.setTotal(pedido.getTotalFinal());
+        venda.setCanalVenda(pedido.getCanalVenda());
+        if (pedido.getEtapa() == StatusPedido.PAGO) {
+            venda.setStatusPedido(StatusPedido.FINALIZADO);
+        }
+
+        return venda;
 
     }
 
