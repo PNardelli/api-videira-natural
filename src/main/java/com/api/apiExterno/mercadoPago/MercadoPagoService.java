@@ -248,6 +248,8 @@ public class MercadoPagoService {
                     itemsList.add(produto);
                 }
             }
+
+            Map<String, Object> body = new HashMap<>();
             // 2. Obtém o frete
             BigDecimal frete = pedido.getValorFrete() != null
                     ? pedido.getValorFrete()
@@ -260,14 +262,9 @@ public class MercadoPagoService {
 
             // 3. Adiciona o frete como um item independente
             if (frete.compareTo(BigDecimal.ZERO) > 0) {
-                Map<String, Object> itemFrete = new HashMap<>();
-
-                itemFrete.put("title", "Frete / Taxa de Entrega");
-                itemFrete.put("quantity", 1);
-                itemFrete.put("unit_price", frete);
-                itemFrete.put("currency_id", "BRL");
-
-                itemsList.add(itemFrete);
+                Map<String, Object> shipments = new HashMap<>();
+                shipments.put("cost", frete);
+                body.put("shipments", shipments);
             }
             // 4. Não cria preferência vazia
             if (itemsList.isEmpty()) {
@@ -275,7 +272,6 @@ public class MercadoPagoService {
                         "O pedido não possui produtos ou frete para cobrar.");
             }
             // 5. Monta a preferência restringe os meios de pagamento
-            Map<String, Object> body = new HashMap<>();
 
             body.put("items", itemsList);
             body.put("external_reference", String.valueOf(pedido.getId()));
