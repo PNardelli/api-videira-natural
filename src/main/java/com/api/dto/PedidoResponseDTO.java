@@ -22,6 +22,7 @@ public record PedidoResponseDTO(
         BigDecimal desconto,
         BigDecimal totalFinal,
         BigDecimal valorFrete,
+        String linkPagamento,
         String canalVenda,
         String tipoEntrega,
         String etapa,

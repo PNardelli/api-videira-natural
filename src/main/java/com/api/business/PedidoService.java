@@ -137,6 +137,7 @@ public class PedidoService {
                 p.getDesconto(),
                 p.getTotalFinal(),
                 p.getValorFrete(),
+                p.getLinkPagamento(),
                 p.getCanalVenda() != null ? p.getCanalVenda().name() : null,
                 p.getTipoEntrega().toString(),
                 p.getEtapa().toString(),

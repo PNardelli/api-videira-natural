@@ -105,7 +105,7 @@ public class ConfiguracaoFreteService {
 
 
         // Obtém as coordenadas da loja (usando o cache que criamos antes)
-        CoordenadaDTO origemCoord = buscarCoordenadas(origemMontada+ "&format=json");
+        CoordenadaDTO origemCoord = new CoordenadaDTO(-8.109827, -34.9079005);  //buscarCoordenadas(origemMontada+ "&format=json");
 
         // Obtém as coordenadas do cliente usando a busca em cascata (CEP -> Bairro -> Texto)
         CoordenadaDTO destinoCoord = buscarCoordenadas(clienteMontado + "&format=json");
