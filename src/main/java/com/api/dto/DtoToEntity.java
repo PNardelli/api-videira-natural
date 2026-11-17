@@ -82,7 +82,15 @@ public class DtoToEntity {
 
 
             ItemVenda item = new ItemVenda();
-            item.setProduto(produtoFornecedorList.get(0).getProduto());
+
+            if (!produtoFornecedorList.isEmpty()){
+                item.setProduto(produtoFornecedorList.get(0).getProduto());
+                item.setProdutoFornecedor(produtoFornecedorList.get(0));
+            }else {
+                item.setProduto(null);
+                item.setPromocaoId(dto.getPromocaoId());
+            }
+
             item.setNomeProduto(dto.getNome());
             item.setQuantidade(quantidade);
             item.setPrecoUnitario(preco);
