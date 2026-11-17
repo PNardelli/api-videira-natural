@@ -22,6 +22,9 @@ public class ProdutoFornecedor {
     @JoinColumn(name = "produto_id")
     private Produto produto;
 
+    @Column(name = "nome_produto_historico")
+    private String nomeProduto;
+
     @ManyToOne
     @JoinColumn(name = "fornecedor_id")
     private Fornecedor fornecedor;

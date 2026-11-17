@@ -1,9 +1,6 @@
 package com.api.business;
 
-import com.api.dto.DtoToEntity;
-import com.api.dto.ItemVendaDTO;
-import com.api.dto.MovimentacaoDTO;
-import com.api.dto.VendaDTO;
+import com.api.dto.*;
 import com.api.eNum.StatusItemPedido;
 import com.api.eNum.StatusPedido;
 import com.api.eNum.TipoVenda;
@@ -35,6 +32,9 @@ public class EstoqueService {
     private VendaRepository vendaRepository;
     @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
+    private PromocaoRepository promocaoRepository;
 
     @Autowired
     private EstoqueRepository estoqueRepository;
@@ -225,6 +225,7 @@ public class EstoqueService {
         }
 
         List<ItemVenda> itemVendaList = dtoToEntity.itemVendaDtoToEntity(vendaDTO.getItens());
+
         Venda venda = dtoToEntity.vendaDtoToEntity(vendaDTO, itemVendaList, clienteVenda);
 
         venda.setItens(new ArrayList<>());
@@ -237,46 +238,80 @@ public class EstoqueService {
                     .map(ProdutoFornecedor::getQuantidade)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            if (estoqueTotal.compareTo(quantidadeRestante) < 0) {
+            if (estoqueTotal.compareTo(quantidadeRestante) < 0 && itemDto.getPromocaoId() == null) {
                 throw new RuntimeException("Estoque insuficiente para o produto: " + itemDto.getNome());
             }
 
-            for (ProdutoFornecedor pf : lotes) {
-                if (quantidadeRestante.compareTo(BigDecimal.ZERO) <= 0) break;
+            if (!lotes.isEmpty()) {
+                for (ProdutoFornecedor pf : lotes) {
+                    if (quantidadeRestante.compareTo(BigDecimal.ZERO) <= 0) break;
 
-                BigDecimal estoqueAtualNoLote = pf.getQuantidade();
-                BigDecimal quantidadeAbatidaDesteLote;
+                    BigDecimal estoqueAtualNoLote = pf.getQuantidade();
+                    BigDecimal quantidadeAbatidaDesteLote;
 
-                if (estoqueAtualNoLote.compareTo(quantidadeRestante) >= 0) {
-                    pf.setQuantidade(estoqueAtualNoLote.subtract(quantidadeRestante));
-                    quantidadeAbatidaDesteLote = quantidadeRestante;
-                    quantidadeRestante = BigDecimal.ZERO;
-                } else {
-                    quantidadeAbatidaDesteLote = estoqueAtualNoLote;
-                    quantidadeRestante = quantidadeRestante.subtract(estoqueAtualNoLote);
-                    pf.setQuantidade(BigDecimal.ZERO);
+                    if (estoqueAtualNoLote.compareTo(quantidadeRestante) >= 0) {
+                        pf.setQuantidade(estoqueAtualNoLote.subtract(quantidadeRestante));
+                        quantidadeAbatidaDesteLote = quantidadeRestante;
+                        quantidadeRestante = BigDecimal.ZERO;
+                    } else {
+                        quantidadeAbatidaDesteLote = estoqueAtualNoLote;
+                        quantidadeRestante = quantidadeRestante.subtract(estoqueAtualNoLote);
+                        pf.setQuantidade(BigDecimal.ZERO);
+                    }
+
+                    ItemVenda item = new ItemVenda();
+                    item.setVenda(venda);
+                    item.setNomeProduto(pf.getProduto().getNome());
+                    item.setProduto(pf.getProduto());
+                    item.setProdutoFornecedor(pf); // Rastreabilidade do lote
+                    item.setQuantidade(quantidadeAbatidaDesteLote);
+                    item.setPrecoUnitario(pf.getPrecoVenda());
+                    item.setSubtotal(pf.getPrecoVenda().multiply(quantidadeAbatidaDesteLote));
+
+                    venda.getItens().add(item);
+
+                    vendaRepository.save(venda);
+
+                    desativarProdutoFornecedor(lotes, null);
+
+                    MovimentacaoDTO responseHistorico = util.montarRegistroHistorico(pf);
+                    responseHistorico.setTipo(SAIDA);
+                    responseHistorico.setOrigemMovimentacao("VENDA PDV #" + venda.getId());
+                    responseHistorico.setObservacao("");
+
+                    registrarHistorico(responseHistorico, pf, pf.getFornecedor());
                 }
+            }else if(itemDto.getPromocaoId() != 0){
+
+                Promocao promocaoEncontrada = promocaoRepository.findById(itemDto.getPromocaoId()).orElseThrow();
+
+                BigDecimal estoqueAtualCombo = BigDecimal.valueOf(promocaoEncontrada.getQuantidadeCombos());
+                BigDecimal estoqueAtualizado = estoqueAtualCombo.subtract(itemDto.getQuantidade());
+
+                if (estoqueAtualizado.compareTo(BigDecimal.ZERO) == 0){
+                    promocaoEncontrada.setAtivo(false);
+                }
+                promocaoEncontrada.setQuantidadeCombos(estoqueAtualizado.intValue());
 
                 ItemVenda item = new ItemVenda();
                 item.setVenda(venda);
-                item.setProduto(pf.getProduto());
-                item.setProdutoFornecedor(pf); // Rastreabilidade do lote
-                item.setQuantidade(quantidadeAbatidaDesteLote);
-                item.setPrecoUnitario(pf.getPrecoVenda());
-                item.setSubtotal(pf.getPrecoVenda().multiply(quantidadeAbatidaDesteLote));
+                item.setQuantidade(itemDto.getQuantidade());
+                item.setPrecoUnitario(itemDto.getPrecoUnitario());
+                item.setSubtotal(venda.getSubtotal());
+                item.setNomeProduto(itemDto.getNome());
+                item.setPromocaoId(itemDto.getPromocaoId());
 
                 venda.getItens().add(item);
 
                 vendaRepository.save(venda);
+                promocaoRepository.save(promocaoEncontrada);
 
-                desativarProdutoFornecedor(lotes, null);
+//                MovimentacaoDTO responseHistorico = util.montarRegistroHistorico(null);
+//                responseHistorico.setTipo(SAIDA);
+//                responseHistorico.setOrigemMovimentacao("VENDA PDV #" + venda.getId());
+//                responseHistorico.setObservacao("");
 
-                MovimentacaoDTO responseHistorico = util.montarRegistroHistorico(pf);
-                responseHistorico.setTipo(SAIDA);
-                responseHistorico.setOrigemMovimentacao("VENDA PDV #" + venda.getId());
-                responseHistorico.setObservacao("");
-
-                registrarHistorico(responseHistorico, pf, pf.getFornecedor());
+                //registrarHistorico(responseHistorico, pf, pf.getFornecedor());
             }
         }
 
@@ -379,29 +414,32 @@ public class EstoqueService {
 
         for (var item : venda.getItens()) {
 
-            ProdutoFornecedor produtoFornecedor = produtoFornecedorRepository
-                    .findById(item.getProdutoFornecedor().getId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Produto fornecedor não encontrado: "
-                                    + item.getProdutoFornecedor().getId()
-                    ));
+            if (item.getPromocaoId() == null) {
+                ProdutoFornecedor produtoFornecedor = produtoFornecedorRepository
+                        .findById(item.getProdutoFornecedor().getId())
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "Produto fornecedor não encontrado: "
+                                        + item.getProdutoFornecedor().getId()
+                        ));
 
-            BigDecimal estoqueAtual = produtoFornecedor.getQuantidade();
-            BigDecimal quantidadeEstornar = item.getQuantidade();
+                BigDecimal estoqueAtual = produtoFornecedor.getQuantidade();
+                BigDecimal quantidadeEstornar = item.getQuantidade();
 
-            produtoFornecedor.setQuantidade(
-                    estoqueAtual.add(quantidadeEstornar)
-            );
+                produtoFornecedor.setQuantidade(
+                        estoqueAtual.add(quantidadeEstornar)
+                );
 
-            produtoFornecedorRepository.save(produtoFornecedor);
+                produtoFornecedorRepository.save(produtoFornecedor);
 
-            MovimentacaoDTO responseHistorico = util.montarRegistroHistorico(produtoFornecedor);
-            responseHistorico.setTipo(ENTRADA);
-            responseHistorico.setOrigemMovimentacao("CANCELAMENTO DE VENDA: #" + venda.getId());
-            responseHistorico.setObservacao("PRODUTO VOLTANDO AO ESTOQUE");
+                MovimentacaoDTO responseHistorico = util.montarRegistroHistorico(produtoFornecedor);
+                responseHistorico.setTipo(ENTRADA);
+                responseHistorico.setOrigemMovimentacao("CANCELAMENTO DE VENDA: #" + venda.getId());
+                responseHistorico.setObservacao("PRODUTO VOLTANDO AO ESTOQUE");
 
-            registrarHistorico(responseHistorico, produtoFornecedor, produtoFornecedor.getFornecedor());
-
+                registrarHistorico(responseHistorico, produtoFornecedor, produtoFornecedor.getFornecedor());
+            } else {
+                cancelarVendaPromocao(item);
+            }
         }
     }
 
@@ -546,6 +584,23 @@ public class EstoqueService {
                     }
                 }
             }
+    }
+
+    private void cancelarVendaPromocao(ItemVenda item){
+
+        Promocao promocaoEncontrada = promocaoRepository.findById(item.getPromocaoId()).orElseThrow();
+
+        BigDecimal estoqueAtualCombo = BigDecimal.valueOf(promocaoEncontrada.getQuantidadeCombos());
+        BigDecimal estoqueAtualizado = estoqueAtualCombo.add(item.getQuantidade());
+
+        if (!promocaoEncontrada.isAtivo()){
+            promocaoEncontrada.setAtivo(true);
+            promocaoEncontrada.setOcultar(false);
+        }
+
+        promocaoEncontrada.setQuantidadeCombos(estoqueAtualizado.intValue());
+
+        promocaoRepository.save(promocaoEncontrada);
     }
 
     private String obterDiasRestantes(LocalDate dataValidade) {

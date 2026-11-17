@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 public class ItemVendaDTO {
     private String nome;
     private Long produtoId;
+    private Long promocaoId;
     private BigDecimal quantidade;
     private String unidadeMedida;
     private BigDecimal precoUnitario; // Importante enviar para garantir o preço do momento do bipe

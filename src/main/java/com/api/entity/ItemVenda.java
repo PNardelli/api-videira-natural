@@ -1,6 +1,7 @@
 package com.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,6 +27,9 @@ public class ItemVenda {
     @ManyToOne
     @JoinColumn(name = "produto_id")
     private Produto produto;
+
+    @Column(name = "promocao_id")
+    private Long promocaoId;
 
     @Column(name = "nome_produto")
     private String nomeProduto;

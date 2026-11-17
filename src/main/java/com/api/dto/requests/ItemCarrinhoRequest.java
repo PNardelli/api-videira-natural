@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 public class ItemCarrinhoRequest {
 
         private Long produtoId;
+        private Long promocaoId;
         private BigDecimal quantidade;
         private String nome;
         private BigDecimal preco;

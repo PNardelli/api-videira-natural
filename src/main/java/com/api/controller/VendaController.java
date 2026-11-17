@@ -56,6 +56,10 @@ public class VendaController {
             return ResponseEntity.accepted().header("X-Action", "PROCESSAR").build();
         }
 
+        if (termo.length() == 10 && termo.startsWith("PROMO")) {
+            return ResponseEntity.accepted().header("X-Action", "PROCESSAR").build();
+        }
+
         // SE ESTIVER APENAS DIGITANDO NOME: Retorna lista de sugestões
         return ResponseEntity.ok(produtoService.buscarFlexivel(termo, pageable));
     }

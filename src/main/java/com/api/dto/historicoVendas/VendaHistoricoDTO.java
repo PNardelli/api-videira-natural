@@ -1,5 +1,6 @@
 package com.api.dto.historicoVendas;
 
+import com.api.eNum.UnidadeMedida;
 import com.api.entity.Venda;
 
 import java.math.BigDecimal;
@@ -51,10 +52,10 @@ public record VendaHistoricoDTO(
         // Tipagem explícita aqui para evitar List<?>
         List<ItemVendaDTO> itensDto = venda.getItens() != null ? venda.getItens().stream()
                 .map(i -> new ItemVendaDTO(
-                        i.getProduto() != null ? i.getProduto().getNome() : "Produto",
+                        i.getNomeProduto() != null ? i.getNomeProduto() : i.getProduto().getNome(),
                         i.getQuantidade(),
                         i.getPrecoUnitario(),
-                        i.getProduto().getUnidadeMedida().toString(),
+                        i.getProduto() != null ? i.getProduto().getUnidadeMedida().toString() : UnidadeMedida.UNIDADE.name(),
                         i.getSubtotal()
                 ))
                 .collect(Collectors.toList()) : java.util.List.of();

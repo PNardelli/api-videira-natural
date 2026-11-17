@@ -10,6 +10,7 @@ import com.api.eNum.TipoVenda;
 import com.api.entity.*;
 import com.api.repository.*;
 import com.api.uteis.Util;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,12 +40,6 @@ public class VendaService {
     private ClienteRepository clienteRepository;
 
     @Autowired
-    private ProdutoService produtoService;
-
-    @Autowired
-    private ClienteService clienteService;
-
-    @Autowired
     private ProdutoRepository produtoRepository;
 
     @Autowired
@@ -52,6 +47,9 @@ public class VendaService {
 
     @Autowired
     private ProdutoFornecedorService produtoFornecedorService;
+
+    @Autowired
+    private PromocaoRepository promocaoRepository;
 
     @Autowired
     private ItemPedidoRepository itemPedidoRepository;
@@ -111,10 +109,27 @@ public class VendaService {
             Integer estoqueConvertidoParaUnidade = somaTotal.intValue();
             String unidadeConvertida = estoqueConvertidoParaUnidade.toString();
             itemParaAdicionar.setEstoque(unidadeConvertida);
+
+        // CASO C: Produto PROMOCAO.
+        } else if (termo != null && termo.startsWith("PROMO")) {
+
+            Promocao promocaoEncontrada = promocaoRepository.findByCodigoPromocaoAndAtivo(termo, true).orElse(null);
+
+            if (promocaoEncontrada == null) {
+                return carrinho;
+            }
+
+            // Usamos um ID técnico negativo apenas para a chave primária visual do carrinho
+            // não colidir com produtos comuns, MAS salvamos o ID real na propriedade 'promocaoId'!
+            itemParaAdicionar.setProdutoId(-promocaoEncontrada.getId());
+            itemParaAdicionar.setPromocaoId(promocaoEncontrada.getId());
+            itemParaAdicionar.setNome("[KIT] " + promocaoEncontrada.getNome());
+            itemParaAdicionar.setPreco(promocaoEncontrada.getPrecoPromocional());
+            itemParaAdicionar.setUnidade("UN");
+            itemParaAdicionar.setQuantidade(BigDecimal.ONE);
+            itemParaAdicionar.setEstoque(String.valueOf(promocaoEncontrada.getQuantidadeCombos()));
         }
-
-
-        // CASO C: FRONT (botão capturar peso ou sugestão)
+        // CASO D: FRONT (botão capturar peso ou sugestão)
         else {
             List<ProdutoFornecedorDTO> produtoFornecedor = produtoFornecedorRepository.buscarGranelPorCodigoLoja(termo);
 
