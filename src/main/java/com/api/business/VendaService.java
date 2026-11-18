@@ -123,7 +123,7 @@ public class VendaService {
             // não colidir com produtos comuns, MAS salvamos o ID real na propriedade 'promocaoId'!
             itemParaAdicionar.setProdutoId(-promocaoEncontrada.getId());
             itemParaAdicionar.setPromocaoId(promocaoEncontrada.getId());
-            itemParaAdicionar.setNome("[KIT] " + promocaoEncontrada.getNome());
+            itemParaAdicionar.setNome("[PROMOÇÂO] " + promocaoEncontrada.getNome());
             itemParaAdicionar.setPreco(promocaoEncontrada.getPrecoPromocional());
             itemParaAdicionar.setUnidade("UN");
             itemParaAdicionar.setQuantidade(BigDecimal.ONE);

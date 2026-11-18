@@ -62,25 +62,61 @@ public class ClienteAppController {
         }
     }
 
+//    @PostMapping("/verificar-e-enviar")
+//    public ResponseEntity<?> verificarEEnviarToken(@RequestBody ClienteDTO dto) {
+//        try {
+//            String whatsappLimpo = dto.getWhatsapp().replaceAll("\\D", "");
+//            Cliente cliente = clienteRepository.buscarPorWhatsapp(whatsappLimpo).orElse(null);
+//
+//            // Se já existe e já tem conta ativa no app, bloqueia
+//            if (cliente != null && cliente.getPossuiContaApp()) {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Este WhatsApp já possui uma conta ativa no aplicativo.");
+//            }
+//
+//            // Define para qual e-mail enviar o token
+//            // Verifica com segurança se o cliente existe E se tem um e-mail preenchido
+//            String emailDestino = (cliente != null && cliente.getEmail() != null && !cliente.getEmail().isEmpty())
+//                    ? cliente.getEmail()
+//                    : dto.getEmail();
+//
+//            if (emailDestino == null || emailDestino.isEmpty()) {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("E-mail obrigatório para o envio do token.");
+//            }
+//
+//            // 1. Gera o token de 6 dígitos
+//            String token = String.format("%06d", new Random().nextInt(999999));
+//
+//            // 2. Salva no cache
+//            tokenCacheService.salvarToken(whatsappLimpo, token);
+//
+//            // 3. Dispara o e-mail
+//            emailService.enviarTokenEmail(emailDestino, token);
+//
+//            // Retorna se existe e, se existir, envia o nome para preencher na tela
+//            Map<String, Object> resposta = new HashMap<>();
+//            resposta.put("clienteExiste", (cliente != null));
+//            resposta.put("nome", (cliente != null) ? cliente.getNome() : null); // Ajuste para o método que pega o nome do seu cliente
+//
+//            return ResponseEntity.ok(resposta);
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//    }
+
     @PostMapping("/verificar-e-enviar")
     public ResponseEntity<?> verificarEEnviarToken(@RequestBody ClienteDTO dto) {
         try {
+            if (dto.getWhatsapp() == null || dto.getWhatsapp().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("WhatsApp obrigatório.");
+            }
+
             String whatsappLimpo = dto.getWhatsapp().replaceAll("\\D", "");
             Cliente cliente = clienteRepository.buscarPorWhatsapp(whatsappLimpo).orElse(null);
 
             // Se já existe e já tem conta ativa no app, bloqueia
-            if (cliente != null && cliente.getPossuiContaApp()) {
+            if (cliente != null && Boolean.TRUE.equals(cliente.getPossuiContaApp())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Este WhatsApp já possui uma conta ativa no aplicativo.");
-            }
-
-            // Define para qual e-mail enviar o token
-            // Verifica com segurança se o cliente existe E se tem um e-mail preenchido
-            String emailDestino = (cliente != null && cliente.getEmail() != null && !cliente.getEmail().isEmpty())
-                    ? cliente.getEmail()
-                    : dto.getEmail();
-
-            if (emailDestino == null || emailDestino.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("E-mail obrigatório para o envio do token.");
             }
 
             // 1. Gera o token de 6 dígitos
@@ -89,13 +125,24 @@ public class ClienteAppController {
             // 2. Salva no cache
             tokenCacheService.salvarToken(whatsappLimpo, token);
 
-            // 3. Dispara o e-mail
-            emailService.enviarTokenEmail(emailDestino, token);
-
-            // Retorna se existe e, se existir, envia o nome para preencher na tela
+            // 3. Prepara a resposta personalizada
             Map<String, Object> resposta = new HashMap<>();
-            resposta.put("clienteExiste", (cliente != null));
-            resposta.put("nome", (cliente != null) ? cliente.getNome() : null); // Ajuste para o método que pega o nome do seu cliente
+            boolean clienteExisteNoPdv = (cliente != null);
+
+            resposta.put("clienteExiste", clienteExisteNoPdv);
+            resposta.put("tokenGerado", token);
+
+            if (clienteExisteNoPdv) {
+                resposta.put("nome", cliente.getNome());
+                // Mensagem personalizada solicitada
+                resposta.put("mensagem", String.format(
+                        "Olá %s, já identificamos que você é cliente da Videira Natural e isso é ótimo! " +
+                                "Agora confirme o token e crie uma senha para ganhar Videira Coins e ter acessos a preços e produtos exclusivos.",
+                        cliente.getNome()
+                ));
+            } else {
+                resposta.put("mensagem", "Cadastre-se para fazer os seus pedidos na Videira Natural.");
+            }
 
             return ResponseEntity.ok(resposta);
 
