@@ -59,7 +59,9 @@ public class AuthController {
                     clienteMap.put("id", usuario.getCliente().getId());
                     clienteMap.put("nome", usuario.getCliente().getNome());
                     clienteMap.put("whatsapp", usuario.getCliente().getWhatsapp());
+                    clienteMap.put("dataNascimento", usuario.getCliente().getDataNascimento());
                     clienteMap.put("email", usuario.getCliente().getEmail());
+                    clienteMap.put("coins", usuario.getCliente().getVideiraSaldo());
                 }
                 resposta.put("cliente", clienteMap);
 
