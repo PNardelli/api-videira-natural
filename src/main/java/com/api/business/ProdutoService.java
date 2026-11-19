@@ -9,6 +9,7 @@ import com.api.repository.CategoriaRepository;
 import com.api.repository.ProdutoFornecedorRepository;
 import com.api.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,8 @@ public class ProdutoService {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
+    @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public Produto salvar(ProdutoRequest req) {
 
         Categoria categoria = categoriaRepository
@@ -101,6 +104,7 @@ public class ProdutoService {
     }
 
     @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public Produto atualizarProduto(Long id, ProdutoRequest produtoAtualizado) {
         Produto produtoExistente = produtoRepository.findById(id).orElseThrow();
 
@@ -130,6 +134,7 @@ public class ProdutoService {
         produtoRepository.deleteById(id);
     }
 
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public Produto ativarInativar(Long id){
         Produto produto =  produtoRepository.findById(id).orElseThrow();
 

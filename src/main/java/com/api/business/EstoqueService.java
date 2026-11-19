@@ -9,6 +9,7 @@ import com.api.entity.*;
 import com.api.repository.*;
 import com.api.uteis.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -61,6 +62,7 @@ public class EstoqueService {
     private MovimentacaoEstoqueRepository movimentacaoRepository;
 
     @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public void processarMovimentacao(MovimentacaoDTO dto) {
 
         ProdutoFornecedor produtoFornecedorExistente = estoqueRepository.findById(dto.getIdVinculo()).orElse(null);
@@ -153,6 +155,7 @@ public class EstoqueService {
 
 
     @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public void processarNovaEntrada(MovimentacaoDTO dto) {
 
         ProdutoFornecedor loteEncontrado = null;
@@ -217,6 +220,7 @@ public class EstoqueService {
     }
 
     @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public Venda processarNovaVenda(VendaDTO vendaDTO) {
         Cliente clienteVenda = new Cliente();
 
@@ -323,6 +327,7 @@ public class EstoqueService {
     }
 
     @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public void novaEntradaViaCompras(ItemCompra itemCompra) {
         List<ProdutoFornecedor> produtoFornecedorList = produtoFornecedorRepository.getProdutoFornecedorList(itemCompra.getProdutoId(), null);
 
@@ -367,6 +372,7 @@ public class EstoqueService {
 
 
     @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public ResponseEntity<?> novaVendaViaPedidoPago(Pedido pedido) {
 
         if (pedido.getEtapa() != StatusPedido.PAGO) {
@@ -410,6 +416,7 @@ public class EstoqueService {
     }
 
     @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public void cancelamentoVendaEstornoEstoque(Venda venda) {
 
         for (var item : venda.getItens()) {
@@ -488,6 +495,7 @@ public class EstoqueService {
 
 
     @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public void reservarEstoquePedido(ProdutoFornecedor loteProdutoFornecedor, BigDecimal quantidade) {
 
         BigDecimal estoqueAtual = loteProdutoFornecedor.getQuantidade();
@@ -509,6 +517,7 @@ public class EstoqueService {
     }
 
     @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public ResponseEntity<Void> cancelarResevaPedido(Long pedidoId){
         List<ItemPedido> itemPedidoList = itemPedidoRepository.findByPedidoIdAndStatusReserva(pedidoId, StatusItemPedido.RESERVADO);
 
@@ -586,6 +595,7 @@ public class EstoqueService {
             }
     }
 
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     private void cancelarVendaPromocao(ItemVenda item){
 
         Promocao promocaoEncontrada = promocaoRepository.findById(item.getPromocaoId()).orElseThrow();

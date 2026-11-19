@@ -1,15 +1,23 @@
+
 package com.api.controller.mobile;
 
+import com.api.business.ConfiguracaoFreteService;
+import com.api.business.EstoqueService;
+import com.api.dto.ClientePdvDTO;
+import com.api.dto.requests.PedidoRequest;
+import com.api.eNum.TipoVenda;
 import com.api.entity.Categoria;
-import com.api.entity.Produto;
+import com.api.entity.ProdutoFornecedor;
 import com.api.repository.CategoriaRepository;
-import com.api.repository.ProdutoRepository;
+import com.api.repository.ProdutoFornecedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +25,14 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/loja")
+@CrossOrigin(origins = "*")
 public class LojaVirtualController {
 
     @Autowired
-    private ProdutoRepository produtoRepository;
+    private ProdutoFornecedorRepository produtoFornecedorRepository;
+
+    @Autowired
+    private ConfiguracaoFreteService freteService;
 
     @Autowired
     private CategoriaRepository categoriaRepository;
@@ -28,36 +40,88 @@ public class LojaVirtualController {
     @GetMapping("/home")
     @Cacheable("vitrineCache")
     public ResponseEntity<Map<String, Object>> obterVitrine() {
-        List<Produto> produtos = produtoRepository.findAll();
+
+        // Busca produtos ativos no estoque
+        List<ProdutoFornecedor> itensEstoque =
+                produtoFornecedorRepository.buscarComEstoqueEAtivosApp(0);
+
         List<Categoria> categorias = categoriaRepository.findAll();
 
-        List<Map<String, Object>> produtosDto = produtos.stream().map(p -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", p.getId());
-            map.put("nome", p.getNome());
-            map.put("sub", p.getUnidadeMedida() != null ? p.getUnidadeMedida().toString() : "Unidade");
-            map.put("preco", p.getPrecoVenda());
-            map.put("img", "https://images.unsplash.com/photo-1587049352847-4d4b1263d596?q=80&w=300&auto=format&fit=crop");
-            map.put("animando", false);
-            return map;
-        }).collect(Collectors.toList());
+        List<Map<String, Object>> produtosDto = itensEstoque.stream()
+                .map(pf -> {
 
-        List<Map<String, Object>> categoriasDto = categorias.stream().map(c -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", c.getId());
-            map.put("nome", c.getNome());
-            map.put("img", "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=200&auto=format&fit=crop");
-            return map;
-        }).collect(Collectors.toList());
+                    Map<String, Object> map = new HashMap<>();
+
+                    var produto = pf.getProduto();
+
+                    if (produto != null) {
+                        map.put("id", produto.getId());
+                        map.put("nome", produto.getNome());
+
+                        map.put("categoriaId",
+                                produto.getCategoria() != null
+                                        ? produto.getCategoria().getId()
+                                        : null);
+
+                        map.put("categoriaNome",
+                                produto.getCategoria() != null
+                                        ? produto.getCategoria().getNome()
+                                        : "Geral");
+
+                        map.put("sub",
+                                produto.getUnidadeMedida() != null
+                                        ? produto.getUnidadeMedida().toString()
+                                        : "50g");
+
+                    } else {
+                        map.put("id", pf.getId());
+                        map.put("nome", "Produto");
+                        map.put("categoriaId", null);
+                        map.put("categoriaNome", "Geral");
+                        map.put("sub", "50g");
+                    }
+
+                    // Preço e estoque do ProdutoFornecedor
+                    map.put("preco", pf.getPrecoVenda());
+                    map.put("precoBase", pf.getPrecoVenda());
+                    map.put("estoqueDisponivel", pf.getQuantidade());
+
+                    map.put("img",
+                            "https://images.unsplash.com/photo-1587049352847-4d4b1263d596?q=80&w=300&auto=format&fit=crop");
+
+                    return map;
+
+                }).collect(Collectors.toList());
+
+        List<Map<String, Object>> categoriasDto = categorias.stream()
+                .map(c -> {
+
+                    Map<String, Object> map = new HashMap<>();
+
+                    map.put("id", c.getId());
+                    map.put("nome", c.getNome());
+
+                    map.put("img",
+                            "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=200&auto=format&fit=crop");
+
+                    return map;
+
+                }).collect(Collectors.toList());
 
         Map<String, Object> resposta = new HashMap<>();
+
         resposta.put("categorias", categoriasDto);
         resposta.put("produtos", produtosDto);
 
         return ResponseEntity.ok(resposta);
     }
 
-    // Opcional: Se quiser limpar o cache manualmente ou via rotina para atualizar os dados
+    @PostMapping("/calcular-frete")
+    public BigDecimal calcularFrete(@RequestBody ClientePdvDTO cliente) throws UnsupportedEncodingException {
+        BigDecimal frete = freteService.calcularFreteParaCliente(cliente, TipoVenda.APP);
+        return frete;
+    }
+
     @GetMapping("/limpar-cache")
     @CacheEvict(value = "vitrineCache", allEntries = true)
     public ResponseEntity<String> limparCache() {

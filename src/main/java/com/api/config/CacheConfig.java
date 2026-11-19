@@ -13,6 +13,6 @@ public class CacheConfig {
     @Bean
     public CacheManager cacheManager() {
         // Cria um gerenciador de cache em memória RAM leve e nativo do Spring
-        return new ConcurrentMapCacheManager("categorias", "fornecedores", "configuracaoFreteCache", "coordenadaLojaCache");
+        return new ConcurrentMapCacheManager("categorias", "fornecedores", "configuracaoFreteCache", "coordenadaLojaCache", "vitrineCache");
     }
 }

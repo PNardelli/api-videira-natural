@@ -118,6 +118,10 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
             @Param("novoPreco") BigDecimal novoPreco
     );
 
+
+    @Query("SELECT pf FROM ProdutoFornecedor pf WHERE pf.quantidade >= :qtd AND pf.produtoAtivo = true")
+    List<ProdutoFornecedor> buscarComEstoqueEAtivosApp(@Param("qtd") Integer qtd);
+
 }
 
 
