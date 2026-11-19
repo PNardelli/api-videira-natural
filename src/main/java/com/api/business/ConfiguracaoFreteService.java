@@ -5,6 +5,7 @@ import com.api.dto.ConfiguracaoFreteDTO;
 import com.api.dto.CoordenadaDTO;
 import com.api.dto.CoordenadaResultadoDTO;
 import com.api.dto.requests.PedidoRequest;
+import com.api.eNum.TipoVenda;
 import com.api.entity.ConfiguracaoFrete;
 import com.api.entity.FaixaFrete;
 import com.api.repository.ConfiguracaoFreteRepository;
@@ -36,6 +37,10 @@ public class ConfiguracaoFreteService {
 
     @Autowired
     private Util util;
+
+    final static String VITA = "51160-071 / 245";
+    final static String LUAR_DO_PARQUE = "51160-070 / 245";
+    final static String MIRANTE = "51160-072 / 245";
 
     @Transactional(readOnly = true)
     @Cacheable(value = "configuracaoFreteCache")
@@ -81,7 +86,20 @@ public class ConfiguracaoFreteService {
         return freteRepository.save(config);
     }
 
-    public BigDecimal calcularFreteParaCliente(ClientePdvDTO clienteRequest) throws UnsupportedEncodingException {
+    public BigDecimal calcularFreteParaCliente(ClientePdvDTO clienteRequest, TipoVenda canalVenda) throws UnsupportedEncodingException {
+        if (canalVenda.equals(TipoVenda.APP)){
+            BigDecimal valorFrete = BigDecimal.ZERO;
+
+            if(clienteRequest.cep().isEmpty()){
+                return null;
+            }
+
+            String validarOnline = clienteRequest.cep() + " / " + clienteRequest.numero();
+            if (validarOnline.equals(VITA) || validarOnline.equals(LUAR_DO_PARQUE) || validarOnline.equals(MIRANTE)){
+                return valorFrete;
+            }
+        }
+
         // 1. Busca a configuração de frete cadastrada no banco
         ConfiguracaoFrete config = freteRepository.findAll().stream()
                 .findFirst()

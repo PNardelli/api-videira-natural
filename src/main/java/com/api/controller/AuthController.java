@@ -62,6 +62,20 @@ public class AuthController {
                     clienteMap.put("dataNascimento", usuario.getCliente().getDataNascimento());
                     clienteMap.put("email", usuario.getCliente().getEmail());
                     clienteMap.put("coins", usuario.getCliente().getVideiraSaldo());
+
+                    // 🟢 DEVOLVENDO O ENDEREÇO DO CLIENTE PARA O FRONT-END
+                    if (usuario.getCliente().getEndereco() != null) {
+                        Map<String, Object> enderecoMap = new HashMap<>();
+                        enderecoMap.put("cep", usuario.getCliente().getEndereco().getCep());
+                        enderecoMap.put("logradouro", usuario.getCliente().getEndereco().getLogradouro());
+                        enderecoMap.put("numero", usuario.getCliente().getEndereco().getNumero());
+                        enderecoMap.put("bairro", usuario.getCliente().getEndereco().getBairro());
+                        enderecoMap.put("localidade", usuario.getCliente().getEndereco().getLocalidade());
+                        enderecoMap.put("estado", usuario.getCliente().getEndereco().getEstado());
+                        enderecoMap.put("complemento", usuario.getCliente().getEndereco().getComplemento());
+
+                        clienteMap.put("endereco", enderecoMap);
+                    }
                 }
                 resposta.put("cliente", clienteMap);
 

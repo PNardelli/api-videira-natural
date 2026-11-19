@@ -109,6 +109,13 @@ public class ClienteService {
 
         Cliente clienteExistente = clienteRepository.findById(id).orElseThrow();
 
+        if (!whatsappLimpo.equals(clienteExistente.getWhatsapp())){
+            Usuario usuarioExistente = usuarioRepository.findByLogin(clienteExistente.getWhatsapp()).orElseThrow();
+            usuarioExistente.setLogin(whatsappLimpo);
+
+            usuarioRepository.save(usuarioExistente);
+        }
+
         clienteExistente.setNome(clienteAtualizado.getNome().trim().toUpperCase());
         clienteExistente.setEmail(clienteAtualizado.getEmail());
         clienteExistente.setWhatsapp(whatsappLimpo);
@@ -169,7 +176,7 @@ public class ClienteService {
         } else {
             // 3. Se não existe na base, cria um cliente totalmente novo
             cliente = new Cliente();
-            cliente.setNome(dto.getNome());
+            cliente.setNome(dto.getNome().trim().toUpperCase());
             cliente.setEmail(dto.getEmail());
             cliente.setWhatsapp(whatsappLimpo);
             cliente.setDataNascimento(dto.getDataNascimento());
@@ -182,7 +189,7 @@ public class ClienteService {
 
         // 4. Cria o usuário e vincula ao cliente
         Usuario usuario = new Usuario();
-        usuario.setLogin(whatsappLimpo);
+        usuario.setLogin(whatsappLimpo.trim());
         usuario.setPassword(dto.getUsuario().getPassword()); // Lembre-se de codificar a senha com BCrypt aqui
         usuario.setDataCriacao(LocalDate.now());
         usuario.setUltimoAcesso(LocalDateTime.now());

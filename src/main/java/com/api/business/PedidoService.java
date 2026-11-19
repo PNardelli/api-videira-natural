@@ -16,6 +16,7 @@ import com.api.repository.ItemPedidoRepository;
 import com.api.repository.PedidoRepository;
 import com.api.repository.ProdutoFornecedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,8 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.text.Format;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,12 +55,24 @@ public class PedidoService {
     @Autowired
     private ConfiguracaoFreteService freteService;
 
+    final static String VITA = "51160-070 / 245";
+    final static String LUAR_DO_PARQUE = "51160-070 / 245";
+    final static String MIRANTE = "51160-070 / 245";
+
 
     @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public ResponseEntity<?> criarPedidoPDV(PedidoRequest request) {
 
-        if (request.getItens() == null || request.getItens().isEmpty()) {
-            return ResponseEntity.badRequest().body("O pedido não possui itens.");
+        Pedido pedidoSalvo = criarPedidoInterno(request);
+        return ResponseEntity.ok(pedidoSalvo);
+    }
+
+    @Transactional
+    @CacheEvict(value = "vitrineCache", allEntries = true)
+    public Pedido criarPedidoInterno(PedidoRequest request) {
+        if (request == null || request.getItens() == null || request.getItens().isEmpty()) {
+            throw new IllegalArgumentException("O pedido não possui itens.");
         }
 
         try {
@@ -67,17 +82,27 @@ public class PedidoService {
             // 2. Descrição dos produtos
             StringBuilder sb = new StringBuilder();
 
-            request.getItens().forEach(i ->
-                    sb.append(i.getQuantidade().toString())
-                            .append("x ")
-                            .append(i.getNome())
-                            .append("; ")
-            );
+            request.getItens().forEach(i -> {
+                BigDecimal qtd = new BigDecimal(i.getQuantidade().toString());
+
+                // Se não for unidade (ex.: granel vendido em gramas), converte para KG (75 -> 0.075)
+                boolean ehUnidade = "UN".equalsIgnoreCase(i.getUnidade())
+                        || "UNIDADE".equalsIgnoreCase(i.getUnidade());
+
+                BigDecimal qtdFormatada = ehUnidade
+                        ? qtd.stripTrailingZeros()
+                        : qtd.divide(BigDecimal.valueOf(1000)).stripTrailingZeros();
+
+                sb.append(qtdFormatada.toPlainString())
+                        .append("x ")
+                        .append(i.getNome())
+                        .append("; ");
+            });
 
             pedido.setProduto(sb.toString());
 
             // 3. Salvar pedido
-            pedido.setEtapa(StatusPedido.CRIADO);
+            pedido.setEtapa(StatusPedido.AGUARDANDO_PAGAMENTO);
 
             Pedido pedidoCriado = pedidoRepository.save(pedido);
 
@@ -94,7 +119,7 @@ public class PedidoService {
                 pedidoRepository.save(pedidoCriado);
 
                 // 4. Retornar pedido criado
-                return ResponseEntity.ok(pedidoCriado);
+                return pedidoCriado;
 
             }catch (Exception e){
                 throw new RuntimeException("Erro ao criar Link de pagamento: " + e.getMessage(), e);
@@ -174,11 +199,12 @@ public class PedidoService {
 
     private Pedido montarPedidoComFreteClienteEndereco(PedidoRequest request) throws UnsupportedEncodingException {
         Pedido pedido = new Pedido();
+        TipoVenda tipoVenda = TipoVenda.valueOf(request.getCanalVenda());
 
         String temCep = request.getCliente().cep();
 
-            if (request.getTipoEntrega().equals(TipoEntrega.DELIVERY) && !request.isFreteGratis()){
-                BigDecimal valorFrete = freteService.calcularFreteParaCliente(request.getCliente());
+            if (request.getTipoEntrega().equals(TipoEntrega.DELIVERY) && !request.isFreteGratis() && !tipoVenda.equals(TipoVenda.APP)){
+                BigDecimal valorFrete = freteService.calcularFreteParaCliente(request.getCliente(), TipoVenda.ONLINE);
                 pedido.setValorFrete(valorFrete);
             }else {
                 pedido.setValorFrete(BigDecimal.ZERO);
@@ -201,7 +227,7 @@ public class PedidoService {
             pedido.setSubtotal(request.getSubtotal());
             pedido.setDesconto(request.getDesconto());
             pedido.setTotalFinal(request.getTotalFinal());
-            pedido.setCanalVenda(TipoVenda.ONLINE);
+            pedido.setCanalVenda(TipoVenda.valueOf(request.getCanalVenda()));
             pedido.setTipoEntrega(request.getTipoEntrega());
 
             return pedido;
@@ -211,6 +237,13 @@ public class PedidoService {
         List<ItemPedido> itensParaSalvar = new ArrayList<>();
 
         for (var itemRequest : itensRequest) {
+            TipoVenda canalVenda = pedidoCriado.getCanalVenda();
+            if (canalVenda.equals(TipoVenda.APP) && !itemRequest.getIsUnidade()){
+                BigDecimal quantidadeConvertida = itemRequest.getQuantidade().divide(BigDecimal.valueOf(1000));
+                itemRequest.setQuantidade(quantidadeConvertida);
+            }
+
+
             // Busca todos os lotes ativos para este produto
             List<ProdutoFornecedor> lotes = produtoFornecedorRepository.findAtivosPorProduto(itemRequest.getProdutoId());
 

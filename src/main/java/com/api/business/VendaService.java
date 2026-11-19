@@ -264,7 +264,7 @@ public class VendaService {
         venda.setFrete(pedido.getValorFrete());
         venda.setTotal(pedido.getTotalFinal());
         venda.setPedido(pedido);
-        venda.setCanalVenda(TipoVenda.ONLINE);
+        venda.setCanalVenda(pedido.getCanalVenda());
         venda.setTipoEntrega(pedido.getTipoEntrega());
         venda.setEnderecoEntrega(cliente.getEndereco());
         venda.setDataVenda(LocalDateTime.now());

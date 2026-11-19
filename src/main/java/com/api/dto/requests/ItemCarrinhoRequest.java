@@ -17,4 +17,5 @@ public class ItemCarrinhoRequest {
         private BigDecimal subTotal;
         private String unidade;
         private String estoque;
+        private Boolean isUnidade;
 }
