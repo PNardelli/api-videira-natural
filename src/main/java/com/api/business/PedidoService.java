@@ -102,7 +102,7 @@ public class PedidoService {
             pedido.setProduto(sb.toString());
 
             // 3. Salvar pedido
-            pedido.setEtapa(StatusPedido.AGUARDANDO_PAGAMENTO);
+            pedido.setEtapa(StatusPedido.CRIADO);
 
             Pedido pedidoCriado = pedidoRepository.save(pedido);
 
@@ -139,6 +139,45 @@ public class PedidoService {
         estoqueService.cancelarResevaPedido(pedido.getId());
 
         return ResponseEntity.ok().build();
+    }
+
+    public PedidoResponseDTO toResponseDTO(Pedido p) {
+        List<ItemPedido> itensMapeados = (p.getItens() == null)
+                ? new ArrayList<>()
+                : p.getItens().stream().map(i -> {
+            String nomeItem = (i.getProdutoFornecedor() != null && i.getProdutoFornecedor().getProduto() != null)
+                    ? i.getProdutoFornecedor().getProduto().getNome()
+                    : i.getNomeProduto();
+            return new ItemPedido(
+                    i.getId(),
+                    nomeItem,
+                    i.getQuantidade(),
+                    i.getPrecoUnitario()
+            );
+        }).collect(Collectors.toList());
+
+        return new PedidoResponseDTO(
+                p.getId(),
+                p.getClienteId(),
+                p.getClienteNome(),
+                p.getWhatsapp(),
+                p.getProduto(),
+                p.getLogradouro(),
+                p.getNumero(),
+                p.getComplemento(),
+                p.getBairro(),
+                p.getCep(),
+                p.getSubtotal(),
+                p.getDesconto(),
+                p.getTotalFinal(),
+                p.getValorFrete(),
+                p.getLinkPagamento(),
+                p.getCanalVenda() != null ? p.getCanalVenda().name() : null,
+                p.getTipoEntrega() != null ? p.getTipoEntrega().toString() : null,
+                p.getEtapa() != null ? p.getEtapa().toString() : null,
+                p.getDataHora(),
+                itensMapeados
+        );
     }
 
 

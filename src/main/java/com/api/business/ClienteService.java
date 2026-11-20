@@ -120,8 +120,8 @@ public class ClienteService {
         clienteExistente.setEmail(clienteAtualizado.getEmail());
         clienteExistente.setWhatsapp(whatsappLimpo);
         clienteExistente.setDataNascimento(clienteAtualizado.getDataNascimento());
-        clienteExistente.setPossuiContaApp(clienteAtualizado.getPossuiContaApp());
-        clienteExistente.setAtivo(clienteAtualizado.getAtivo());
+        clienteExistente.setPossuiContaApp(true);
+        clienteExistente.setAtivo(true);
         clienteExistente.setEndereco(clienteAtualizado.getEndereco() == null ? null : util.formatarEndereco(clienteAtualizado.getEndereco()));
         return clienteRepository.save(clienteExistente);
     }
@@ -155,7 +155,6 @@ public class ClienteService {
 
     public Cliente cadastrarClienteViaApp(ClienteDTO dto) throws Exception {
         String whatsappLimpo = limparMascara(dto.getWhatsapp());
-
         try {
 
         // 1. Busca se o cliente já existe pelo WhatsApp
@@ -205,8 +204,6 @@ public class ClienteService {
             throw new RuntimeException("Erro ao tentar cadastrar um cliente via APP. ERRO: " + e.getMessage());
         }
     }
-
-
 
     // Função auxiliar para remover tudo que não for dígito
     private String limparMascara(String whatsapp) {

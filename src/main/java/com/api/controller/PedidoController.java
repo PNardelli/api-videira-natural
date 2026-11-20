@@ -44,28 +44,48 @@ public class PedidoController {
         return pedidoService.criarPedidoPDV(request);
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<PedidoResponseDTO>> listarPedidosPorCliente(@PathVariable Long clienteId) {
+        LocalDateTime trintaDiasAtras = LocalDateTime.now().minusDays(30);
+        List<PedidoResponseDTO> pedidosFiltrados = pedidoService.listarPedidosRecentes(trintaDiasAtras)
+                .stream()
+                .filter(p -> p.clienteId() != null && p.clienteId().equals(clienteId))
+                .sorted((a, b) -> {
+                    if (a.dataHora() == null && b.dataHora() == null) return 0;
+                    if (a.dataHora() == null) return 1;
+                    if (b.dataHora() == null) return -1;
+                    return b.dataHora().compareTo(a.dataHora());
+                })
+                .toList();
+        return ResponseEntity.ok(pedidosFiltrados);
+    }
+
     @PutMapping("/{id}/etapa")
     @Transactional
-    public ResponseEntity<Pedido> atualizarEtapa(@PathVariable Long id, @RequestParam StatusPedido etapa, @RequestParam(required = false) FormaPagamento formaPagamento) {
+    public ResponseEntity<PedidoResponseDTO> atualizarEtapa(
+            @PathVariable Long id,
+            @RequestParam StatusPedido etapa,
+            @RequestParam(required = false) FormaPagamento formaPagamento) {
 
-         return pedidoRepository.findById(id).map(pedido -> {
-             var etapaAnterior = pedido.getEtapa();
-             if(etapaAnterior.equals(StatusPedido.FINALIZADO)){
-                 return ResponseEntity.ok(pedido);
-             }
-
-            pedido.setEtapa(etapa);
-            if (etapa.equals(StatusPedido.PAGO) && formaPagamento != null && etapaAnterior.equals(StatusPedido.AGUARDANDO_PAGAMENTO)){
-                pedido.setFormaPagamento(formaPagamento);
-                pedidoService.efetuarVendaReservado(pedido);
-
+        return pedidoRepository.findById(id).map(pedido -> {
+            var etapaAnterior = pedido.getEtapa();
+            if (etapaAnterior.equals(StatusPedido.FINALIZADO)) {
+                return ResponseEntity.ok(pedidoService.toResponseDTO(pedido));
             }
 
-            if (pedido.getEtapa().equals(StatusPedido.CANCELADO) && !etapaAnterior.equals(StatusPedido.FINALIZADO)){
+            pedido.setEtapa(etapa);
+            if (etapa.equals(StatusPedido.PAGO) && formaPagamento != null && etapaAnterior.equals(StatusPedido.AGUARDANDO_PAGAMENTO)) {
+                pedido.setFormaPagamento(formaPagamento);
+                pedidoService.efetuarVendaReservado(pedido);
+            }
+
+            if (pedido.getEtapa().equals(StatusPedido.CANCELADO) && !etapaAnterior.equals(StatusPedido.FINALIZADO)) {
                 pedidoService.cancelarPedido(pedido);
             }
 
-            return ResponseEntity.ok(pedidoRepository.save(pedido));
+            Pedido salvo = pedidoRepository.save(pedido);
+            return ResponseEntity.ok(pedidoService.toResponseDTO(salvo));
         }).orElse(ResponseEntity.notFound().build());
     }
 }

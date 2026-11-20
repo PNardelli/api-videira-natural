@@ -63,6 +63,7 @@ public class ProdutoFornecedorService {
         produtoFornecedor.setUnidadeMedida(produto.getUnidadeMedida().toString());
         produtoFornecedor.setDataEntrada(LocalDateTime.now());
         produtoFornecedor.setProdutoAtivo(true);
+        produtoFornecedor.setNomeProduto(produto.getNome());
 
          ProdutoFornecedor produtoCriado = repositoryPF.save(produtoFornecedor);
          MovimentacaoDTO response = util.montarRegistroHistorico(produtoFornecedor);
