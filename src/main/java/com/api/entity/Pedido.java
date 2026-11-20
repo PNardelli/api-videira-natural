@@ -45,7 +45,7 @@ public class Pedido {
     private BigDecimal totalFinal;
     private BigDecimal valorFrete;
 
-    // Ex: "PDV", "WHATSAPP_ONLINE"
+    @Enumerated(EnumType.STRING)
     private TipoVenda canalVenda;
 
     @Enumerated(EnumType.STRING)
