@@ -44,6 +44,23 @@ public class PedidoController {
         return pedidoService.criarPedidoPDV(request);
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<PedidoResponseDTO>> listarPedidosPorCliente(@PathVariable Long clienteId) {
+        LocalDateTime trintaDiasAtras = LocalDateTime.now().minusDays(30);
+        List<PedidoResponseDTO> pedidosFiltrados = pedidoService.listarPedidosRecentes(trintaDiasAtras)
+                .stream()
+                .filter(p -> p.clienteId() != null && p.clienteId().equals(clienteId))
+                .sorted((a, b) -> {
+                    if (a.dataHora() == null && b.dataHora() == null) return 0;
+                    if (a.dataHora() == null) return 1;
+                    if (b.dataHora() == null) return -1;
+                    return b.dataHora().compareTo(a.dataHora());
+                })
+                .toList();
+        return ResponseEntity.ok(pedidosFiltrados);
+    }
+
     @PutMapping("/{id}/etapa")
     @Transactional
     public ResponseEntity<Pedido> atualizarEtapa(@PathVariable Long id, @RequestParam StatusPedido etapa, @RequestParam(required = false) FormaPagamento formaPagamento) {

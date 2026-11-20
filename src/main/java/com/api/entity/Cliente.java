@@ -53,7 +53,7 @@ public class Cliente {
     private String dataNascimento;
 
     @Column(name = "VIDEIRA_SALDO")
-    private Integer videiraSaldo = 50;
+    private Integer videiraSaldo = 10;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn( name = "endereco_id")

@@ -102,7 +102,7 @@ public class PedidoService {
             pedido.setProduto(sb.toString());
 
             // 3. Salvar pedido
-            pedido.setEtapa(StatusPedido.AGUARDANDO_PAGAMENTO);
+            pedido.setEtapa(StatusPedido.CRIADO);
 
             Pedido pedidoCriado = pedidoRepository.save(pedido);
 
