@@ -274,17 +274,9 @@ public class VendaService {
 
         // 5. Criar os itens da venda
         List<ItemVenda> itensVenda = new ArrayList<>();
-        List<PagamentoVenda> pagamentos = new ArrayList<>();
 
         for (ItemPedido itemPedido : itemPedidoList) {
-
             ItemVenda itemVenda = new ItemVenda();
-            PagamentoVenda pagamentoVenda = new PagamentoVenda();
-
-            pagamentoVenda.setTipo(pedido.getFormaPagamento());
-            pagamentoVenda.setValor(itemPedido.getPrecoUnitario());
-            pagamentoVenda.setParcela(1);
-            pagamentoVenda.setVenda(vendaSalva);
 
             itemVenda.setVenda(vendaSalva);
             itemVenda.setProduto(itemPedido.getProdutoFornecedor().getProduto());
@@ -300,11 +292,21 @@ public class VendaService {
                     itemPedido.getProdutoFornecedor()
             );
 
-            pagamentos.add(pagamentoVenda);
             itensVenda.add(itemVenda);
 
             // 6. Finalizar reserva
             itemPedido.setStatusReserva(StatusItemPedido.CONCLUIDO);
+        }
+
+        // Criar um único registro de pagamento para a venda (se houver forma de pagamento)
+        List<PagamentoVenda> pagamentos = new ArrayList<>();
+        if (pedido.getFormaPagamento() != null) {
+            PagamentoVenda pagamentoVenda = new PagamentoVenda();
+            pagamentoVenda.setTipo(pedido.getFormaPagamento());
+            pagamentoVenda.setValor(vendaSalva.getTotal());
+            pagamentoVenda.setParcela(1);
+            pagamentoVenda.setVenda(vendaSalva);
+            pagamentos.add(pagamentoVenda);
         }
 
         vendaSalva.setItens(itensVenda);
