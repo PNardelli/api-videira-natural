@@ -31,6 +31,9 @@ public class MercadoPagoService {
     @Value("${mercadopago.access.token}")
     private String accessToken;
 
+    @Value("${app.backend.url}")
+    private String backendUrl;
+
     // Armazena temporariamente o orderId vinculado à externalReference para consulta ultra-rápida por ID
     private final Map<String, String> cacheExternalParaOrderId = new HashMap<>();
 
@@ -271,20 +274,26 @@ public class MercadoPagoService {
                 throw new IllegalArgumentException(
                         "O pedido não possui produtos ou frete para cobrar.");
             }
-            // 5. Monta a preferência restringe os meios de pagamento
 
+            // 5. Monta a preferência restringe os meios de pagamento
             body.put("items", itemsList);
             body.put("external_reference", String.valueOf(pedido.getId()));
 
+            String urlLimpaBackend = backendUrl.endsWith("/")
+                    ? backendUrl.substring(0, backendUrl.length() - 1)
+                    : backendUrl;
+            body.put("notification_url", urlLimpaBackend + "/api/pdv/webhook/mercadopago");
+
             Map<String, String> backUrls = new HashMap<>();
             backUrls.put("success",
-                    "https://videiranatural.com.br/app");
+                    "https://videiranatural.com.br/app?tab=pedidos&pedidoId=" + pedido.getId());
             backUrls.put("pending",
-                    "https://videiranatural.com.br/app");
+                    "https://videiranatural.com.br/app?tab=pedidos&pedidoId=" + pedido.getId());
             backUrls.put("failure",
-                    "https://videiranatural.com.br/app");
+                    "https://videiranatural.com.br/app?tab=pedidos&pedidoId=" + pedido.getId());
 
             body.put("back_urls", backUrls);
+            body.put("auto_return", "approved");
 
             // --- RESTRIÇÃO DE MEIOS DE PAGAMENTO ---
             Map<String, Object> paymentMethods = new HashMap<>();
@@ -396,7 +405,6 @@ public class MercadoPagoService {
         return false;
     }
 
-
     //WEBHOOK PARA PAGAMENTOS ONLINE DE LINK DE PAGAMENTO.
     public void processarPagamentoAprovadoPorWebhook(String paymentId) {
         String urlPagamento = "https://api.mercadopago.com/v1/payments/" + paymentId;
@@ -412,18 +420,16 @@ public class MercadoPagoService {
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 Map<String, Object> paymentData = response.getBody();
 
-                String status = (String) paymentData.get("status"); // Ex: "approved"
-                String externalReference = (String) paymentData.get("external_reference"); // Este é o ID do Pedido que salvamos antes!
+                String status = (String) paymentData.get("status");
+                String externalReference = paymentData.get("external_reference") != null
+                        ? String.valueOf(paymentData.get("external_reference"))
+                        : null;
 
-                // 2. Se o pagamento foi realmente aprovado
-                if ("approved".equalsIgnoreCase(status) && externalReference != null) {
+                if ("approved".equalsIgnoreCase(status) && externalReference != null && !externalReference.isBlank()) {
                     Long pedidoId = Long.valueOf(externalReference);
-
-                    // 3. Localiza o pedido no seu banco de dados
                     Pedido pedido = pedidoRepository.findById(pedidoId).orElse(null);
 
-                    if (pedido != null) {
-                        // 4. Atualiza a etapa para PAGO (ou avança de acordo com a sua regra de negócio/delivery)
+                    if (pedido != null && pedido.getEtapa() != StatusPedido.PAGO) {
                         pedido.setEtapa(StatusPedido.PAGO);
                         pedidoRepository.save(pedido);
                     }
@@ -434,7 +440,19 @@ public class MercadoPagoService {
         }
     }
 
+    public boolean confirmarPagamentoPedidoOnline(Long pedidoId, String paymentId) {
+        if (pedidoId == null) {
+            return false;
+        }
 
+        if (paymentId != null && !paymentId.isBlank() && !"null".equalsIgnoreCase(paymentId)) {
+            processarPagamentoAprovadoPorWebhook(paymentId);
+        }
+
+        Pedido pedido = pedidoRepository.findById(pedidoId).orElse(null);
+
+        return pedido != null && pedido.getEtapa() == StatusPedido.PAGO;
+    }
 
     private String produtoDescricaoPadrao(ItemCarrinhoRequest item) {
         return item.getNome() != null ? item.getNome() : "Produto Videira Natural";
