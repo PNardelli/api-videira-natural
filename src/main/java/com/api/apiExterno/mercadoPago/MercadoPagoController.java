@@ -2,7 +2,6 @@ package com.api.apiExterno.mercadoPago;
 
 import com.api.dto.VendaMercadoPagoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +17,7 @@ public class MercadoPagoController {
     @PostMapping("/cobrar")
     public ResponseEntity<?> cobrarNaMaquininha(@RequestBody VendaMercadoPagoDTO request) {
 
-        ResponseEntity<Map> resposta = mercadoPagoService.criarOrdemPagamento(
+        ResponseEntity resposta = mercadoPagoService.criarOrdemPagamento(
                 request.getValor(),
                 request.getTipoPagamento(),
                 request.getParcelas(),
@@ -29,7 +28,6 @@ public class MercadoPagoController {
 
     @GetMapping("/status-ordem/{orderID}")
     public ResponseEntity<?> verificarStatusOrdem(@PathVariable String orderID) {
-        // O seu pointService pode buscar a ordem no Mercado Pago pelo external_reference
         Map<String, Object> statusResponse = mercadoPagoService.consultarStatusPorReferencia(orderID);
         return ResponseEntity.ok(statusResponse);
     }
@@ -44,26 +42,44 @@ public class MercadoPagoController {
     }
 
     @PostMapping("/webhook/mercadopago")
-    public ResponseEntity<Void> receberNotificacao(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<Void> receberNotificacao(
+            @RequestBody(required = false) Map<String, Object> payload,
+            @RequestParam(value = "type", required = false) String typeParam,
+            @RequestParam(value = "topic", required = false) String topicParam,
+            @RequestParam(value = "data.id", required = false) String dataIdParam,
+            @RequestParam(value = "id", required = false) String idParam) {
         try {
-            String tipo = (String) payload.get("type");
+            String tipo = typeParam != null ? typeParam : topicParam;
+            String paymentId = dataIdParam != null ? dataIdParam : idParam;
 
-            // O Mercado Pago avisa quando há um novo pagamento
-            if ("payment".equalsIgnoreCase(tipo)) {
-                Map<String, Object> data = (Map<String, Object>) payload.get("data");
-                String paymentId = String.valueOf(data.get("id"));
+            if (payload != null) {
+                if (tipo == null && payload.get("type") != null) {
+                    tipo = String.valueOf(payload.get("type"));
+                }
+                if (tipo == null && payload.get("topic") != null) {
+                    tipo = String.valueOf(payload.get("topic"));
+                }
+                if (paymentId == null && payload.get("data") instanceof Map<?, ?> dataMap && dataMap.get("id") != null) {
+                    paymentId = String.valueOf(dataMap.get("id"));
+                }
+            }
 
-                // Consulta a API do Mercado Pago usando o paymentId para ver os detalhes e o status
-                // Se aprovado, localiza o pedido pela external_reference e atualiza o status para PAGO
+            if ("payment".equalsIgnoreCase(tipo) && paymentId != null && !paymentId.isBlank()) {
                 mercadoPagoService.processarPagamentoAprovadoPorWebhook(paymentId);
             }
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             System.err.println("Erro ao processar webhook do Mercado Pago: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.ok().build();
         }
     }
 
-
+    @PostMapping("/confirmar-online/{pedidoId}")
+    public ResponseEntity<?> confirmarPagamentoOnline(
+            @PathVariable Long pedidoId,
+            @RequestParam(value = "paymentId", required = false) String paymentId) {
+        boolean pago = mercadoPagoService.confirmarPagamentoPedidoOnline(pedidoId, paymentId);
+        return ResponseEntity.ok(Map.of("pago", pago));
+    }
 }
