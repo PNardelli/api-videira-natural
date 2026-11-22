@@ -278,11 +278,11 @@ public class MercadoPagoService {
 
             Map<String, String> backUrls = new HashMap<>();
             backUrls.put("success",
-                    "https://videiranatural.com.br/news");
+                    "https://videiranatural.com.br/app");
             backUrls.put("pending",
-                    "https://videiranatural.com.br/news");
+                    "https://videiranatural.com.br/app");
             backUrls.put("failure",
-                    "https://videiranatural.com.br/falha");
+                    "https://videiranatural.com.br/app");
 
             body.put("back_urls", backUrls);
 

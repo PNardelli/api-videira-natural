@@ -123,6 +123,7 @@ public class ClienteService {
         clienteExistente.setPossuiContaApp(true);
         clienteExistente.setAtivo(true);
         clienteExistente.setEndereco(clienteAtualizado.getEndereco() == null ? null : util.formatarEndereco(clienteAtualizado.getEndereco()));
+        clienteExistente.setVideiraSaldo(clienteExistente.getVideiraSaldo());
         return clienteRepository.save(clienteExistente);
     }
 
