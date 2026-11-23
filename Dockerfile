@@ -4,12 +4,12 @@ WORKDIR /app
 
 # Baixa as dependências primeiro para aproveitar cache quando o pom.xml não mudar
 COPY pom.xml .
-RUN --mount=type=cache,target=/root/.m2 \
+RUN --mount=type=cache,id=maven-cache,target=/root/.m2 \
     mvn dependency:go-offline -B
 
 # Agora copia o código e empacota usando o cache local
 COPY . .
-RUN --mount=type=cache,target=/root/.m2 \
+RUN --mount=type=cache,id=maven-cache,target=/root/.m2 \
     mvn clean package -DskipTests -B
 
 FROM eclipse-temurin:17-jre
