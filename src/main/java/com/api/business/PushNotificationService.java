@@ -35,11 +35,19 @@ public class PushNotificationService {
     private PushService pushService;
 
     @PostConstruct
-    public void init() throws Exception {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
+    public void init() {
+        if (publicKey == null || publicKey.isBlank() || privateKey == null || privateKey.isBlank()) {
+            System.out.println("AVISO: Chaves VAPID não configuradas. Push desabilitado neste ambiente.");
+            return;
         }
-        pushService = new PushService(publicKey, privateKey, subject);
+        try {
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                Security.addProvider(new BouncyCastleProvider());
+            }
+            pushService = new PushService(publicKey, privateKey, subject);
+        } catch (Exception e) {
+            System.err.println("Falha ao inicializar PushService: " + e.getMessage());
+        }
     }
 
     @Async
