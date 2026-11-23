@@ -6,6 +6,7 @@ import com.api.dto.ConfiguracaoFreteDTO;
 import com.api.entity.ConfiguracaoFrete;
 import com.api.repository.HorarioLojaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +43,7 @@ public class ConfiguracoesController {
 
     //AREA DE HORARIOS
     @GetMapping("/loja")
+    @CacheEvict(value = "vitrineCache", allEntries = true)
     public ResponseEntity<java.util.Map<String, Object>> buscarHorarioLoja() {
         com.api.entity.HorarioLoja config = lojaRepository.findById(1L).orElseGet(() -> {
             com.api.entity.HorarioLoja padrao = new com.api.entity.HorarioLoja();

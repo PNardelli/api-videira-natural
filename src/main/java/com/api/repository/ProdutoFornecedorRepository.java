@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -121,6 +122,15 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
 
     @Query("SELECT pf FROM ProdutoFornecedor pf WHERE pf.quantidade >= :qtd AND pf.produtoAtivo = true")
     List<ProdutoFornecedor> buscarComEstoqueEAtivosApp(@Param("qtd") Integer qtd);
+
+    //INATIVA E ATIVAR PELO PRODUTO.
+    @Modifying
+    @Transactional
+    @Query("UPDATE ProdutoFornecedor pf " +
+            "SET pf.produtoAtivo = :ativo, " +
+            "    pf.quantidade = CASE WHEN :ativo = false THEN 0 ELSE pf.quantidade END " +
+            "WHERE pf.produto.id = :produtoId")
+    int atualizarProdutoAtivoPorProdutoId(@Param("produtoId") Long produtoId, @Param("ativo") boolean ativo);
 
 }
 

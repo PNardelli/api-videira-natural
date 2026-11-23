@@ -4,7 +4,6 @@ import com.api.dto.ClientePdvDTO;
 import com.api.dto.ConfiguracaoFreteDTO;
 import com.api.dto.CoordenadaDTO;
 import com.api.dto.CoordenadaResultadoDTO;
-import com.api.dto.requests.PedidoRequest;
 import com.api.eNum.TipoVenda;
 import com.api.entity.ConfiguracaoFrete;
 import com.api.entity.FaixaFrete;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import javax.crypto.Mac;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.Comparator;

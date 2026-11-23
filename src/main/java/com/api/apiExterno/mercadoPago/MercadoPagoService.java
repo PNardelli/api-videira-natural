@@ -2,6 +2,7 @@ package com.api.apiExterno.mercadoPago;
 
 import com.api.business.PedidoService;
 import com.api.dto.requests.ItemCarrinhoRequest;
+import com.api.eNum.FormaPagamento;
 import com.api.eNum.StatusPedido;
 import com.api.entity.Pedido;
 import com.api.repository.PedidoRepository;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -27,6 +29,10 @@ public class MercadoPagoService {
 
     @Autowired
     private PedidoRepository pedidoRepository;
+
+    @Autowired
+    @org.springframework.context.annotation.Lazy
+    private PedidoService pedidoService;
 
     @Value("${mercadopago.access.token}")
     private String accessToken;
@@ -406,6 +412,7 @@ public class MercadoPagoService {
     }
 
     //WEBHOOK PARA PAGAMENTOS ONLINE DE LINK DE PAGAMENTO.
+    @Transactional
     public void processarPagamentoAprovadoPorWebhook(String paymentId) {
         String urlPagamento = "https://api.mercadopago.com/v1/payments/" + paymentId;
 
@@ -430,8 +437,18 @@ public class MercadoPagoService {
                     Pedido pedido = pedidoRepository.findById(pedidoId).orElse(null);
 
                     if (pedido != null && pedido.getEtapa() != StatusPedido.PAGO) {
+                        String paymentTypeId = paymentData.get("payment_type_id") != null
+                                ? String.valueOf(paymentData.get("payment_type_id"))
+                                : "";
+
+                        FormaPagamento formaPgto = "debit_card".equalsIgnoreCase(paymentTypeId)
+                                ? FormaPagamento.CARTAO_DEBITO
+                                : FormaPagamento.CARTAO_CREDITO;
+
+                        pedido.setFormaPagamento(formaPgto);
                         pedido.setEtapa(StatusPedido.PAGO);
                         pedidoRepository.save(pedido);
+                        pedidoService.efetuarVendaReservado(pedido);
                     }
                 }
             }
@@ -447,6 +464,11 @@ public class MercadoPagoService {
 
         if (paymentId != null && !paymentId.isBlank() && !"null".equalsIgnoreCase(paymentId)) {
             processarPagamentoAprovadoPorWebhook(paymentId);
+        } else {
+            String paymentIdEncontrado = buscarPaymentIdAprovadoPorReferencia(String.valueOf(pedidoId));
+            if (paymentIdEncontrado != null) {
+                processarPagamentoAprovadoPorWebhook(paymentIdEncontrado);
+            }
         }
 
         Pedido pedido = pedidoRepository.findById(pedidoId).orElse(null);
@@ -456,5 +478,37 @@ public class MercadoPagoService {
 
     private String produtoDescricaoPadrao(ItemCarrinhoRequest item) {
         return item.getNome() != null ? item.getNome() : "Produto Videira Natural";
+    }
+
+    private String buscarPaymentIdAprovadoPorReferencia(String externalReference) {
+        String urlSearch = "https://api.mercadopago.com/v1/payments/search?external_reference="
+                + externalReference + "&sort=date_created&criteria=desc&limit=5";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.restTemplate().exchange(
+                    urlSearch, HttpMethod.GET, entity, Map.class);
+
+            Map body = response.getBody();
+            if (response.getStatusCode().is2xxSuccessful() && body != null) {
+                Object resultsObj = body.get("results");
+                if (resultsObj instanceof List<?> results) {
+                    for (Object itemObj : results) {
+                        if (itemObj instanceof Map<?, ?> pag) {
+                            String statusPag = String.valueOf(pag.get("status"));
+                            if ("approved".equalsIgnoreCase(statusPag) && pag.get("id") != null) {
+                                return String.valueOf(pag.get("id"));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar pagamento por external_reference: " + e.getMessage());
+        }
+        return null;
     }
 }
