@@ -1,6 +1,5 @@
 package com.api.controller.mobile;
 
-import com.api.apiExterno.email.EmailService;
 import com.api.business.ClienteService;
 import com.api.dto.ClienteDTO;
 import com.api.dto.ValidarTokenDTO;
@@ -26,9 +25,6 @@ public class ClienteAppController {
     @Autowired
     private TokenCacheService tokenCacheService;
 
-    @Autowired
-    private EmailService emailService;
-    
     @Autowired
     private ClienteRepository clienteRepository;
 
