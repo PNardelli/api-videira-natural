@@ -55,6 +55,10 @@ public class PedidoService {
     @Autowired
     private ConfiguracaoFreteService freteService;
 
+    @Autowired
+    private PushNotificationService notificationService;
+
+
     final static String VITA = "51160-070 / 245";
     final static String LUAR_DO_PARQUE = "51160-070 / 245";
     final static String MIRANTE = "51160-070 / 245";
@@ -117,6 +121,8 @@ public class PedidoService {
                pedidoCriado.setLinkPagamento(linkReal);
 
                 pedidoRepository.save(pedidoCriado);
+                notificationService.notificarEtapaPedido(pedido);
+
 
                 // 4. Retornar pedido criado
                 return pedidoCriado;
@@ -137,6 +143,7 @@ public class PedidoService {
 
     public ResponseEntity<Void> cancelarPedido(Pedido pedido){
         estoqueService.cancelarResevaPedido(pedido.getId());
+        notificationService.notificarEtapaPedido(pedido);
 
         return ResponseEntity.ok().build();
     }

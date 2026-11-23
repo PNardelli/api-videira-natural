@@ -23,11 +23,13 @@ public class EstoqueItemDTO {
     private BigDecimal precoCompra;
     private BigDecimal precoVenda;
     private LocalDate dataValidade;
+    private Boolean emPromocao;
+    private BigDecimal valorPromocional;
 
     // CONSTRUTOR NA ORDEM EXATA DA QUERY
     public EstoqueItemDTO(Long idVinculo, Long produtoId, String codigoProduto, String nome,
                           String fornecedorNome, BigDecimal quantidade, BigDecimal estoqueMinimo,
-                          String unidadeMedida, BigDecimal precoCompra, BigDecimal precoVenda, LocalDate dataValidade) {
+                          String unidadeMedida, BigDecimal precoCompra, BigDecimal precoVenda, LocalDate dataValidade, Boolean emPromocao, BigDecimal valorPromocional) {
         this.idVinculo = idVinculo;
         this.produtoId = produtoId;
         this.codigoProduto = codigoProduto;
@@ -39,6 +41,8 @@ public class EstoqueItemDTO {
         this.precoCompra = precoCompra;
         this.precoVenda = precoVenda;
         this.dataValidade = dataValidade;
+        this.emPromocao = emPromocao;
+        this.valorPromocional = valorPromocional;
     }
 
 }

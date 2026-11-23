@@ -82,12 +82,27 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
 
 
     //TRAZER DADOS PARA ESTOQUE DE FORMA RAPIDA E DIRETA
-    @Query("SELECT NEW com.api.dto.EstoqueItemDTO(" +
-            "pf.id, p.id, COALESCE(p.codigoProduto, p.codigoBarras), p.nome, " +
-            "f.nome, pf.quantidade, pf.estoqueMinimo, pf.unidadeMedida, " +
-            "pf.precoCompra, pf.precoVenda, pf.dataValidade) " +
-            "FROM ProdutoFornecedor pf JOIN pf.produto p LEFT JOIN pf.fornecedor f " +
-            "WHERE pf.produtoAtivo = true AND p.ativo = true")
+    @Query("""
+    SELECT NEW com.api.dto.EstoqueItemDTO(
+        pf.id,
+        p.id,
+        COALESCE(p.codigoProduto, p.codigoBarras),
+        p.nome,
+        f.nome,
+        pf.quantidade,
+        pf.estoqueMinimo,
+        pf.unidadeMedida,
+        pf.precoCompra,
+        pf.precoVenda,
+        pf.dataValidade,
+        pf.emPromocao,
+        pf.valorPromocional
+    )
+    FROM ProdutoFornecedor pf
+    JOIN pf.produto p
+    LEFT JOIN pf.fornecedor f
+    WHERE pf.produtoAtivo = true AND p.ativo = true
+""")
     List<EstoqueItemDTO> listarEstoqueCompletoOTimizado();
 
 
