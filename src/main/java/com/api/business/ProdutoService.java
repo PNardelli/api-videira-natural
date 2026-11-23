@@ -140,6 +140,8 @@ public class ProdutoService {
 
         if (produto.isAtivo()){
             produto.setAtivo(false);
+            produtoFornecedorRepository.atualizarProdutoAtivoPorProdutoId(id, false);
+
         }else{
             produto.setAtivo(true);
         };

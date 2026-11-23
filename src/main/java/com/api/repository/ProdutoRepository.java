@@ -19,11 +19,11 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long > {
     Optional<Produto> findByCodigoFornecedorXml(String codigoFornecedor);
 
 
-    @Query("SELECT p FROM Produto p WHERE " +
+    @Query("SELECT p FROM Produto p WHERE p.ativo = true AND (" +
             "CAST(p.id AS string) = :termo OR " +
             "p.codigoBarras = :termo OR " +
             "p.codigoProduto = :termo OR " +
-            "LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%'))")
+            "LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%')))")
     List<Produto> findByFlexivel(@Param("termo") String termo);
 
     @Query("""

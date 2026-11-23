@@ -6,11 +6,9 @@ import com.api.dto.requests.ItemCarrinhoRequest;
 import com.api.dto.requests.ProdutoRequest;
 import com.api.eNum.StatusItemPedido;
 import com.api.eNum.StatusPedido;
-import com.api.eNum.TipoVenda;
 import com.api.entity.*;
 import com.api.repository.*;
 import com.api.uteis.Util;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,7 +20,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class VendaService {
@@ -257,7 +254,16 @@ public class VendaService {
                         new RuntimeException("Cliente não encontrado.")
                 );
 
-        // 3. Montar os dados da venda
+        // 3. GERAR COINS
+        int coinsGeradas = pedido.getSubtotal().intValue();
+        int videiraCoinsAtual = cliente.getVideiraSaldo();
+        int novoSaldo = videiraCoinsAtual + coinsGeradas;
+        cliente.setVideiraSaldo(novoSaldo);
+
+        clienteRepository.save(cliente);
+
+        // 4. Montar os dados da venda
+        venda.setCoinsGeradas(coinsGeradas);
         venda.setCliente(cliente);
         venda.setSubtotal(pedido.getSubtotal());
         venda.setDesconto(pedido.getDesconto());
@@ -269,10 +275,10 @@ public class VendaService {
         venda.setEnderecoEntrega(cliente.getEndereco());
         venda.setDataVenda(LocalDateTime.now());
 
-        // 4. Depois de obter o ID
+        // 5. Depois de obter o ID
         Venda vendaSalva = vendaRepository.save(venda);
 
-        // 5. Criar os itens da venda
+        // 6. Criar os itens da venda
         List<ItemVenda> itensVenda = new ArrayList<>();
 
         for (ItemPedido itemPedido : itemPedidoList) {
@@ -294,7 +300,7 @@ public class VendaService {
 
             itensVenda.add(itemVenda);
 
-            // 6. Finalizar reserva
+            // 7. Finalizar reserva
             itemPedido.setStatusReserva(StatusItemPedido.CONCLUIDO);
         }
 
