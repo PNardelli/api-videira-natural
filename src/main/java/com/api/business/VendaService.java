@@ -51,6 +51,9 @@ public class VendaService {
     @Autowired
     private ItemPedidoRepository itemPedidoRepository;
 
+    @Autowired
+    private PushNotificationService notificationService;
+
     @Transactional
     public Venda finalizarVenda(VendaDTO dto) {
         return estoqueService.processarNovaVenda(dto);
@@ -323,6 +326,8 @@ public class VendaService {
 
         // 8. Atualizar itens do pedido
         itemPedidoRepository.saveAll(itemPedidoList);
+
+        notificationService.notificarEtapaPedido(pedido);
 
         return vendaSalva;
     }

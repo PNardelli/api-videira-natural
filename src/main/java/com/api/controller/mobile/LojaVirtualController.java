@@ -81,9 +81,16 @@ public class LojaVirtualController {
                         map.put("sub", "50g");
                     }
 
-                    // Preço e estoque do ProdutoFornecedor
+                    boolean emPromocao = Boolean.TRUE.equals(pf.getEmPromocao())
+                            && pf.getValorPromocional() != null
+                            && pf.getValorPromocional().compareTo(BigDecimal.ZERO) > 0;
+
+                    map.put("produtoFornecedorId", pf.getId());
                     map.put("preco", pf.getPrecoVenda());
+                    map.put("precoOriginal", pf.getPrecoVenda());
                     map.put("precoBase", pf.getPrecoVenda());
+                    map.put("emPromocao", emPromocao);
+                    map.put("valorPromocional", emPromocao ? pf.getValorPromocional() : null);
                     map.put("estoqueDisponivel", pf.getQuantidade());
 
                     map.put("img",

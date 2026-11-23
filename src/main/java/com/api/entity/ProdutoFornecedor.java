@@ -45,4 +45,10 @@ public class ProdutoFornecedor {
     private BigDecimal estoqueMinimo;
 
     private Boolean produtoAtivo;
+
+    @Column(name = "em_promocao")
+    private Boolean emPromocao = false;
+
+    @Column(name = "valor_promocional", precision = 14, scale = 2)
+    private BigDecimal valorPromocional;
 }

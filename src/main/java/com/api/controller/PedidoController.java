@@ -2,6 +2,7 @@ package com.api.controller; // Ajuste para o seu pacote correto
 
 import com.api.apiExterno.mercadoPago.MercadoPagoService;
 import com.api.business.PedidoService;
+import com.api.business.PushNotificationService;
 import com.api.dto.PedidoResponseDTO;
 import com.api.dto.requests.PedidoRequest;
 import com.api.eNum.FormaPagamento;
@@ -31,6 +32,9 @@ public class PedidoController {
 
     @Autowired
     private MercadoPagoService mercadoPagoService;
+
+    @Autowired
+    private PushNotificationService notificationService;
 
     @GetMapping("/listar")
     @Transactional(readOnly = true) // Use se for apenas consulta
@@ -82,9 +86,11 @@ public class PedidoController {
 
             if (pedido.getEtapa().equals(StatusPedido.CANCELADO) && !etapaAnterior.equals(StatusPedido.FINALIZADO)) {
                 pedidoService.cancelarPedido(pedido);
+
             }
 
             Pedido salvo = pedidoRepository.save(pedido);
+            notificationService.notificarEtapaPedido(pedido);
             return ResponseEntity.ok(pedidoService.toResponseDTO(salvo));
         }).orElse(ResponseEntity.notFound().build());
     }
