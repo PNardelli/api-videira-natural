@@ -135,7 +135,12 @@ public interface ProdutoFornecedorRepository extends JpaRepository<ProdutoFornec
     );
 
 
-    @Query("SELECT pf FROM ProdutoFornecedor pf WHERE pf.quantidade >= :qtd AND pf.produtoAtivo = true")
+    @Query("""
+    SELECT pf FROM ProdutoFornecedor pf
+    WHERE pf.quantidade >= :qtd
+      AND pf.produtoAtivo = true
+    ORDER BY LOWER(pf.produto.nome) ASC
+    """)
     List<ProdutoFornecedor> buscarComEstoqueEAtivosApp(@Param("qtd") Integer qtd);
 
     //INATIVA E ATIVAR PELO PRODUTO.
