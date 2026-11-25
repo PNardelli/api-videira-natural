@@ -8,8 +8,10 @@ import com.api.dto.requests.PedidoRequest;
 import com.api.eNum.TipoVenda;
 import com.api.entity.Categoria;
 import com.api.entity.ProdutoFornecedor;
+import com.api.entity.Promocao;
 import com.api.repository.CategoriaRepository;
 import com.api.repository.ProdutoFornecedorRepository;
+import com.api.repository.PromocaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,9 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.Collator;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -37,6 +38,9 @@ public class LojaVirtualController {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
+    @Autowired
+    private PromocaoRepository promocaoRepository;
+
     @GetMapping("/home")
     @Cacheable("vitrineCache")
     public ResponseEntity<Map<String, Object>> obterVitrine() {
@@ -46,6 +50,9 @@ public class LojaVirtualController {
                 produtoFornecedorRepository.buscarComEstoqueEAtivosApp(0);
 
         List<Categoria> categorias = categoriaRepository.findAll();
+
+        Collator collator = Collator.getInstance(Locale.forLanguageTag("pt-BR"));
+        collator.setStrength(Collator.PRIMARY);
 
         List<Map<String, Object>> produtosDto = itensEstoque.stream()
                 .map(pf -> {
@@ -98,7 +105,9 @@ public class LojaVirtualController {
 
                     return map;
 
-                }).collect(Collectors.toList());
+                }).sorted(Comparator.comparing(m -> Objects.toString(m.get("nome"), "Produto"),
+                        collator))
+                .collect(Collectors.toList());
 
         List<Map<String, Object>> categoriasDto = categorias.stream()
                 .map(c -> {
@@ -113,7 +122,11 @@ public class LojaVirtualController {
 
                     return map;
 
-                }).collect(Collectors.toList());
+                }).sorted(Comparator.comparing(
+                m -> Objects.toString(m.get("nome"), ""),
+                collator
+        ))
+                .collect(Collectors.toList());
 
         Map<String, Object> resposta = new HashMap<>();
 
