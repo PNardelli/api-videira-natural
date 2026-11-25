@@ -1,5 +1,6 @@
 package com.api.controller;
 
+import com.api.business.PushNotificationService;
 import com.api.entity.PushSubscriptionCliente;
 import com.api.repository.PushSubscriptionClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,9 @@ public class PushController {
 
     @Autowired
     private PushSubscriptionClienteRepository repository;
+
+    @Autowired
+    private PushNotificationService pushNotificationService;
 
     @GetMapping("/public-key")
     public Map<String, String> getPublicKey() {
@@ -46,4 +50,22 @@ public class PushController {
         repository.save(entity);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/enviar")
+    public ResponseEntity<?> enviarPushParaTodos(@RequestBody Map<String, String> body) {
+        String titulo = body.get("title");
+        String mensagem = body.get("body");
+        String url = body.getOrDefault("url", "/app");
+
+        if (titulo == null || titulo.isBlank() || mensagem == null || mensagem.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("erro", "Título e mensagem são obrigatórios."));
+        }
+
+        int enviados = pushNotificationService.enviarParaTodos(titulo, mensagem, url);
+        return ResponseEntity.ok(Map.of(
+                "mensagem", "Push enviado com sucesso!",
+                "totalEnviados", enviados
+        ));
+    }
+
 }

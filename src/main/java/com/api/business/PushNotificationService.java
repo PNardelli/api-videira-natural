@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
@@ -85,6 +86,51 @@ public class PushNotificationService {
         }
     }
 
+    @Async
+    public int enviarParaTodos(String titulo, String mensagem, String urlDestino) {
+        if (pushService == null || titulo == null || titulo.isBlank() || mensagem == null || mensagem.isBlank()) {
+            return 0;
+        }
+
+        List<PushSubscriptionCliente> subs = subscriptionRepository.findAll();
+        if (subs.isEmpty()) {
+            return 0;
+        }
+
+        String urlSegura = (urlDestino == null || urlDestino.isBlank()) ? "www.videiranatural.com.br/app" : urlDestino.trim();
+        String payload = String.format(
+                "{\"title\":\"%s\",\"body\":\"%s\",\"url\":\"%s\"}",
+                escaparJson(titulo.trim()),
+                escaparJson(mensagem.trim()),
+                escaparJson(urlSegura)
+        );
+
+        int enviadosComSucesso = 0;
+
+        for (PushSubscriptionCliente sub : subs) {
+            try {
+                Notification notification = new Notification(
+                        sub.getEndpoint(),
+                        sub.getP256dh(),
+                        sub.getAuth(),
+                        payload.getBytes(StandardCharsets.UTF_8)
+                );
+                var response = pushService.send(notification);
+                int status = response.getStatusLine().getStatusCode();
+                if (status == 404 || status == 410) {
+                    subscriptionRepository.delete(sub);
+                } else if (status >= 200 && status < 300) {
+                    enviadosComSucesso++;
+                }
+            } catch (Exception e) {
+                System.err.println("Falha ao enviar Push broadcast para subscription " + sub.getId() + ": " + e.getMessage());
+            }
+        }
+
+        return enviadosComSucesso;
+    }
+
+    //METODOS PRIVADOS
     private String montarMensagemPorEtapa(StatusPedido etapa, Long pedidoId) {
         return switch (etapa) {
             case CRIADO -> "Recebemos seu pedido #" + pedidoId + "! Em breve começaremos a separar.";
@@ -97,5 +143,14 @@ public class PushNotificationService {
             case CANCELADO -> "Seu pedido #" + pedidoId + " foi cancelado. Qualquer dúvida, fale conosco.";
             default -> "O status do seu pedido #" + pedidoId + " mudou para: " + etapa.name();
         };
+    }
+
+    private String escaparJson(String texto) {
+        if (texto == null) return "";
+        return texto
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r");
     }
 }
