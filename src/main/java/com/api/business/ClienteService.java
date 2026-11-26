@@ -10,6 +10,7 @@ import com.api.repository.ClienteRepository;
 import com.api.repository.UsuarioRepository;
 import com.api.uteis.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -84,7 +85,7 @@ public class ClienteService {
     }
 
     public List<Cliente> listarTodos() {
-        return clienteRepository.findAll();
+        return clienteRepository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
     }
 
     public Optional<Cliente> buscarPorId(Long id) {
