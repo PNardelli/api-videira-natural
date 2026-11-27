@@ -252,7 +252,10 @@ public class PedidoService {
             if (request.getTipoEntrega().equals(TipoEntrega.DELIVERY) && !request.isFreteGratis() && !tipoVenda.equals(TipoVenda.APP)){
                 BigDecimal valorFrete = freteService.calcularFreteParaCliente(request.getCliente(), TipoVenda.ONLINE);
                 pedido.setValorFrete(valorFrete);
-            }else {
+            } else if (tipoVenda.equals(TipoVenda.APP)) {
+                pedido.setValorFrete(request.getAcrescimo());
+            }
+            else {
                 pedido.setValorFrete(BigDecimal.ZERO);
             }
 

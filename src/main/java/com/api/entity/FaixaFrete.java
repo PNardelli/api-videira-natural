@@ -1,5 +1,6 @@
 package com.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,6 +22,7 @@ public class FaixaFrete {
     private LocalDateTime dataCriacao = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "configuracao_frete_id", nullable = false)
     private ConfiguracaoFrete configuracaoFrete;
 

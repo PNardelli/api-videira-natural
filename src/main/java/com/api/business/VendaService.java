@@ -201,11 +201,26 @@ public class VendaService {
         return vendaRepository.buscarVendasGerais(termo);
     }
 
+    @Transactional(readOnly = true)
     public List<Venda> pesquisarVendasPorIdOuCliente(String termo) {
-        return vendaRepository.pesquisarVendasPorIdOuCliente(termo);
+        List<Venda> vendas = vendaRepository.pesquisarVendasPorIdOuCliente(termo);
+        for (Venda v : vendas) {
+            if (v.getItens() != null) {
+                v.getItens().size();
+            }
+            if (v.getPagamentos() != null) {
+                v.getPagamentos().size();
+            }
+        }
+        return vendas;
     }
 
+    @Transactional(readOnly = true)
     public List<Venda> listarVendasDoisDias(String termo) {
+        if (!termo.isEmpty()){
+            return pesquisarVendasPorIdOuCliente(termo);
+        }
+
         LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
 
         LocalDateTime inicio = hoje.atStartOfDay();

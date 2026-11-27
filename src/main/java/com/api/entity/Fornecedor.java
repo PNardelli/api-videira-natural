@@ -35,5 +35,8 @@ public class Fornecedor {
 
     private boolean ativo = true;
 
+    @Column(name = "razao_social")
+    private String razaoSocial;
+
     private LocalDate dataCadastro;
 }

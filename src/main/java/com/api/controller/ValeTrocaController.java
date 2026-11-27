@@ -3,11 +3,13 @@ package com.api.controller;
 import com.api.business.ValeTrocaService;
 import com.api.entity.ValeTroca;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vale-troca")
@@ -59,6 +61,29 @@ public class ValeTrocaController {
             return ResponseEntity.ok(novoVale);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/gerar-cupom")
+    public ResponseEntity<ValeTroca> criarCupom(@RequestBody ValeTroca valeTroca){
+        valeTrocaService.cadastrarCupom(valeTroca);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/validar")
+    public ResponseEntity<?> validarCupom(
+            @RequestParam(name = "codigo", required = false) String codigo,
+            @RequestParam(name = "cupom", required = false) String cupom) {
+        String termo = (codigo != null && !codigo.isBlank()) ? codigo : cupom;
+        if (termo == null || termo.isBlank()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", "Informe o código do cupom."));
+        }
+
+        try {
+            return valeTrocaService.validarCupom(termo.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 }

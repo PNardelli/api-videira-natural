@@ -30,7 +30,11 @@ public class FornecedorController {
     @GetMapping("/listar")
     public List<Fornecedor> listar() {
         return service.listar();
+    }
 
+    @GetMapping("/{id}")
+    public Fornecedor buscarFornecedor(@PathVariable Long id) {
+        return service.buscarFornecedor(id);
     }
 
     @PutMapping("/atualizar/{id}")

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface VendaRepository  extends JpaRepository<Venda, Long> {
 
@@ -52,14 +53,30 @@ public interface VendaRepository  extends JpaRepository<Venda, Long> {
             @Param("fim") LocalDateTime fim
     );
 
-    @Query("SELECT DISTINCT v FROM Venda v " +
-            "LEFT JOIN v.cliente c " +
-            "WHERE (:termo IS NULL OR :termo = '' " +
-            "OR CAST(v.id AS string) LIKE CONCAT('%', :termo, '%') " +
-            "OR (c IS NOT NULL AND LOWER(c.nome) LIKE LOWER(CONCAT('%', :termo, '%')))) " +
-            "ORDER BY v.id DESC")
-    List<Venda> pesquisarVendasPorIdOuCliente(
-            @Param("termo") String termo
+    @Query("""
+    SELECT DISTINCT v FROM Venda v
+    LEFT JOIN v.cliente c
+    WHERE (:termo IS NULL OR TRIM(:termo) = ''
+           OR CAST(v.id AS string) = TRIM(:termo)
+           OR (c IS NOT NULL AND LOWER(c.nome) LIKE LOWER(CONCAT('%', TRIM(:termo), '%'))))
+    ORDER BY v.id DESC
+    """)
+    List<Venda> pesquisarVendasPorIdOuCliente(@Param("termo") String termo);
+
+    @Query("""
+    SELECT DISTINCT v FROM Venda v
+    LEFT JOIN v.cliente c
+    WHERE (:termo IS NULL OR :termo = ''
+           OR CAST(v.id AS string) = :termo
+           OR (c IS NOT NULL AND LOWER(c.nome) LIKE LOWER(CONCAT('%', :termo, '%'))))
+      AND (:inicio IS NULL OR v.dataVenda >= :inicio)
+      AND (:fim IS NULL OR v.dataVenda < :fim)
+    ORDER BY v.id DESC
+    """)
+    List<Venda> filtrarVendas(
+            @Param("termo") String termo,
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
     );
 
 

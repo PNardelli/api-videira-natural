@@ -13,4 +13,6 @@ public interface ValeTrocaRepository extends JpaRepository<ValeTroca, Long> {
     // baseada no atributo 'codigoBarra' da entidade ValeTroca
     Optional<ValeTroca> findByCodigoBarra(String codigoBarra);
 
+    Optional<ValeTroca> findByCodigoCupom(String codigoCupom);
+
 }
