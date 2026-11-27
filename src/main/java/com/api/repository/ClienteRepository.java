@@ -23,7 +23,7 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     // Para EDIÇÕES: Verifica se existe em outro ID
     boolean existsByWhatsappOrEmailAndIdNot(String whatsapp, String email, Long id);
 
-    @Query("SELECT c FROM Cliente c WHERE c.flagAtivo = true ORDER BY c.nome ASC")
+    @Query("SELECT c FROM Cliente c WHERE c.ativo = true ORDER BY c.nome ASC")
     List<Cliente> buscarClientesAtivos();
 
     @Query("""
