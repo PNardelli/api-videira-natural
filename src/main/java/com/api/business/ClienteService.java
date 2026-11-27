@@ -85,7 +85,7 @@ public class ClienteService {
     }
 
     public List<Cliente> listarTodos() {
-        return clienteRepository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
+        return clienteRepository.findByFlagAtivoTrueOrderByNomeAsc();
     }
 
     public Optional<Cliente> buscarPorId(Long id) {
