@@ -291,7 +291,9 @@ public class VendaService {
         venda.setCanalVenda(pedido.getCanalVenda());
         venda.setTipoEntrega(pedido.getTipoEntrega());
         venda.setEnderecoEntrega(cliente.getEndereco());
+        venda.setCodigoCupom(pedido.getCodigoCupom());
         venda.setDataVenda(LocalDateTime.now());
+        venda.setStatusPedido(StatusPedido.FINALIZADO);
 
         // 5. Depois de obter o ID
         Venda vendaSalva = vendaRepository.save(venda);

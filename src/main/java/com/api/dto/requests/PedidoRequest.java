@@ -30,5 +30,7 @@ public class PedidoRequest {
     private boolean freteGratis;
 
     private ClientePdvDTO cliente;
+
+    private String codigoCupom;
 }
 

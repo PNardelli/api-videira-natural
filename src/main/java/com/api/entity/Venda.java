@@ -71,6 +71,9 @@ public class Venda {
     @JoinColumn(name = "pedido_id", unique = true)
     private Pedido pedido;
 
+    @Column(name = "codigo_cupom", length = 60)
+    private String codigoCupom;
+
     // Helper method para garantir que a data de atualização mude sempre
     @PreUpdate
     @PrePersist

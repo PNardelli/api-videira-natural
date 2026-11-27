@@ -74,6 +74,7 @@ public class PedidoController {
 
         return pedidoRepository.findById(id).map(pedido -> {
             var etapaAnterior = pedido.getEtapa();
+
             if (etapaAnterior.equals(StatusPedido.FINALIZADO)) {
                 return ResponseEntity.ok(pedidoService.toResponseDTO(pedido));
             }
@@ -90,7 +91,7 @@ public class PedidoController {
             }
 
             Pedido salvo = pedidoRepository.save(pedido);
-            notificationService.notificarEtapaPedido(pedido);
+            notificationService.notificarEtapaPedido(salvo);
             return ResponseEntity.ok(pedidoService.toResponseDTO(salvo));
         }).orElse(ResponseEntity.notFound().build());
     }

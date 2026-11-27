@@ -188,5 +188,25 @@ public interface VendaRepository  extends JpaRepository<Venda, Long> {
     );
 
 
+    @Query("""
+    SELECT v.codigoCupom,
+           COUNT(v.id),
+           COALESCE(SUM(v.desconto), 0),
+           COALESCE(SUM(v.total), 0)
+    FROM Venda v
+    WHERE v.codigoCupom IS NOT NULL
+      AND TRIM(v.codigoCupom) <> ''
+      AND v.statusPedido <> com.api.eNum.StatusPedido.FINALIZADO
+      AND v.dataVenda >= :inicio
+      AND v.dataVenda < :fim
+    GROUP BY v.codigoCupom
+    ORDER BY COUNT(v.id) DESC
+    """)
+    List<Object[]> rankingCuponsPorPeriodo(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
+
+
 
 }
