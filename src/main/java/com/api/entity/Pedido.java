@@ -64,4 +64,7 @@ public class Pedido {
 
     @Enumerated(EnumType.STRING)
     private FormaPagamento formaPagamento;
+
+    @Column(name = "codigo_cupom", length = 60)
+    private String codigoCupom;
 }

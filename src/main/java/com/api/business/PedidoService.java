@@ -278,6 +278,7 @@ public class PedidoService {
             pedido.setTotalFinal(request.getTotalFinal());
             pedido.setCanalVenda(TipoVenda.valueOf(request.getCanalVenda()));
             pedido.setTipoEntrega(request.getTipoEntrega());
+            pedido.setCodigoCupom(request.getCodigoCupom());
 
             return pedido;
     }

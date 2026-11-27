@@ -1,16 +1,22 @@
-
 package com.api.dto.relatorio;
 
+import com.api.eNum.StatusPedido;
+import com.api.entity.ItemVenda;
+import com.api.entity.PagamentoVenda;
+import com.api.entity.Venda;
+import com.api.repository.VendaRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Getter
 @Setter
@@ -24,6 +30,7 @@ public class PainelVendasDTO {
 
     private List<GraficoDTO> grafico = new ArrayList<>();
     private List<FormaPagamentoDTO> formasPagamento = new ArrayList<>();
+    private List<CupomResumoDTO> cupons = new ArrayList<>();
     private List<ProdutoMaisVendidoDTO> produtosMaisVendidos = new ArrayList<>();
     private List<VendaDTO> vendas = new ArrayList<>();
 
@@ -86,6 +93,18 @@ public class PainelVendasDTO {
         private Long quantidade = 0L;
     }
 
+    // Desempenho por cupom no período
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CupomResumoDTO {
+        private String codigoCupom;
+        private Long quantidade = 0L;
+        private BigDecimal totalDesconto = BigDecimal.ZERO;
+        private BigDecimal totalFaturado = BigDecimal.ZERO;
+    }
+
     // Ranking de produtos vendidos
     @Getter
     @Setter
@@ -109,6 +128,7 @@ public class PainelVendasDTO {
         private String clienteNome;
         private String status;
         private String canalVenda;
+        private String codigoCupom;
 
         private BigDecimal subtotal = BigDecimal.ZERO;
         private BigDecimal desconto = BigDecimal.ZERO;

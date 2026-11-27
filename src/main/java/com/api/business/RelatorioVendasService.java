@@ -6,22 +6,15 @@ import com.api.entity.ItemVenda;
 import com.api.entity.PagamentoVenda;
 import com.api.entity.Venda;
 import com.api.repository.VendaRepository;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class RelatorioVendasService {
@@ -171,12 +164,63 @@ public class RelatorioVendasService {
                 PainelVendasDTO.ProdutoMaisVendidoDTO::getQuantidadeVendida).reversed());
         dto.setProdutosMaisVendidos(produtos.stream().limit(10).toList());
 
-        // Somente as 10 vendas mais recentes para a tabela do painel.
-        List<Venda> recentes = vendaRepository.buscarVendasRecentes(
-                inicioPeriodo, fimExclusivo, PageRequest.of(0, 10));
-        dto.setVendas(recentes.stream().map(this::mapearVenda).toList());
+        // Todas as vendas do período filtrado (sem limitar a 10).
+        List<Venda> vendasPeriodo = vendaRepository.findByDataVendaBetweenOrderByDataVendaDesc(
+                inicioPeriodo, fimExclusivo);
+        List<PainelVendasDTO.VendaDTO> vendasDto = vendasPeriodo.stream()
+                .map(this::mapearVenda)
+                .toList();
+        dto.setVendas(vendasDto);
+
+        // Resumo de cupons no período (ignora vendas canceladas).
+        Map<String, PainelVendasDTO.CupomResumoDTO> mapaCupons = new LinkedHashMap<>();
+        for (Venda venda : vendasPeriodo) {
+            if (venda.getStatusPedido() == StatusPedido.CANCELADO) continue;
+            String codigo = resolverCodigoCupom(venda);
+            if (codigo == null) continue;
+
+            PainelVendasDTO.CupomResumoDTO cupomDto = mapaCupons.computeIfAbsent(
+                    codigo,
+                    k -> new PainelVendasDTO.CupomResumoDTO(
+                            k, 0L, BigDecimal.ZERO, BigDecimal.ZERO)
+            );
+            cupomDto.setQuantidade(cupomDto.getQuantidade() + 1);
+            cupomDto.setTotalDesconto(cupomDto.getTotalDesconto().add(valor(venda.getDesconto())));
+            cupomDto.setTotalFaturado(cupomDto.getTotalFaturado().add(valor(venda.getTotal())));
+        }
+
+        List<PainelVendasDTO.CupomResumoDTO> cuponsOrdenados = new ArrayList<>(mapaCupons.values());
+        cuponsOrdenados.sort(Comparator.comparing(PainelVendasDTO.CupomResumoDTO::getQuantidade).reversed()
+                .thenComparing(PainelVendasDTO.CupomResumoDTO::getTotalFaturado, Comparator.reverseOrder()));
+        dto.setCupons(cuponsOrdenados);
 
         return dto;
+    }
+
+    private String resolverCodigoCupom(Venda venda) {
+        if (venda == null) return null;
+        // Se você adicionou getCodigoCupom() na Venda, ele já lê direto daqui;
+        // caso ainda não tenha o getter na Venda, tenta pegar do Pedido vinculado.
+        try {
+            var metodo = Venda.class.getMethod("getCodigoCupom");
+            Object val = metodo.invoke(venda);
+            if (val != null && !val.toString().trim().isEmpty()) {
+                return val.toString().trim().toUpperCase();
+            }
+        } catch (ReflectiveOperationException ignored) {
+        }
+
+        if (venda.getPedido() != null) {
+            try {
+                var metodoPedido = venda.getPedido().getClass().getMethod("getCodigoCupom");
+                Object valPedido = metodoPedido.invoke(venda.getPedido());
+                if (valPedido != null && !valPedido.toString().trim().isEmpty()) {
+                    return valPedido.toString().trim().toUpperCase();
+                }
+            } catch (ReflectiveOperationException ignored) {
+            }
+        }
+        return null;
     }
 
     private PainelVendasDTO.VendaDTO mapearVenda(Venda venda) {
@@ -186,16 +230,13 @@ public class RelatorioVendasService {
         dto.setClienteNome(venda.getCliente() != null ? venda.getCliente().getNome() : "Cliente Balcão");
         dto.setStatus(venda.getStatusPedido() != null ? venda.getStatusPedido().name() : "INDEFINIDO");
         dto.setCanalVenda(venda.getCanalVenda() != null ? venda.getCanalVenda().name() : "INDEFINIDO");
+        dto.setCodigoCupom(resolverCodigoCupom(venda));
         dto.setSubtotal(valor(venda.getSubtotal()));
         dto.setDesconto(valor(venda.getDesconto()));
         dto.setFrete(valor(venda.getFrete()));
         dto.setTotalFinal(valor(venda.getTotal()));
 
         List<ItemVenda> itens = venda.getItens() != null ? venda.getItens() : List.of();
-//        dto.setQuantidadeItens(itens.stream()
-//                .map(ItemVenda::getQuantidade)
-//                .filter(Objects::nonNull)
-//                .reduce(BigDecimal.ZERO, BigDecimal::add));
         dto.setQuantidadeItens(itens.size());
 
         dto.setFormasPagamento(venda.getPagamentos() == null ? List.of()
@@ -222,9 +263,12 @@ public class RelatorioVendasService {
 
     private LocalDate converterData(Object valorData) {
         if (valorData instanceof LocalDate data) return data;
-        if (valorData instanceof Date dataSql) return dataSql.toLocalDate();
+        if (valorData instanceof java.sql.Date dataSql) return dataSql.toLocalDate();
+        if (valorData instanceof LocalDateTime dataHora) return dataHora.toLocalDate();
         if (valorData instanceof java.util.Date data) {
-            return new Date(data.getTime()).toLocalDate();
+            return data.toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDate();
         }
         return LocalDate.parse(valorData.toString());
     }
@@ -232,4 +276,5 @@ public class RelatorioVendasService {
     private BigDecimal valor(BigDecimal valor) {
         return valor != null ? valor : BigDecimal.ZERO;
     }
-}
+
+    }
