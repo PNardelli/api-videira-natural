@@ -4,6 +4,7 @@ import com.api.entity.Fornecedor;
 import com.api.repository.FornecedorRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class FornecedorService {
         fornecedor.setNome(payload.getNome().trim().toUpperCase());
         fornecedor.setWhatsapp(payload.getWhatsapp());
         fornecedor.setCpfCnpj(payload.getCpfCnpj());
+        fornecedor.setRazaoSocial(payload.getRazaoSocial().trim().toUpperCase());
         fornecedor.setDataCadastro(LocalDate.now());
 
         repository.save(fornecedor);
@@ -41,7 +43,13 @@ public class FornecedorService {
 
     @Cacheable(value = "fornecedores")
     public List<Fornecedor> listar() {
-        return repository.findAll();
+        List<Fornecedor> lista = repository.findAll();
+
+        return lista;
+    }
+
+    public Fornecedor buscarFornecedor(Long id){
+        return repository.findById(id).orElseThrow();
     }
 
 
@@ -51,8 +59,9 @@ public class FornecedorService {
         fornecedorParaAtualizar.setNome(fornecedorAtualizado.getNome().trim().toUpperCase());
         fornecedorParaAtualizar.setCpfCnpj(fornecedorAtualizado.getCpfCnpj().trim());
         fornecedorParaAtualizar.setWhatsapp(fornecedorAtualizado.getWhatsapp().trim());
+        fornecedorParaAtualizar.setRazaoSocial(fornecedorAtualizado.getRazaoSocial().trim().toUpperCase());
 
-        return fornecedorParaAtualizar;
+        return repository.save(fornecedorParaAtualizar);
     }
 
     public Fornecedor intativarAtivaFornecedor(Long id) {

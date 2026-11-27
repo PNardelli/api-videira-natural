@@ -4,19 +4,27 @@ import com.api.business.ConfiguracaoFreteService;
 import com.api.business.HorarioLojaService;
 import com.api.dto.ConfiguracaoFreteDTO;
 import com.api.entity.ConfiguracaoFrete;
+import com.api.entity.FaixaFrete;
+import com.api.repository.FaixaFreteRepository;
 import com.api.repository.HorarioLojaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("api/configuracoes")
+@RequestMapping("/api/configuracoes")
 @CrossOrigin("*")
 public class ConfiguracoesController {
 
     @Autowired
     private ConfiguracaoFreteService service;
+
+    @Autowired
+    private FaixaFreteRepository faixaFreteRepository;
 
     @Autowired
     private HorarioLojaService horarioLojaService;
@@ -81,6 +89,12 @@ public class ConfiguracoesController {
 
         return buscarHorarioLoja();
 
+    }
+
+    @GetMapping("/faixas")
+    public ResponseEntity<List<FaixaFrete>> listarFaixas() {
+        List<FaixaFrete> faixas = faixaFreteRepository.findAll(Sort.by(Sort.Direction.ASC, "distanciaMaximaKm"));
+        return ResponseEntity.ok(faixas);
     }
 
     //METODOS PRIVADOS

@@ -36,7 +36,7 @@ public class ConfiguracaoFreteService {
     @Autowired
     private Util util;
 
-    final static String VITA = "51160-071 / 245";
+    final static String VITA = "51160-070 / 245";
     final static String LUAR_DO_PARQUE = "51160-070 / 121";
     final static String MIRANTE = "51150-310 / 305";
 
